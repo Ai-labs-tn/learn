@@ -1,5 +1,60 @@
 /* Bytecode stepper — source ↔ bytecode ↔ frame inspector. Token-driven. */
 
+/* The whiteboard board: ink cards + HTML card contents layered over them. */
+.ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.layer {
+  transition: opacity 0.45s ease;
+}
+
+.shown {
+  opacity: 0.55;
+}
+
+.focus {
+  opacity: 1;
+}
+
+.cardContent {
+  position: absolute;
+  overflow: hidden;
+}
+
+.frameStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.consoleContent {
+  background-color: #0f172a;
+  color: #7ee787;
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 11px;
+  line-height: 1.55;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.emptyFrames {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+}
+
+.inkTextStrong {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+/* The retired dashboard trace layout (kept only for the reused card styles below). */
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
