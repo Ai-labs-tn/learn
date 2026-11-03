@@ -1,27 +1,34 @@
+# Render Blueprint for Learn — JVM-Lens (https://render.com/docs/blueprint-spec)
+#
+# The simulators are 100% client-side, so today only the static site is deployed.
+# The app uses hash routing (#/track), so no SPA rewrite rules are needed.
+# When auth / lesson tracking lands, re-add the API + database blocks kept below.
+
 services:
-  - type: web
-    name: learn-jvm-lens-api
-    runtime: python
-    rootDir: backend
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
-    healthCheckPath: /api/health
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.13.0
-      - key: DATABASE_URL
-        fromDatabase:
-          name: learn-jvm-lens-db
-          property: connectionString
   - type: web
     name: learn-jvm-lens
     runtime: static
-    buildCommand: "npm ci && npm run build"
+    buildCommand: "npm ci --include=dev && npm run build"
     staticPublishPath: dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: /api
-databases:
-  - name: learn-jvm-lens-db
-    plan: free
+    pullRequestPreviewsEnabled: yes
+
+# --- Future phases (auth, lesson progress): re-add when the app calls the API ---
+# services:
+#   - type: web
+#     name: learn-jvm-lens-api
+#     runtime: python
+#     rootDir: backend
+#     plan: starter
+#     buildCommand: pip install -r requirements.txt
+#     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+#     healthCheckPath: /api/health
+#     envVars:
+#       - key: PYTHON_VERSION
+#         value: 3.13.0
+#       - key: DATABASE_URL
+#         fromDatabase:
+#           name: learn-jvm-lens-db
+#           property: connectionString
+# databases:
+#   - name: learn-jvm-lens-db
+#     plan: free
