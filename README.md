@@ -50,7 +50,14 @@ with a friendly warning past 500 snapshots.
   micro-steps against an exact `javap -c` listing: operand stack push/pop, local slots,
   `invokestatic` pushing a real frame and `ireturn` handing the value back. *Next in Phase 2:
   the Monaco editor + java-ast pipeline so learners type their own program.*
-- [ ] Phase 2b — live Java editing (Monaco → AST → snapshots)
+- [x] **Phase 2b — write your own** (`src/simulator/jvm/java/`): the PRD's pipeline live —
+  Monaco editor → **Java-subset parser** (`parser.ts`) → **bytecode compiler** (`compiler.ts`,
+  javap-shaped: iconst/iload/istore/iinc/if_icmp*/goto/invokestatic/getstatic+invokevirtual/
+  invokedynamic concat) → **mini-JVM runner** (`engine.ts`) emitting one snapshot per instruction
+  with the **500-snapshot cap and friendly warning**. The playground screen (`JavaPlayground.tsx`,
+  lazy-loaded so Monaco stays out of the first paint) shares the curated stepper's visual.
+  Parse errors report the line; runtime errors (e.g. division by zero) stop the run politely.
+  Swapping in a full java-ast/ANTLR4 front-end later only replaces `parser.ts` + `compiler.ts`.
 - [ ] Phase 3 — DSA visualizer
 
 ## Run it

@@ -1,0 +1,39 @@
+/* Java playground — the learner's own program, compiled to bytecode micro-steps. */
+
+.playground {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.editorCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.editorWrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.runRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.statusStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}

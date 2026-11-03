@@ -1,21 +1,25 @@
 import { Badge, Button, Card, ProgressBar, Stack } from '@agiler/ui';
 
 /**
- * The bytecode stepper (Phase 2b) — one source line decomposed into its micro-steps:
- * the operand stack pushes and pops, the local slots fill, `invokestatic` pushes a frame
- * and `ireturn` pops it. Pure snapshot rendering; the listing is exact `javap -c` output.
+ * The bytecode trace — the shared visual of the curated stepper (Phase 2b) and the learner's
+ * own programs (playground): source ↔ bytecode ↔ frame inspector, driven by a step pointer.
  */
 
 import { cn } from '../../utils/cn';
 import { useSimulator } from '../useSimulator';
 import { ADDER_SOURCE, BYTECODE, BYTECODE_TIMELINE } from './bytecodeTimeline';
-import type { BytecodeFrame } from './types';
+import type { BytecodeFrame, BytecodeStep } from './types';
 import styles from './BytecodeStepper.module.css';
 
-function SourceView({ activeLine }: { activeLine: number }) {
+export interface TraceListing {
+  method: string;
+  lines: Array<{ pc: number; text: string }>;
+}
+
+function SourceView({ lines, activeLine }: { lines: Array<{ line: number; text: string }>; activeLine: number }) {
   return (
     <pre className={styles.source}>
-      {ADDER_SOURCE.map((source) => (
+      {lines.map((source) => (
         <span
           key={source.line}
           className={cn(styles.sourceLine, source.line === activeLine && styles.sourceLineActive)}
@@ -28,10 +32,10 @@ function SourceView({ activeLine }: { activeLine: number }) {
   );
 }
 
-function BytecodeView({ method, pc }: { method: string; pc: number }) {
+function BytecodeView({ listings, method, pc }: { listings: TraceListing[]; method: string; pc: number }) {
   return (
     <pre className={styles.bytecode}>
-      {BYTECODE.map((listing) => (
+      {listings.map((listing) => (
         <span key={listing.method}>
           <span className={styles.methodName}>{listing.method}</span>
           {listing.lines.map((line) => (
@@ -85,8 +89,12 @@ function FrameView({ frame, top }: { frame: BytecodeFrame; top: boolean }) {
   );
 }
 
-export function BytecodeStepper() {
-  const sim = useSimulator(BYTECODE_TIMELINE);
+export function BytecodeTrace(props: {
+  sourceLines: Array<{ line: number; text: string }>;
+  listings: TraceListing[];
+  steps: BytecodeStep[];
+}) {
+  const sim = useSimulator(props.steps);
   const step = sim.current;
   const [current, ...frozen] = step.frames;
 
@@ -96,13 +104,13 @@ export function BytecodeStepper() {
         <Card padding="lg">
           <Stack gap={3}>
             <h3>Source</h3>
-            <SourceView activeLine={step.sourceLine} />
+            <SourceView lines={props.sourceLines} activeLine={step.sourceLine} />
           </Stack>
         </Card>
         <Card padding="lg">
           <Stack gap={3}>
-            <h3>Bytecode (javap -c)</h3>
-            <BytecodeView method={current?.method ?? BYTECODE[0].method} pc={step.pc} />
+            <h3>Bytecode</h3>
+            <BytecodeView listings={props.listings} method={current?.method ?? ''} pc={step.pc} />
           </Stack>
         </Card>
       </div>
@@ -158,10 +166,19 @@ export function BytecodeStepper() {
         <Card padding="lg">
           <Stack gap={3}>
             <h3>Console (stdout)</h3>
-            <pre className={styles.console}>{step.console.length === 0 ? '—' : step.console.join('\n')}</pre>
+            <pre className={styles.console}>
+              {step.console.length === 0 ? '—' : step.console.join('\n')}
+            </pre>
           </Stack>
         </Card>
       </div>
     </div>
+  );
+}
+
+/** The curated Adder program — the same trace, fed with the hand-authored exact javap listing. */
+export function BytecodeStepper() {
+  return (
+    <BytecodeTrace sourceLines={ADDER_SOURCE} listings={BYTECODE} steps={BYTECODE_TIMELINE} />
   );
 }

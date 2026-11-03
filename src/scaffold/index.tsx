@@ -11,14 +11,15 @@ export function Brand() {
   return <strong>Learn — JVM-Lens</strong>;
 }
 
+/** The learning tracks shipped so far (Phase 3 — DSA — lands next). */
+export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own';
+
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Boot & OS', to: '/boot-os' },
   { label: 'JVM runtime', to: '/jvm-runtime' },
   { label: 'Bytecode stepper', to: '/bytecode-stepper' },
+  { label: 'Write your own', to: '/write-your-own' },
 ];
-
-/** The learning tracks shipped so far (Phase 3 — DSA — lands next). */
-export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper';
 
 
 /** Sidebar with its required `brand` wiring supplied. */

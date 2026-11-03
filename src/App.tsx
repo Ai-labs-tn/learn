@@ -1,5 +1,5 @@
 import { AppShell } from '@agiler/ui';
-import { useEffect, useState, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 
 import { AppSidebar, AppTopBar, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
@@ -7,17 +7,30 @@ import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
 import { JvmRuntimeScreen } from './screens/JvmRuntimeScreen';
 
 /**
- * Track map — the learning tracks shipped so far (Phase 3 — DSA — lands next).
- * Routing is hash-based: no router dependency for three links.
+ * The playground is lazy: Monaco's editor core is heavy and belongs only to the track that
+ * needs it — the three snapshot tracks keep a light first paint.
  */
-const TRACKS: Record<TrackId, () => ReactNode> = {
-  'boot-os': BootSimulatorScreen,
-  'jvm-runtime': JvmRuntimeScreen,
-  'bytecode-stepper': BytecodeStepperScreen,
+const LazyPlaygroundScreen = lazy(() =>
+  import('./screens/JavaPlaygroundScreen').then((module) => ({ default: module.JavaPlaygroundScreen })),
+);
+
+/**
+ * Track map — the learning tracks shipped so far (Phase 3 — DSA — lands next).
+ * Routing is hash-based: no router dependency for four links.
+ */
+const TRACKS: Record<TrackId, ReactNode> = {
+  'boot-os': <BootSimulatorScreen />,
+  'jvm-runtime': <JvmRuntimeScreen />,
+  'bytecode-stepper': <BytecodeStepperScreen />,
+  'write-your-own': (
+    <Suspense fallback={<p>Loading the editor…</p>}>
+      <LazyPlaygroundScreen />
+    </Suspense>
+  ),
 };
 
 function trackFromHash(): TrackId {
-  const path = window.location.hash.replace(/^#/, '') || '/boot-os';
+  const path = (window.location.hash.replace(/^#/, '') || '/boot-os').split('?')[0];
   const id = path.replace(/^\//, '').replace(/[^a-z-]/g, '') as TrackId;
   return id in TRACKS ? id : 'boot-os';
 }
@@ -42,7 +55,6 @@ function HashLink(props: {
 
 export function App() {
   const [track, setTrack] = useState<TrackId>(trackFromHash);
-  const TrackScreen = TRACKS[track];
 
   // Back/forward gestures (hash change without a click) must switch tracks too.
   useEffect(() => {
@@ -63,7 +75,7 @@ export function App() {
       }
       topbar={<AppTopBar />}
     >
-      <TrackScreen key={track} />
+      <Fragment key={track}>{TRACKS[track]}</Fragment>
     </AppShell>
   );
 }
