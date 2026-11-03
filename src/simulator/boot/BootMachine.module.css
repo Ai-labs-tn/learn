@@ -1,6 +1,6 @@
 /* The machine, sketched in ink. Parts reveal step by step; the pointer glides; chalk notes annotate. */
 
-/* Part lifecycle: hidden → shown (faded ink) → focus (fresh ink) */
+/* Per-part colour identity: fresh ink, faded ink, focused ink (unchanged). */
 .layer {
   transition: opacity 0.45s ease;
 }
@@ -11,7 +11,7 @@
 }
 
 .shown {
-  opacity: 0.45;
+  opacity: 0.42;
 }
 
 .focus {
@@ -42,7 +42,33 @@
   }
 }
 
-/* Flow connectors: marching dashes. */
+/* Animatic touches: the busy core breathes, RAM fills glide, the platter spins. */
+.coreActive {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: corePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes corePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+.ramFill {
+  transition: width 0.6s ease;
+}
+
+.crtGlow {
+  filter: drop-shadow(0 0 9px rgb(74 222 128 / 0.4));
+}
+
+/* Flow connectors: dashed trail + moving particles live in the component (SMIL). */
 .flowPath {
   stroke-dasharray: 7 7;
   animation: march 1s linear infinite;
@@ -79,15 +105,76 @@
   pointer-events: none;
 }
 
-/* Click-to-explore hit areas. */
+/* Click-to-explore: hover draws a dashed outline (never an opaque cover), click opens the glossary. */
 .hit {
   fill: transparent;
+  stroke: transparent;
   cursor: pointer;
   pointer-events: auto;
 }
 
 .hit:hover {
-  fill: var(--color-primary-soft);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+/* Chalk glossary card for the inspected part. */
+.glossaryCard {
+  position: absolute;
+  z-index: 5;
+  width: 236px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-md, 0 6px 16px rgb(15 23 42 / 0.12));
+}
+
+.glossaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.glossaryName {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary);
+}
+
+.glossaryClose {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.glossaryBody {
+  margin: 6px 0 8px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.glossaryAction {
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium, 500);
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.glossaryAction:hover {
+  background-color: var(--color-primary-soft);
 }
 
 /* Ink text (labels, ticks) — monospace chalk. */
@@ -128,7 +215,7 @@
 .guiIcon {
   width: 15px;
   height: 15px;
-  border: 1.5px solid var(--color-text-primary);
+  border: 1.5px solid #4ade80;
   border-radius: 3px;
   opacity: 0.8;
 }
@@ -137,7 +224,7 @@
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 10.5px;
   line-height: 1.55;
-  color: var(--color-text-secondary);
+  color: #7ee787;
   overflow: hidden;
   flex: 1;
   min-height: 0;
@@ -149,11 +236,12 @@
 }
 
 .logOld {
-  opacity: 0.4;
+  opacity: 0.42;
 }
 
 .logNew {
-  color: var(--color-success);
+  color: #4ade80;
+  font-weight: var(--font-weight-semibold, 600);
 }
 
 .loginBox {
@@ -162,20 +250,20 @@
   top: 88px;
   width: 112px;
   padding: 8px 10px 12px;
-  border: 1.5px solid var(--color-text-primary);
+  border: 1.5px solid #4ade80;
   border-radius: 6px;
-  background-color: var(--color-surface);
+  background-color: rgb(2 6 23 / 0.85);
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 10px;
-  color: var(--color-text-secondary);
+  color: #7ee787;
 }
 
 .loginLine {
   display: block;
   height: 1px;
   margin: 9px 0 0;
-  background-color: var(--color-text-primary);
-  opacity: 0.5;
+  background-color: #4ade80;
+  opacity: 0.6;
 }
 
 .appWindow {
@@ -184,16 +272,16 @@
   top: 146px;
   width: 152px;
   padding: 6px 10px 10px;
-  border: 1.5px solid var(--color-success);
+  border: 1.5px solid #4ade80;
   border-radius: 6px;
-  background-color: var(--color-surface);
+  background-color: rgb(2 6 23 / 0.92);
 }
 
 .appTitle {
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 9.5px;
-  color: var(--color-success);
-  border-bottom: 1.2px solid var(--color-success);
+  color: #4ade80;
+  border-bottom: 1.2px solid #4ade80;
   padding-bottom: 3px;
   margin-bottom: 2px;
 }
@@ -226,6 +314,14 @@
   }
 
   .pointer {
+    transition: none;
+  }
+
+  .coreActive {
+    animation: none;
+  }
+
+  .ramFill {
     transition: none;
   }
 }
