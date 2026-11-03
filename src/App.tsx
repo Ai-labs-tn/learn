@@ -70,7 +70,7 @@ export function App() {
     <Fragment key={track}>
       <AppTemplate
         brand={<Brand />}
-        title="Learn — JVM-Lens"
+        title="Learn with Saravana"
         items={NAV_ITEMS}
         activePath={`/${track}`}
         linkComponent={HashLink}

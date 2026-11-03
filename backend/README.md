@@ -1,4 +1,4 @@
-# Learn — JVM-Lens — API
+# Learn with Saravana — API
 
 FastAPI service with one router per feature.
 

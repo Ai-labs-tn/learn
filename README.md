@@ -1,6 +1,6 @@
-# Learn — JVM-Lens (Computer & JVM Simulator)
+# Learn with Saravana (Computer & JVM Simulator)
 
-**Live:** https://learn-jvm-lens.onrender.com (Render static site, auto-deploys from `main`)
+**Live:** https://learn-with-saravana.onrender.com (Render static site, auto-deploys from `main`)
 
 An educational platform that teaches by **simulating the machine in 2D**: how a program really
 works inside a computer, from the moment power is applied to a running Java application — and,
@@ -80,7 +80,7 @@ All three phases of the order (`epic-54567c59`) are now live in the app.
 ## Run it
 
 - **Local:** `npm run dev` → http://localhost:5173 · production build: `npm run build && npm run preview` → :4173
-- **Deployed:** https://learn-jvm-lens.onrender.com — a Render static site (`render.yaml`, `npm ci --include=dev && npm run build`, publish `dist`), auto-deploying on every push to `main`.
+- **Deployed:** https://learn-with-saravana.onrender.com — a Render static site (`render.yaml`, `npm ci --include=dev && npm run build`, publish `dist`), auto-deploying on every push to `main`.
 
 ## Stack
 

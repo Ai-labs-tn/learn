@@ -9,7 +9,7 @@ export { DsaVisualizer } from '../simulator/dsa/DsaVisualizer';
 
 /** Brand block — the only place this app writes markup of its own. */
 export function Brand() {
-  return <strong>Learn — JVM-Lens</strong>;
+  return <strong>Learn with Saravana</strong>;
 }
 
 /** The learning tracks shipped so far (Phase 3 — DSA — lands next). */
@@ -31,7 +31,7 @@ export function AppSidebar(props: Omit<Parameters<typeof Sidebar>[0], 'brand'>) 
 
 /** Top bar with the app title wired in. */
 export function AppTopBar(props: Omit<Parameters<typeof TopBar>[0], 'title'>) {
-  return <TopBar title="Learn — JVM-Lens" {...props} />;
+  return <TopBar title="Learn with Saravana" {...props} />;
 }
 
 /** Deterministic table wiring: one column set per feature, records still to be fetched. */

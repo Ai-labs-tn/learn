@@ -88,13 +88,15 @@
   font-weight: var(--font-weight-semibold, 600);
 }
 
-/* The process console (dark CRT, green output). */
+/* The process console (dark CRT, green output) — always readable, never faded. */
 .consoleContent {
   position: absolute;
   display: flex;
   flex-direction: column;
   padding: 8px;
   box-sizing: border-box;
+  border-radius: 6px;
+  background-color: #0f172a;
   filter: url(#ink-rough);
   pointer-events: none;
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);

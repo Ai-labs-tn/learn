@@ -1,4 +1,4 @@
--- Learn — JVM-Lens: one table per delivered feature.
+-- Learn with Saravana: one table per delivered feature.
 
 CREATE TABLE IF NOT EXISTS simulator_engine (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

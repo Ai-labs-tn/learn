@@ -1,4 +1,4 @@
-"""{Learn — JVM-Lens} — auth: one-time code + password sign-in and password reset."""
+"""{Learn with Saravana} — auth: one-time code + password sign-in and password reset."""
 
 from __future__ import annotations
 

@@ -23,12 +23,32 @@ import styles from './whiteboard.module.css';
 
 export interface WhiteboardStep {
   caption: string;
+  /** Tamil caption (Tamil script, English jargons kept in English) — falls back to `caption`. */
+  captionTa?: string;
   phase: string;
 }
+
+export type CaptionLanguage = 'en' | 'ta';
 
 const PACES = [1, 1.5, 2] as const;
 const BREATH_MS = 550;
 const STAGE_RATIO = 1040 / 620;
+
+/** Best available voice for a language: Tamil voices for Tamil; "Natural"/neural for English. */
+function pickVoice(synth: SpeechSynthesis, lang: string): SpeechSynthesisVoice | null {
+  const voices = synth.getVoices();
+  if (voices.length === 0) return null;
+  if (lang.startsWith('ta')) {
+    return voices.find((voice) => voice.lang.toLowerCase().startsWith('ta')) ?? null;
+  }
+  const english = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'));
+  return (
+    english.find((voice) => /natural|neural|online/i.test(voice.name)) ??
+    english.find((voice) => /google/i.test(voice.name)) ??
+    english[0] ??
+    null
+  );
+}
 
 export function Whiteboard<T extends WhiteboardStep>({
   title,
@@ -45,8 +65,11 @@ export function Whiteboard<T extends WhiteboardStep>({
   // Playback is driven here (manualAdvance) so voice and timers share one clock.
   const sim = useSimulator(steps, 1600, { manualAdvance: true });
   const [voiceOn, setVoiceOn] = useState(false);
+  const [lang, setLang] = useState<CaptionLanguage>('en');
   const [pace, setPace] = useState<number>(PACES[0]);
-  const caption = useTypewriter(sim.current.caption, 14);
+  /** The caption in the selected language, falling back to English when no Tamil yet. */
+  const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
+  const caption = useTypewriter(spoken, 14);
 
   const boardRef = useRef<HTMLDivElement>(null);
   const stageWrapRef = useRef<HTMLDivElement>(null);
@@ -141,20 +164,24 @@ export function Whiteboard<T extends WhiteboardStep>({
 
     if (voiceOn && synth) {
       synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(sim.current.caption);
+      const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
+      const utterance = new SpeechSynthesisUtterance(spoken);
       utterance.rate = Math.min(2, 1 * pace);
+      utterance.lang = spoken === sim.current.captionTa ? 'ta-IN' : 'en-US';
+      const voice = pickVoice(synth, utterance.lang);
+      if (voice) utterance.voice = voice;
       utterance.onend = () => {
         // A short beat after the sentence lands, then move on.
         timer = window.setTimeout(advance, BREATH_MS / pace);
       };
       utterance.onerror = () => {
-        timer = window.setTimeout(advance, durationFor(sim.current.caption));
+        timer = window.setTimeout(advance, durationFor(spoken));
       };
       // Never stall the lecture if the speech engine swallows the event.
-      safety = window.setTimeout(advance, durationFor(sim.current.caption) + 5000);
+      safety = window.setTimeout(advance, durationFor(spoken) + 5000);
       synth.speak(utterance);
     } else {
-      timer = window.setTimeout(advance, durationFor(sim.current.caption));
+      timer = window.setTimeout(advance, durationFor(spoken));
     }
 
     return () => {
@@ -164,7 +191,7 @@ export function Whiteboard<T extends WhiteboardStep>({
       synth?.cancel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sim.playing, sim.index, voiceOn, pace]);
+  }, [sim.playing, sim.index, voiceOn, pace, lang]);
 
   // Stepping by hand with voice ON: read each beat as it is chosen.
   useEffect(() => {
@@ -172,11 +199,14 @@ export function Whiteboard<T extends WhiteboardStep>({
     const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
     if (!synth) return undefined;
     synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(sim.current.caption);
+    const utterance = new SpeechSynthesisUtterance(spoken);
     utterance.rate = Math.min(2, 1 * pace);
+    utterance.lang = spoken === sim.current.captionTa ? 'ta-IN' : 'en-US';
+    const voice = pickVoice(synth, utterance.lang);
+    if (voice) utterance.voice = voice;
     synth.speak(utterance);
     return () => synth.cancel();
-  }, [voiceOn, sim.playing, sim.current.caption, pace]);
+  }, [voiceOn, sim.playing, spoken, pace]);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -257,8 +287,13 @@ export function Whiteboard<T extends WhiteboardStep>({
           >
             {voiceOn ? '🔊' : '🔇'}
           </IconButton>
-          <Button variant="ghost" size="sm" onClick={cyclePace} title="Lecture pace">
-            {pace}×
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLang((current) => (current === 'en' ? 'ta' : 'en'))}
+            title="Caption language — English or Tamil (jargons stay in English)"
+          >
+            {lang === 'en' ? '🌐 தமிழ்' : '🌐 English'}
           </Button>
           <span className={styles.stepChip}>
             {sim.index + 1} / {sim.total}
