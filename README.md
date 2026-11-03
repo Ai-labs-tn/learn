@@ -41,7 +41,16 @@ with a friendly warning past 500 snapshots.
   (`types.ts` + `useSimulator.ts`) and the 16-step boot timeline (`boot/bootTimeline.ts`) rendered
   as a 2D machine (CPU cores, kernel/user RAM regions, HDD platter / SSD, firmware chip) with
   narration, boot log and process chips — [`src/screens/BootSimulatorScreen.tsx`](src/screens/BootSimulatorScreen.tsx)
-- [ ] Phase 2 — JVM runtime visualizer + bytecode stepper
+- [x] **Phase 2 — JVM runtime + bytecode stepper** (`src/simulator/jvm/`): a 14-step runtime
+  timeline (`classLoadingTimeline.ts`) — JVM as an OS process → runtime data areas → loader
+  delegation → link (verify / prepare / resolve) → `<clinit>` → main thread → Eden allocation →
+  minor GC → lazy loading → exit — rendered as a live memory model (loaders, Metaspace chips,
+  generational heap lanes, thread frame stacks) (`JvmRuntime.tsx`); plus a **bytecode stepper**
+  (`bytecodeTimeline.ts` + `BytecodeStepper.tsx`) that decomposes one source line into 14
+  micro-steps against an exact `javap -c` listing: operand stack push/pop, local slots,
+  `invokestatic` pushing a real frame and `ireturn` handing the value back. *Next in Phase 2:
+  the Monaco editor + java-ast pipeline so learners type their own program.*
+- [ ] Phase 2b — live Java editing (Monaco → AST → snapshots)
 - [ ] Phase 3 — DSA visualizer
 
 ## Run it

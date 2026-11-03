@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 /** Learning simulators (the app's domain layer, exposed to screens through the scaffold). */
 export { BootSimulator } from '../simulator/boot/BootSimulator';
+export { JvmRuntime } from '../simulator/jvm/JvmRuntime';
+export { BytecodeStepper } from '../simulator/jvm/BytecodeStepper';
 
 /** Brand block — the only place this app writes markup of its own. */
 export function Brand() {
@@ -10,15 +12,14 @@ export function Brand() {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'simulator-engine', to: '/simulator-engine' },
-  { label: 'boot-os-simulator', to: '/boot-os-simulator' },
-  { label: 'jvm-runtime-visualizer', to: '/jvm-runtime-visualizer' },
-  { label: 'bytecode-stepper', to: '/bytecode-stepper' },
-  { label: 'dsa-visualizer', to: '/dsa-visualizer' },
-  { label: 'code-editor', to: '/code-editor' },
-  { label: 'lesson-tracks', to: '/lesson-tracks' },
-  { label: 'progress-tracking', to: '/progress-tracking' },
+  { label: 'Boot & OS', to: '/boot-os' },
+  { label: 'JVM runtime', to: '/jvm-runtime' },
+  { label: 'Bytecode stepper', to: '/bytecode-stepper' },
 ];
+
+/** The learning tracks shipped so far (Phase 3 — DSA — lands next). */
+export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper';
+
 
 /** Sidebar with its required `brand` wiring supplied. */
 export function AppSidebar(props: Omit<Parameters<typeof Sidebar>[0], 'brand'>) {
