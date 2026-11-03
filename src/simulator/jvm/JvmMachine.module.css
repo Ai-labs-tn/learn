@@ -1,0 +1,193 @@
+/* The JVM, sketched in colour on the lecturer's whiteboard. */
+
+.ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.inkOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.layer {
+  transition: opacity 0.45s ease;
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.shown {
+  opacity: 0.42;
+}
+
+.focus {
+  opacity: 1;
+}
+
+.fresh {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.8s ease 0.05s forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.freshFill {
+  animation: inkIn 0.7s ease 0.45s both;
+}
+
+@keyframes inkIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.pointer {
+  transition: transform 0.5s ease;
+}
+
+.hit {
+  fill: transparent;
+  stroke: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.hit:hover {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.inkText {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-text-secondary);
+}
+
+.inkTextStrong {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.noteText {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-warning);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+/* The process console (dark CRT, green output). */
+.consoleContent {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  box-sizing: border-box;
+  filter: url(#ink-rough);
+  pointer-events: none;
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: #7ee787;
+  overflow: hidden;
+}
+
+.logLine {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.logOld {
+  opacity: 0.42;
+}
+
+.logNew {
+  color: #4ade80;
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+/* Chalk glossary card (shared look with the boot machine). */
+.glossaryCard {
+  position: absolute;
+  z-index: 5;
+  width: 236px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-md, 0 6px 16px rgb(15 23 42 / 0.12));
+}
+
+.glossaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.glossaryName {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary);
+}
+
+.glossaryClose {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.glossaryBody {
+  margin: 6px 0 8px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.glossaryAction {
+  border: 1.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: var(--font-weight-medium, 500);
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.glossaryAction:hover {
+  background-color: var(--color-primary-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fresh {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .freshFill {
+    animation: none;
+  }
+
+  .pointer {
+    transition: none;
+  }
+}

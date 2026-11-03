@@ -46,12 +46,17 @@ export interface ThreadView {
   frames: StackFrameView[];
 }
 
+import { FocusSpec } from '../types';
+
 /** One immutable snapshot of the whole JVM. */
 export interface JvmStep {
   id: string;
   phase: string;
   title: string;
-  narration: string;
+  /** The line the presenter "says" for this step. */
+  caption: string;
+  /** The presenter's focus choreography for this step. */
+  focus: FocusSpec;
   loaders: LoaderPart[];
   /** Classes resident in Metaspace, with their load stage. */
   classes: LoadedClass[];
