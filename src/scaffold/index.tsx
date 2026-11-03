@@ -5,6 +5,7 @@ import { useState } from 'react';
 export { BootSimulator } from '../simulator/boot/BootSimulator';
 export { JvmRuntime } from '../simulator/jvm/JvmRuntime';
 export { BytecodeStepper } from '../simulator/jvm/BytecodeStepper';
+export { DsaVisualizer } from '../simulator/dsa/DsaVisualizer';
 
 /** Brand block — the only place this app writes markup of its own. */
 export function Brand() {
@@ -12,13 +13,14 @@ export function Brand() {
 }
 
 /** The learning tracks shipped so far (Phase 3 — DSA — lands next). */
-export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own';
+export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa';
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Boot & OS', to: '/boot-os' },
   { label: 'JVM runtime', to: '/jvm-runtime' },
   { label: 'Bytecode stepper', to: '/bytecode-stepper' },
   { label: 'Write your own', to: '/write-your-own' },
+  { label: 'DSA', to: '/dsa' },
 ];
 
 

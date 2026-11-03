@@ -58,16 +58,30 @@ with a friendly warning past 500 snapshots.
   lazy-loaded so Monaco stays out of the first paint) shares the curated stepper's visual.
   Parse errors report the line; runtime errors (e.g. division by zero) stop the run politely.
   Swapping in a full java-ast/ANTLR4 front-end later only replaces `parser.ts` + `compiler.ts`.
-- [ ] Phase 3 — DSA visualizer
+- [x] **Phase 3 — DSA visualizer** (`src/simulator/dsa/`): three structure simulators on the
+  shared engine with a topic switcher — **Binary search tree** (`bstTimeline.ts`: inserts walking
+  the invariant, a search that hits in three comparisons, a miss proven absent, and the
+  balanced-vs-sorted-order honesty step), **Bubble sort** (`sortTimeline.ts`: cells as contiguous
+  memory with `i`/`j` pointer chips, compare/swap/sorted states and live counters), and a
+  **Hash map** (`hashTimeline.ts`: hash-line arithmetic, a real collision with separate chaining,
+  a chained `get`, an empty-bucket miss and the O(n) asterisk) — all rendered as memory:
+  SVG-linked node boxes, index labels, buckets.
+
+All three phases of the order (`epic-54567c59`) are now live in the app.
+
+## What comes next
+
+- Lesson-tracks shell + progress tracking (the remaining order features)
+- More structures on the same engine: linked list vs array, queue, merge sort
+- The full java-ast/ANTLR4 front-end swap behind `simulate.ts`
 
 ## Run it
 
 ```bash
 npm install
-npm run dev      # the boot & OS simulator on :5173
+npm run dev      # all five learning tracks on :5173
 npm run build    # design-lint + tsc + vite build
 ```
-- [ ] Phase 3 — DSA visualizer
 
 ## Stack
 

@@ -4,6 +4,7 @@ import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from 'r
 import { AppSidebar, AppTopBar, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
+import { DsaScreen } from './screens/DsaScreen';
 import { JvmRuntimeScreen } from './screens/JvmRuntimeScreen';
 
 /**
@@ -15,8 +16,7 @@ const LazyPlaygroundScreen = lazy(() =>
 );
 
 /**
- * Track map — the learning tracks shipped so far (Phase 3 — DSA — lands next).
- * Routing is hash-based: no router dependency for four links.
+ * Track map — all three phases shipped. Routing is hash-based: no router dependency.
  */
 const TRACKS: Record<TrackId, ReactNode> = {
   'boot-os': <BootSimulatorScreen />,
@@ -27,6 +27,7 @@ const TRACKS: Record<TrackId, ReactNode> = {
       <LazyPlaygroundScreen />
     </Suspense>
   ),
+  dsa: <DsaScreen />,
 };
 
 function trackFromHash(): TrackId {
