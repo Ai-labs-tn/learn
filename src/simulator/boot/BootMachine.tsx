@@ -140,6 +140,11 @@ const pctY = (y: number): string => `${(y / 620) * 100}%`;
 const pctW = (w: number): string => `${(w / 1040) * 100}%`;
 const pctH = (h: number): string => `${(h / 620) * 100}%`;
 
+/** The board-space point the phone camera should centre on for this step. */
+export function focusAnchorOf(step: BootStep): { x: number; y: number } {
+  return ANCHORS[step.focus.part] ?? ANCHORS.board;
+}
+
 /* --- Component ---------------------------------------------------------------- */
 
 export function BootMachine({

@@ -1,4 +1,4 @@
-import { Button } from '@agiler/ui';
+import { Button, IconButton } from '@agiler/ui';
 import {
   useEffect,
   useMemo,
@@ -34,10 +34,13 @@ export function Whiteboard<T extends WhiteboardStep>({
   title,
   steps,
   renderCanvas,
+  anchorFor,
 }: {
   title: string;
   steps: readonly T[];
   renderCanvas: (sim: UseSimulatorResult<T>) => ReactNode;
+  /** Board-space point (viewBox 1040×620) the phone camera should centre on this step. */
+  anchorFor?: (sim: UseSimulatorResult<T>) => { x: number; y: number } | null;
 }) {
   // Playback is driven here (manualAdvance) so voice and timers share one clock.
   const sim = useSimulator(steps, 1600, { manualAdvance: true });
@@ -47,7 +50,7 @@ export function Whiteboard<T extends WhiteboardStep>({
 
   const boardRef = useRef<HTMLDivElement>(null);
   const stageWrapRef = useRef<HTMLDivElement>(null);
-  const [stageSize, setStageSize] = useState<{ w: number; h: number } | null>(null);
+  const [wrapSize, setWrapSize] = useState({ w: 0, h: 0 });
 
   // Fit the lecture to the viewport: the stage takes whatever height is left.
   useEffect(() => {
@@ -61,13 +64,11 @@ export function Whiteboard<T extends WhiteboardStep>({
         board.style.height = `${available}px`;
       }
       const rect = wrap.getBoundingClientRect();
-      const width = Math.floor(Math.min(rect.width, rect.height * STAGE_RATIO));
-      const height = Math.floor(width / STAGE_RATIO);
-      if (width > 100 && height > 100) {
-        setStageSize((current) =>
-          current && current.w === width && current.h === height ? current : { w: width, h: height },
-        );
-      }
+      setWrapSize((current) =>
+        Math.abs(current.w - rect.width) < 1 && Math.abs(current.h - rect.height) < 1
+          ? current
+          : { w: rect.width, h: rect.height },
+      );
     };
     recompute();
     window.addEventListener('resize', recompute);
@@ -78,6 +79,38 @@ export function Whiteboard<T extends WhiteboardStep>({
       observer.disconnect();
     };
   }, []);
+
+  /**
+   * Phone camera: below 720px the stage zooms to the focused part and follows the pointer
+   * (a landscape machine in a portrait screen is otherwise unreadably small). Larger screens
+   * letterbox the whole board, centred.
+   */
+  const boardAnchor = anchorFor ? anchorFor(sim) : null;
+  const stage = useMemo(() => {
+    const { w: wrapW, h: wrapH } = wrapSize;
+    if (wrapW < 100 || wrapH < 100) return null;
+    if (wrapW < 720 && boardAnchor) {
+      const zoom = 1.75;
+      const scale = (wrapW * zoom) / 1040;
+      const width = 1040 * scale;
+      const height = 620 * scale;
+      const clamp = (value: number, min: number, max: number) =>
+        Math.min(max, Math.max(min, value));
+      return {
+        w: Math.floor(width),
+        h: Math.floor(height),
+        left: Math.floor(clamp(wrapW / 2 - boardAnchor.x * scale, wrapW - width, 0)),
+        top: Math.floor(clamp(wrapH / 2 - boardAnchor.y * scale, wrapH - height, 0)),
+      };
+    }
+    const width = Math.min(wrapW, (wrapH * 1040) / 620);
+    return {
+      w: Math.floor(width),
+      h: Math.floor((width * 620) / 1040),
+      left: Math.floor((wrapW - width) / 2),
+      top: Math.floor((wrapH - (width * 620) / 1040) / 2),
+    };
+  }, [wrapSize, boardAnchor?.x, boardAnchor?.y]);
 
   /** How long a caption should stay on screen when it is not being spoken. */
   const durationFor = (text: string): number =>
@@ -169,33 +202,56 @@ export function Whiteboard<T extends WhiteboardStep>({
       <div className={styles.topBar}>
         <h2 className={styles.title}>{title}</h2>
         <div className={styles.controls}>
-          <Button variant="outline" size="sm" onClick={sim.prev} disabled={sim.atStart}>
-            ← Back
-          </Button>
-          <Button
-            variant="primary"
+          <IconButton
+            aria-label="Previous step"
+            title="Previous step (←)"
             size="sm"
+            variant="outline"
+            onClick={sim.prev}
+            disabled={sim.atStart}
+          >
+            ←
+          </IconButton>
+          <IconButton
+            aria-label={sim.playing ? 'Pause lecture' : 'Play lecture'}
+            title={sim.playing ? 'Pause (space)' : 'Play (space)'}
+            size="sm"
+            variant="solid"
             onClick={sim.toggle}
             disabled={sim.atEnd && !sim.playing}
           >
-            {sim.playing ? 'Pause' : 'Play'}
-          </Button>
-          <Button variant="outline" size="sm" onClick={sim.next} disabled={sim.atEnd}>
-            Next →
-          </Button>
-          <Button variant="ghost" size="sm" onClick={sim.reset}>
-            Restart
-          </Button>
-          <Button
-            variant={voiceOn ? 'primary' : 'outline'}
+            {sim.playing ? '⏸' : '▶'}
+          </IconButton>
+          <IconButton
+            aria-label="Next step"
+            title="Next step (→)"
             size="sm"
-            onClick={() => setVoiceOn((current) => !current)}
-            title="Read the caption aloud — the lecture waits for the voice to finish"
+            variant="outline"
+            onClick={sim.next}
+            disabled={sim.atEnd}
           >
-            {voiceOn ? '🔊 Voice on' : '🔇 Voice'}
-          </Button>
+            →
+          </IconButton>
+          <IconButton
+            aria-label="Restart lecture"
+            title="Restart"
+            size="sm"
+            variant="ghost"
+            onClick={sim.reset}
+          >
+            ↺
+          </IconButton>
+          <IconButton
+            aria-label={voiceOn ? 'Turn the voice off' : 'Read the caption aloud'}
+            title={voiceOn ? 'Voice on — lecture waits for the sentence' : 'Voice off'}
+            size="sm"
+            variant={voiceOn ? 'solid' : 'outline'}
+            onClick={() => setVoiceOn((current) => !current)}
+          >
+            {voiceOn ? '🔊' : '🔇'}
+          </IconButton>
           <Button variant="ghost" size="sm" onClick={cyclePace} title="Lecture pace">
-            {pace}× pace
+            {pace}×
           </Button>
           <span className={styles.stepChip}>
             {sim.index + 1} / {sim.total}
@@ -231,7 +287,11 @@ export function Whiteboard<T extends WhiteboardStep>({
       <div ref={stageWrapRef} className={styles.stageWrap}>
         <div
           className={styles.stage}
-          style={stageSize ? { width: stageSize.w, height: stageSize.h } : undefined}
+          style={
+            stage
+              ? { width: stage.w, height: stage.h, left: stage.left, top: stage.top }
+              : undefined
+          }
         >
           {renderCanvas(sim)}
         </div>
