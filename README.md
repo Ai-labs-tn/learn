@@ -1,5 +1,7 @@
 # Learn — JVM-Lens (Computer & JVM Simulator)
 
+**Live:** https://learn-jvm-lens.onrender.com (Render static site, auto-deploys from `main`)
+
 An educational platform that teaches by **simulating the machine in 2D**: how a program really
 works inside a computer, from the moment power is applied to a running Java application — and,
 step by step, how data structures behave in memory.
@@ -77,11 +79,8 @@ All three phases of the order (`epic-54567c59`) are now live in the app.
 
 ## Run it
 
-```bash
-npm install
-npm run dev      # all five learning tracks on :5173
-npm run build    # design-lint + tsc + vite build
-```
+- **Local:** `npm run dev` → http://localhost:5173 · production build: `npm run build && npm run preview` → :4173
+- **Deployed:** https://learn-jvm-lens.onrender.com — a Render static site (`render.yaml`, `npm ci --include=dev && npm run build`, publish `dist`), auto-deploying on every push to `main`.
 
 ## Stack
 
