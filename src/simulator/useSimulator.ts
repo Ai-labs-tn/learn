@@ -28,7 +28,11 @@ export interface UseSimulatorResult<T> {
  * The step pointer (PRD §2.4): the UI tracks a single `currentStepIndex` and animates to whichever
  * snapshot is current. The snapshots themselves never change — only this pointer moves.
  */
-export function useSimulator<T>(steps: readonly T[], initialSpeedMs = 1400): UseSimulatorResult<T> {
+export function useSimulator<T>(
+  steps: readonly T[],
+  initialSpeedMs = 1400,
+  options: { manualAdvance?: boolean } = {},
+): UseSimulatorResult<T> {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speedMs, setSpeedMs] = useState(initialSpeedMs);
@@ -48,6 +52,7 @@ export function useSimulator<T>(steps: readonly T[], initialSpeedMs = 1400): Use
   const atEnd = total === 0 || index >= total - 1;
 
   useEffect(() => {
+    if (options.manualAdvance) return undefined;
     if (!playing || atEnd) {
       if (atEnd) setPlaying(false);
       return undefined;
@@ -57,7 +62,7 @@ export function useSimulator<T>(steps: readonly T[], initialSpeedMs = 1400): Use
       Math.max(200, speedMs),
     );
     return () => window.clearInterval(timer);
-  }, [playing, speedMs, atEnd, total]);
+  }, [options.manualAdvance, playing, speedMs, atEnd, total]);
 
   const progress = total > 1 ? (index / (total - 1)) * 100 : 100;
 

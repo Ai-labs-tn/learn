@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from
 /**
  * The lecturer's whiteboard — one full-bleed stage, one focal point, one voice.
  *
- * The track renders its world into `renderCanvas`; this frame owns the seminar mechanics:
- * the agenda chalked across the top, the spoken caption (typewriter + optional voiceover),
- * the lecture controls and keyboard stepping (←/→, space).
+ * Pacing is lecture-paced, not timer-paced: with voice ON, the next beat starts when the
+ * narration of the current beat FINISHES (plus a short breath); with voice OFF, each caption
+ * stays for a reading-length pause computed from its own text. A pace control scales both.
  */
 
 import { useSimulator, type UseSimulatorResult } from '../useSimulator';
@@ -18,6 +18,9 @@ export interface WhiteboardStep {
   phase: string;
 }
 
+const PACES = [1, 1.5, 2] as const;
+const BREATH_MS = 550;
+
 export function Whiteboard<T extends WhiteboardStep>({
   steps,
   renderCanvas,
@@ -25,30 +28,70 @@ export function Whiteboard<T extends WhiteboardStep>({
   steps: readonly T[];
   renderCanvas: (sim: UseSimulatorResult<T>) => ReactNode;
 }) {
-  const sim = useSimulator(steps, 1600);
+  // Playback is driven here (manualAdvance) so voice and timers share one clock.
+  const sim = useSimulator(steps, 1600, { manualAdvance: true });
   const [voiceOn, setVoiceOn] = useState(false);
+  const [pace, setPace] = useState<number>(PACES[0]);
   const caption = useTypewriter(sim.current.caption, 14);
 
-  const toggleVoice = () => {
-    const next = !voiceOn;
-    setVoiceOn(next);
-    sim.setSpeedMs(next ? 3600 : 1600); // let the voice finish a line before advancing
-  };
+  /** How long a caption should stay on screen when it is not being spoken. */
+  const durationFor = (text: string): number =>
+    Math.min(12000, Math.max(2400, Math.round((text.length * 55) / pace)));
 
-  // Voiceover: speak the caption of the current step while it is on screen.
+  // Playback: advance on the speaker's rhythm (or a reading pause when silent).
   useEffect(() => {
-    const synth = window.speechSynthesis;
-    if (!synth) return undefined;
-    if (!voiceOn) {
-      synth.cancel();
+    if (!sim.playing) return undefined;
+    if (sim.atEnd) {
+      sim.pause();
       return undefined;
     }
+
+    const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
+    let cancelled = false;
+    let timer: number | undefined;
+    let safety: number | undefined;
+    const advance = () => {
+      if (!cancelled) sim.next();
+    };
+
+    if (voiceOn && synth) {
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(sim.current.caption);
+      utterance.rate = Math.min(2, 1 * pace);
+      utterance.onend = () => {
+        // A short beat after the sentence lands, then move on.
+        timer = window.setTimeout(advance, BREATH_MS / pace);
+      };
+      utterance.onerror = () => {
+        timer = window.setTimeout(advance, durationFor(sim.current.caption));
+      };
+      // Never stall the lecture if the speech engine swallows the event.
+      safety = window.setTimeout(advance, durationFor(sim.current.caption) + 5000);
+      synth.speak(utterance);
+    } else {
+      timer = window.setTimeout(advance, durationFor(sim.current.caption));
+    }
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      window.clearTimeout(safety);
+      synth?.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sim.playing, sim.index, voiceOn, pace]);
+
+  // Stepping by hand with voice ON: read each beat as it is chosen.
+  useEffect(() => {
+    if (sim.playing || !voiceOn) return undefined;
+    const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
+    if (!synth) return undefined;
     synth.cancel();
     const utterance = new SpeechSynthesisUtterance(sim.current.caption);
-    utterance.rate = 1.02;
+    utterance.rate = Math.min(2, 1 * pace);
     synth.speak(utterance);
     return () => synth.cancel();
-  }, [voiceOn, sim.current.caption]);
+  }, [voiceOn, sim.playing, sim.current.caption, pace]);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -68,6 +111,11 @@ export function Whiteboard<T extends WhiteboardStep>({
       event.preventDefault();
       sim.toggle();
     }
+  };
+
+  const cyclePace = () => {
+    const at = PACES.indexOf(pace as (typeof PACES)[number]);
+    setPace(PACES[(at + 1) % PACES.length]);
   };
 
   return (
@@ -123,10 +171,13 @@ export function Whiteboard<T extends WhiteboardStep>({
           <Button
             variant={voiceOn ? 'primary' : 'outline'}
             size="sm"
-            onClick={toggleVoice}
-            title="Read the caption aloud (browser speech)"
+            onClick={() => setVoiceOn((current) => !current)}
+            title="Read the caption aloud — the lecture waits for the voice to finish"
           >
             {voiceOn ? '🔊 Voice on' : '🔇 Voice'}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={cyclePace} title="Lecture pace">
+            {pace}× pace
           </Button>
         </div>
       </div>
