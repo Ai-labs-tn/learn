@@ -1,0 +1,8 @@
+{
+  "dataTheme": "light",
+  "tokens": {
+    "--color-primary": "#2547c9",
+    "--color-primary-hover": "#1e39a1",
+    "--radius-md": "0.5rem"
+  }
+}

@@ -36,8 +36,21 @@ with a friendly warning past 500 snapshots.
 - [x] PRD + sketches captured (`docs/prd/`)
 - [x] AGILER order placed (`epic-54567c59`) — 12 features, ₹9,32,000
 - [x] Delivery template planned (8 features · 24 stories)
-- [ ] Phase 1 — boot & OS simulator
+- [x] AGILER scaffold generated (Vite + React + `@agiler/ui` v0.5.1 + backend + db schema)
+- [x] **Phase 1 — boot & OS simulator** (`src/simulator/`): deterministic snapshot engine
+  (`types.ts` + `useSimulator.ts`) and the 16-step boot timeline (`boot/bootTimeline.ts`) rendered
+  as a 2D machine (CPU cores, kernel/user RAM regions, HDD platter / SSD, firmware chip) with
+  narration, boot log and process chips — [`src/screens/BootSimulatorScreen.tsx`](src/screens/BootSimulatorScreen.tsx)
 - [ ] Phase 2 — JVM runtime visualizer + bytecode stepper
+- [ ] Phase 3 — DSA visualizer
+
+## Run it
+
+```bash
+npm install
+npm run dev      # the boot & OS simulator on :5173
+npm run build    # design-lint + tsc + vite build
+```
 - [ ] Phase 3 — DSA visualizer
 
 ## Stack
