@@ -1,7 +1,7 @@
-import { AppShell } from '@agiler/ui';
+import { AppTemplate } from '@agiler/ui';
 import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 
-import { AppSidebar, AppTopBar, NAV_ITEMS, type TrackId } from './scaffold';
+import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
 import { DsaScreen } from './screens/DsaScreen';
@@ -17,6 +17,8 @@ const LazyPlaygroundScreen = lazy(() =>
 
 /**
  * Track map — all three phases shipped. Routing is hash-based: no router dependency.
+ * The shell itself is AGILER's base design (AppTemplate from @agiler/ui): persistent
+ * sidebar + topbar on desktop, drawer navigation on mobile.
  */
 const TRACKS: Record<TrackId, ReactNode> = {
   'boot-os': <BootSimulatorScreen />,
@@ -37,7 +39,7 @@ function trackFromHash(): TrackId {
 }
 
 /**
- * Router-agnostic link for the sidebar: renders a plain anchor around `#<to>` so the browser's
+ * Router-agnostic link for the template: renders a plain anchor around `#<to>` so the browser's
  * history (and its back/forward gestures) work, without pulling in a router.
  */
 function HashLink(props: {
@@ -65,18 +67,17 @@ export function App() {
   }, []);
 
   return (
-    <AppShell
-      sidebar={
-        <AppSidebar
-          items={NAV_ITEMS}
-          activePath={`/${track}`}
-          linkComponent={HashLink}
-          onNavigate={() => setTrack(trackFromHash())}
-        />
-      }
-      topbar={<AppTopBar />}
-    >
-      <Fragment key={track}>{TRACKS[track]}</Fragment>
-    </AppShell>
+    <Fragment key={track}>
+      <AppTemplate
+        brand={<Brand />}
+        title="Learn — JVM-Lens"
+        items={NAV_ITEMS}
+        activePath={`/${track}`}
+        linkComponent={HashLink}
+        onNavigate={() => setTrack(trackFromHash())}
+      >
+        {TRACKS[track]}
+      </AppTemplate>
+    </Fragment>
   );
 }
