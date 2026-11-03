@@ -82,8 +82,9 @@ export function Whiteboard<T extends WhiteboardStep>({
 
   /**
    * Phone camera: below 720px the stage zooms to the focused part and follows the pointer
-   * (a landscape machine in a portrait screen is otherwise unreadably small). Larger screens
-   * letterbox the whole board, centred.
+   * (a landscape machine in a portrait screen is otherwise unreadably small). The stage stays
+   * pannable — the camera only chooses the initial framing per step. Larger screens letterbox
+   * the whole board, centred.
    */
   const boardAnchor = anchorFor ? anchorFor(sim) : null;
   const stage = useMemo(() => {
@@ -92,25 +93,31 @@ export function Whiteboard<T extends WhiteboardStep>({
     if (wrapW < 720 && boardAnchor) {
       const zoom = 1.75;
       const scale = (wrapW * zoom) / 1040;
-      const width = 1040 * scale;
-      const height = 620 * scale;
-      const clamp = (value: number, min: number, max: number) =>
-        Math.min(max, Math.max(min, value));
-      return {
-        w: Math.floor(width),
-        h: Math.floor(height),
-        left: Math.floor(clamp(wrapW / 2 - boardAnchor.x * scale, wrapW - width, 0)),
-        top: Math.floor(clamp(wrapH / 2 - boardAnchor.y * scale, wrapH - height, 0)),
-      };
+      return { w: Math.floor(1040 * scale), h: Math.floor(620 * scale) };
     }
     const width = Math.min(wrapW, (wrapH * 1040) / 620);
-    return {
-      w: Math.floor(width),
-      h: Math.floor((width * 620) / 1040),
-      left: Math.floor((wrapW - width) / 2),
-      top: Math.floor((wrapH - (width * 620) / 1040) / 2),
-    };
+    return { w: Math.floor(width), h: Math.floor((width * 620) / 1040) };
   }, [wrapSize, boardAnchor?.x, boardAnchor?.y]);
+
+  // The camera glides to the focused part when the beat changes; the learner can still pan.
+  useEffect(() => {
+    const wrap = stageWrapRef.current;
+    if (!wrap || !stage || !boardAnchor) return;
+    if (wrap.scrollWidth <= wrap.clientWidth + 2 && wrap.scrollHeight <= wrap.clientHeight + 2) {
+      return; // everything visible — no camera needed
+    }
+    const scale = stage.w / 1040;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const left = Math.max(
+      0,
+      Math.min(wrap.scrollWidth - wrap.clientWidth, boardAnchor.x * scale - wrap.clientWidth / 2),
+    );
+    const top = Math.max(
+      0,
+      Math.min(wrap.scrollHeight - wrap.clientHeight, boardAnchor.y * scale - wrap.clientHeight / 2),
+    );
+    wrap.scrollTo({ left, top, behavior: reduced ? 'auto' : 'smooth' });
+  }, [sim.index, stage, boardAnchor?.x, boardAnchor?.y]);
 
   /** How long a caption should stay on screen when it is not being spoken. */
   const durationFor = (text: string): number =>
@@ -287,11 +294,7 @@ export function Whiteboard<T extends WhiteboardStep>({
       <div ref={stageWrapRef} className={styles.stageWrap}>
         <div
           className={styles.stage}
-          style={
-            stage
-              ? { width: stage.w, height: stage.h, left: stage.left, top: stage.top }
-              : undefined
-          }
+          style={stage ? { width: stage.w, height: stage.h } : undefined}
         >
           {renderCanvas(sim)}
         </div>
