@@ -1,11 +1,35 @@
-/* The lecturer's whiteboard — dot-grid paper, one stage, spoken caption. */
+/* The lecturer's whiteboard — one viewport: tabs + caption up top, the stage fills the rest. */
 
 .board {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-2);
   min-width: 0;
   outline: none;
+}
+
+/* Top bar: title + controls + voice config, always visible. */
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .agenda {
@@ -16,7 +40,7 @@
 }
 
 .pill {
-  padding: 0.3rem 0.75rem;
+  padding: 0.28rem 0.7rem;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-full);
   background-color: transparent;
@@ -47,23 +71,65 @@
 }
 
 .stepChip {
-  margin-left: auto;
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
-/* Stage: dot-grid paper with a sketchy frame — the only focal point on screen. */
+/* The spoken caption, attached to the tab row like a subtitle. */
+.caption {
+  margin: 0;
+  min-height: 3.35rem;
+  max-height: 3.35rem;
+  overflow: hidden;
+  padding: 0.3rem var(--space-3);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-sunken);
+  font-size: var(--font-size-md);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+.captionQuote {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  margin-right: 2px;
+}
+
+.caret {
+  display: inline-block;
+  width: 7px;
+  height: 1em;
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  background-color: var(--color-primary);
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Stage: sized by the Whiteboard (JS fit) so the whole lecture never scrolls. */
 .stageWrap {
-  overflow-x: auto;
-  touch-action: pan-x pan-y;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   padding: 2px;
 }
 
 .stage {
   position: relative;
-  min-width: 920px;
   aspect-ratio: 1040 / 620;
+  max-width: 100%;
+  max-height: 100%;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   background-color: var(--color-background);
@@ -77,56 +143,6 @@
   inset: 0;
   width: 100%;
   height: 100%;
-}
-
-/* Bottom: the spoken caption + lecture controls — subtitles, not a side panel. */
-.bottom {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--space-4);
-}
-
-.caption {
-  flex: 1 1 460px;
-  margin: 0;
-  padding: var(--space-3) var(--space-4);
-  border-left: 3px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  background-color: var(--color-surface-sunken);
-  font-size: var(--font-size-md);
-  line-height: 1.55;
-  color: var(--color-text-primary);
-  min-height: 3.4rem;
-}
-
-.captionQuote {
-  color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
-  margin-right: 2px;
-}
-
-.caret {
-  display: inline-block;
-  width: 8px;
-  height: 1.05em;
-  margin-left: 3px;
-  vertical-align: text-bottom;
-  background-color: var(--color-primary);
-  animation: blink 1s steps(2, start) infinite;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 @media (prefers-reduced-motion: reduce) {
