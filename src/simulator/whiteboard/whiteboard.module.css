@@ -1,0 +1,136 @@
+/* The lecturer's whiteboard — dot-grid paper, one stage, spoken caption. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  outline: none;
+}
+
+.agenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pill {
+  padding: 0.3rem 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+}
+
+.pill:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong, var(--color-border));
+}
+
+.pillDone {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.pillCurrent {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+}
+
+.stepChip {
+  margin-left: auto;
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Stage: dot-grid paper with a sketchy frame — the only focal point on screen. */
+.stageWrap {
+  overflow-x: auto;
+  touch-action: pan-x pan-y;
+  padding: 2px;
+}
+
+.stage {
+  position: relative;
+  min-width: 920px;
+  aspect-ratio: 1040 / 620;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-background);
+  background-image: radial-gradient(var(--color-border) 1px, transparent 1.4px);
+  background-size: 24px 24px;
+  overflow: hidden;
+}
+
+.ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Bottom: the spoken caption + lecture controls — subtitles, not a side panel. */
+.bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-4);
+}
+
+.caption {
+  flex: 1 1 460px;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-sunken);
+  font-size: var(--font-size-md);
+  line-height: 1.55;
+  color: var(--color-text-primary);
+  min-height: 3.4rem;
+}
+
+.captionQuote {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  margin-right: 2px;
+}
+
+.caret {
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  background-color: var(--color-primary);
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+  }
+}

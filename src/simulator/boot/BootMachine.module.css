@@ -1,0 +1,231 @@
+/* The machine, sketched in ink. Parts reveal step by step; the pointer glides; chalk notes annotate. */
+
+/* Part lifecycle: hidden → shown (faded ink) → focus (fresh ink) */
+.layer {
+  transition: opacity 0.45s ease;
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.shown {
+  opacity: 0.45;
+}
+
+.focus {
+  opacity: 1;
+}
+
+/* Draw-on: stroke reveals along its own length (pathLength=1). */
+.fresh {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.8s ease 0.05s forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Fills and chips pop in slightly after their outline is drawn. */
+.freshFill {
+  animation: inkIn 0.7s ease 0.45s both;
+}
+
+@keyframes inkIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Flow connectors: marching dashes. */
+.flowPath {
+  stroke-dasharray: 7 7;
+  animation: march 1s linear infinite;
+}
+
+@keyframes march {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* The pointer glides between focal points. */
+.pointer {
+  transition: transform 0.5s ease;
+}
+
+/* HDD platter spins while reading. */
+.spinLine {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Overlay layers (presenter + hits) sit above the ink and the screen content. */
+.inkOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Click-to-explore hit areas. */
+.hit {
+  fill: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.hit:hover {
+  fill: var(--color-primary-soft);
+}
+
+/* Ink text (labels, ticks) — monospace chalk. */
+.inkText {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-text-secondary);
+}
+
+.inkTextStrong {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.noteText {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  fill: var(--color-warning);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+/* The machine's screen: HTML content layered over the ink (log, icons, login, app window). */
+.monitorContent {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  box-sizing: border-box;
+  filter: url(#ink-rough);
+  pointer-events: none;
+}
+
+.guiIcons {
+  display: flex;
+  gap: 10px;
+}
+
+.guiIcon {
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid var(--color-text-primary);
+  border-radius: 3px;
+  opacity: 0.8;
+}
+
+.monitorLog {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.logLine {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.logOld {
+  opacity: 0.4;
+}
+
+.logNew {
+  color: var(--color-success);
+}
+
+.loginBox {
+  position: absolute;
+  left: 32px;
+  top: 88px;
+  width: 112px;
+  padding: 8px 10px 12px;
+  border: 1.5px solid var(--color-text-primary);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.loginLine {
+  display: block;
+  height: 1px;
+  margin: 9px 0 0;
+  background-color: var(--color-text-primary);
+  opacity: 0.5;
+}
+
+.appWindow {
+  position: absolute;
+  left: 12px;
+  top: 146px;
+  width: 152px;
+  padding: 6px 10px 10px;
+  border: 1.5px solid var(--color-success);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+}
+
+.appTitle {
+  font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
+  font-size: 9.5px;
+  color: var(--color-success);
+  border-bottom: 1.2px solid var(--color-success);
+  padding-bottom: 3px;
+  margin-bottom: 2px;
+}
+
+.appLine {
+  display: block;
+  height: 1px;
+  margin: 9px 0 0;
+  background-color: var(--color-text-primary);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fresh {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .freshFill {
+    animation: none;
+  }
+
+  .flowPath {
+    animation: none;
+  }
+
+  .spinLine {
+    animation: none;
+  }
+
+  .pointer {
+    transition: none;
+  }
+}
