@@ -73,9 +73,9 @@ All three phases of the order (`epic-54567c59`) are now live in the app.
 
 ### Languages + narration
 
-- **English + Tamil captions** are authored for every beat across all five narrated tracks: Boot & OS (16), JVM runtime (14), Bytecode stepper (14), BST (10), Bubble sort (8), Hash map (8). Tamil uses Tamil script; technical terms stay English (Eden, Metaspace, bytecode, kernel space…). Caption keys are checked against every timeline step.
+- **English + Tamil captions** are authored for every beat across all narrated tracks: Boot & OS (16), JVM runtime (14), Bytecode stepper (14), BST (10), Bubble sort (8), Hash map (8) — 70 beats total. Tamil uses Tamil script; technical terms stay English (Eden, Metaspace, bytecode, kernel space…). Caption keys are checked against every timeline step.
 - The 🌐 toggle, voice on/off, and pace persist across tracks and reloads.
-- Voice playback uses a single run-guarded controller, sentence-sized chunks, retry-on-interruption, and waits for speech completion before advancing. Tamil TTS uses the browser's installed `ta-IN` voice (Edge exposes Microsoft's natural voice; after installing Tamil speech, fully restart the browser so its voice list refreshes). When no Tamil voice is exposed, we never substitute an English voice: Tamil captions stay visible and the UI explains the voice limitation.
+- Voice playback has a single run-guarded controller, sentence-sized chunks, retries on browser `interrupted` events, and estimated-duration padding when the platform reports utterance completion too early. It never advances while the browser reports active speech. Tamil TTS uses an exposed `ta-IN` browser voice; Windows' language-pack checkbox and Edge Read Aloud are separate from the voices exposed to a webpage's `speechSynthesis` API. If no Tamil voice is exposed, the app does not read Tamil with an English voice — captions stay available and the voice hint explains the browser limitation.
 - **Human-recorded voice is ready to add per beat**: optional `audioSrcEn` / `audioSrcTa` takes priority over TTS and advances only on audio completion. Recording naming/format/approval notes are in [`public/audio/README.md`](public/audio/README.md). No recordings are included until the speaker approves them.
 
 ## What comes next
