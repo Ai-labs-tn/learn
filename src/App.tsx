@@ -1,4 +1,4 @@
-import { AppTemplate } from '@agiler/ui';
+import { AppTemplate, ThemeToggle } from '@agiler/ui';
 import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 
 import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
@@ -74,6 +74,7 @@ export function App() {
         items={NAV_ITEMS}
         activePath={`/${track}`}
         linkComponent={HashLink}
+        actions={<ThemeToggle />}
         onNavigate={() => setTrack(trackFromHash())}
       >
         {TRACKS[track]}

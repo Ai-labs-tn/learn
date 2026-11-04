@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@agiler/ui": "github:Ai-labs-tn/agiler-ui#v0.6.0",
-    "@monaco-editor/react": "^4.7.0",
-    "monaco-editor": "^0.57.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "^0.57.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",
