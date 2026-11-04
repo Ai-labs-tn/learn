@@ -38,7 +38,7 @@ with a friendly warning past 500 snapshots.
 - [x] PRD + sketches captured (`docs/prd/`)
 - [x] AGILER order placed (`epic-54567c59`) — 12 features, ₹9,32,000
 - [x] Delivery template planned (8 features · 24 stories)
-- [x] AGILER scaffold generated (Vite + React + `@agiler/ui` v0.5.1 + backend + db schema)
+- [x] AGILER scaffold generated from the mobile-first base app template (Vite + React + `@agiler/ui` v0.6.0 + backend + db schema)
 - [x] **Phase 1 — boot & OS simulator** (`src/simulator/`): deterministic snapshot engine
   (`types.ts` + `useSimulator.ts`) and the 16-step boot timeline (`boot/bootTimeline.ts`) rendered
   as a 2D machine (CPU cores, kernel/user RAM regions, HDD platter / SSD, firmware chip) with
@@ -71,8 +71,16 @@ with a friendly warning past 500 snapshots.
 
 All three phases of the order (`epic-54567c59`) are now live in the app.
 
+### Languages + narration
+
+- **English + Tamil captions** are authored for every beat across all five narrated tracks: Boot & OS (16), JVM runtime (14), Bytecode stepper (14), BST (10), Bubble sort (8), Hash map (8). Tamil uses Tamil script; technical terms stay English (Eden, Metaspace, bytecode, kernel space…). Caption keys are checked against every timeline step.
+- The 🌐 toggle, voice on/off, and pace persist across tracks and reloads.
+- Voice playback uses a single run-guarded controller, sentence-sized chunks, retry-on-interruption, and waits for speech completion before advancing. Tamil TTS uses the browser's installed `ta-IN` voice (Edge exposes Microsoft's natural voice; after installing Tamil speech, fully restart the browser so its voice list refreshes). When no Tamil voice is exposed, we never substitute an English voice: Tamil captions stay visible and the UI explains the voice limitation.
+- **Human-recorded voice is ready to add per beat**: optional `audioSrcEn` / `audioSrcTa` takes priority over TTS and advances only on audio completion. Recording naming/format/approval notes are in [`public/audio/README.md`](public/audio/README.md). No recordings are included until the speaker approves them.
+
 ## What comes next
 
+- Record Saravana's narration progressively; each approved audio file overrides TTS for that beat
 - Lesson-tracks shell + progress tracking (the remaining order features)
 - More structures on the same engine: linked list vs array, queue, merge sort
 - The full java-ast/ANTLR4 front-end swap behind `simulate.ts`

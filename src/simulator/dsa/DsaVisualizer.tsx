@@ -11,6 +11,7 @@ import { Whiteboard, type WhiteboardStep } from '../whiteboard/Whiteboard';
 import { BST_TIMELINE } from './bstTimeline';
 import { HASH_TIMELINE } from './hashTimeline';
 import { SORT_TIMELINE } from './sortTimeline';
+import { DSA_CAPTIONS_TA } from './dsaCaptions.ta';
 import type { DsaStep, TopicId, TreeView } from './types';
 import styles from './DsaVisualizer.module.css';
 
@@ -250,7 +251,12 @@ function asWhiteboardSteps(steps: DsaStep[], topic: TopicId): Array<DsaStep & Wh
     if (topic === 'hash') return raw.startsWith('put') ? 'put' : raw.startsWith('get') ? 'get' : raw;
     return raw;
   };
-  return steps.map((step) => ({ ...step, caption: step.narration, phase: chapter(step.phase) }));
+  return steps.map((step) => ({
+    ...step,
+    caption: step.narration,
+    captionTa: DSA_CAPTIONS_TA[topic]?.[step.id],
+    phase: chapter(step.phase),
+  }));
 }
 
 export function DsaVisualizer() {

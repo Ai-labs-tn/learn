@@ -11,6 +11,7 @@ import { cn } from '../../utils/cn';
 import { useSimulator } from '../useSimulator';
 import { Whiteboard } from '../whiteboard/Whiteboard';
 import { ADDER_SOURCE, BYTECODE, BYTECODE_TIMELINE } from './bytecodeTimeline';
+import { BYTECODE_CAPTIONS_TA } from './bytecodeCaptions.ta';
 import type { BytecodeFrame, BytecodeStep } from './types';
 import styles from './BytecodeStepper.module.css';
 
@@ -317,6 +318,7 @@ export function BytecodeStepper() {
     BYTECODE_TIMELINE.map((step) => ({
       ...step,
       caption: step.narration,
+      captionTa: BYTECODE_CAPTIONS_TA[step.id],
       phase: ADD_METHOD_STEPS.has(step.id) ? 'add()' : 'main()',
     })),
   );

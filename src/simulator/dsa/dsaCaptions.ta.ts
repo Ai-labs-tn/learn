@@ -1,0 +1,35 @@
+/* Tamil script + English DSA jargon; data-structure names/operations stay in English. */
+export const DSA_CAPTIONS_TA: Record<string, Record<string, string>> = {
+  bst: {
+    empty: 'Binary search tree ஒரு விதியைப் பின்பற்றுகிறது: node-ன் left subtree-ல் சிறிய values, right subtree-ல் பெரிய values. ஒவ்வொரு comparison-மும் பாதி வழிகளை நீக்குகிறது — அதனால்தான் lookup வேகமாகிறது.',
+    'insert-50': 'Tree காலியாக இருக்கிறது. ஆகவே 50 root-ஆக அமர்கிறது. Memory-ல் இது value, left pointer, right pointer கொண்ட heap object — இப்போது இரண்டு pointers-மும் null.',
+    'insert-30': '30-ஐ 50-உடன் compare செய்கிறோம்: சிறியது, ஆகவே left. 50-க்கு left child இல்லை — 30 அங்கே அமர்கிறது.',
+    'insert-70': '70, 50-ஐவிட பெரியது — right side. ஒரே comparison, உடனே placement.',
+    'insert-20': '20 < 50 என்பதால் left. 20 < 30 என்பதால் மீண்டும் left. ஒவ்வொரு comparison-மும் ஒரு subtree-ஐத் தேர்ந்தெடுத்து மற்றதை விலக்குகிறது.',
+    'insert-40': '40 < 50 — left. 40 > 30 — right. 40 என்பது 30-ன் right child. In-order traversal படித்தால் 20, 30, 40, 50, 70 என்று வரும்.',
+    invariant: 'ஒவ்வொரு node-மும் விதியைப் பின்பற்றுகிறது: left-ல் சிறிய values, right-ல் பெரிய values. Insert செய்வதே sorting — ஒவ்வொரு insert-ன் செலவும் tree-ன் depth; node எண்ணிக்கை மட்டும் அல்ல.',
+    'search-40-hit': '40 < 50 — left. 40 > 30 — right. 40 == 40 — கிடைத்துவிட்டது. ஐந்து nodes-ல் மூன்று comparisons. ஒரு million nodes கொண்ட balanced tree-ல் சுமார் 20 comparisons போதும்.',
+    'search-65-miss': '65 > 50 — right. 65 < 70 — left. 70-க்கு left child இல்லை. Invariant காரணமாக, 65 வேறு எங்கும் இருக்க முடியாது — tree-ஐ scan செய்யாமலே இல்லை என்று நிரூபித்தோம்.',
+    balance: 'Values நல்ல வரிசையில் வந்ததால் இந்த tree balanced. அதே values-ஐ sorted order-ல் insert செய்தால், ஒவ்வொரு node-மும் ஒரே பாதையில் அமர்ந்து linked list போல ஆகும். அதைத்தான் AVL, red-black போன்ற self-balancing trees சரிசெய்கின்றன.',
+  },
+  sort: {
+    start: 'Array என்பது memory-ல் தொடர்ச்சியான ஒரே block. int-க்கு index i-ன் address = base + i × 4 bytes. அதனால் எந்த cell-ஐயும் O(1)-ல் நேரடியாகப் படிக்கலாம். இப்போது [5, 1, 4, 2, 8]-ஐ bubble sort செய்வோம்.',
+    'p1-c0': 'j, a[j]-ஐ a[j+1]-உடன் compare செய்கிறது. 5 > 1 — வரிசை தவறு, swap! ஜோடியில் பெரிய value வலப்பக்கம் ஒரு படி நகர்கிறது.',
+    'p1-c1': '5 இன்னும் தனது அடுத்த ஜோடியைவிட பெரியது. மீண்டும் swap — அது வலப்பக்கம் நகர்ந்துகொண்டே இருக்கிறது.',
+    'p1-c2': 'பெரிய value ஒவ்வொரு comparison-க்கும் ஒரு cell வலப்பக்கம் bubble ஆகிறது. இதுவே algorithm-ன் அடிப்படை.',
+    'p1-c3': '8 > 5 — சரியான வரிசை, swap இல்லை. Pass 1 முடிந்தது: பெரிய value 8 கடைசியில் உறுதியாக அமர்ந்துவிட்டது. அந்த இடத்தை இனி தொடவே மாட்டோம்.',
+    'p2-c0': 'இரண்டாவது pass, இன்னும் வரிசைப்படாத prefix-ஐ மட்டும் பார்க்கிறது. 4 > 2 — swap; 4 ஒரு படி வலப்பக்கம் செல்கிறது.',
+    'p2-end': 'Prefix-ல் 5-ஐவிட பெரிய value இல்லை. 5 தனது இடத்தில் உறுதியாக அமர்கிறது — sorted tail மேலும் வளர்கிறது.',
+    'p3-end': 'முழு pass-ல் swap ஒன்றும் இல்லை — array sorted. ஐந்து items-க்கு 10 comparisons; மோசமான நிலையில் n(n−1)/2. இதுதான் O(n²) memory-யில் எப்படி தெரிகிறது.',
+  },
+  hash: {
+    empty: 'Hash map என்பது buckets கொண்ட array + ஒரு hash function. Key-ஐக் கொடுத்தால் hash(key) % 8 மூலம் நேராக bucket-க்கு போகலாம் — தேடிக்கொண்டிருக்க வேண்டாம். Average lookup ஏன் O(1) என்பது இதுதான்.',
+    'put-ada': 'இந்த உதாரணத்தில் hash("Ada") % 8 = 2. ("Ada" → "engineer") entry நேராக bucket 2-ல் செல்கிறது. ஒரு கணக்கு — தேடல் ஏதுமில்லை.',
+    'put-grace': 'வேறு key, வேறு bucket: hash("Grace") % 8 = 5. Entries buckets முழுவதும் பரவுகின்றன — அந்தப் பரவல்தான் இந்த data structure-ன் பலம்.',
+    'put-linus': 'Collision! இரண்டு keys ஒரே bucket 2-க்கு வந்துவிட்டன. இது error அல்ல; எதிர்பார்க்கக்கூடியது. Separate chaining-ல் bucket 2 ஒரு சிறிய linked list ஆகிறது: புதிய entry முதலில்.',
+    'put-kat': 'hash("Kat") % 8 = 7 — காலியான bucket, நேரடி placement. Load factor = 4/8 = 0.5. இது 0.75-ஐ நெருங்கும்போது real maps resize செய்து எல்லாவற்றையும் rehash செய்கின்றன.',
+    'get-linus': 'Key-ஐ hash செய்: bucket 2. அங்கே நேராகப் போ. Chain-ல் key-களை compare செய்: "Linus" உடனே match ஆகிறது. Map முழுவதையும் scan செய்யாமல் O(1)-average lookup.',
+    'get-missing': 'hash("Eve") % 8 = 3. Bucket 3 காலி — வேறு bucket-ஐத் தொடாமலே Eve இல்லை என்று தெரிகிறது. Find வேகமான அதே கணக்கு miss-யும் வேகமாக்குகிறது.',
+    'worst-case': 'எல்லா keys-மும் ஒரே bucket-ல் மோதினால், ஒவ்வொரு lookup-மும் நீண்ட chain-ஐ நடக்க வேண்டும் — அதுதான் O(n) worst case. Java HashMap நீண்ட chain-களை mini red-black tree-ஆக மாற்றி, attack நேரத்திலும் வேகமாக இருக்க முயல்கிறது.',
+  },
+};

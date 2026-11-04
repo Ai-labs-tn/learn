@@ -25,6 +25,9 @@ export interface WhiteboardStep {
   caption: string;
   /** Tamil caption (Tamil script, English jargons kept in English) — falls back to `caption`. */
   captionTa?: string;
+  /** Optional human-recorded narration. If provided, it takes priority over browser TTS. */
+  audioSrcEn?: string;
+  audioSrcTa?: string;
   phase: string;
 }
 
@@ -268,6 +271,7 @@ export function Whiteboard<T extends WhiteboardStep>({
    * bookkeeping can never interrupt an utterance that is already speaking.
    */
   const runIdRef = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const speechVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
   speechVoicesRef.current = speechVoices;
 
@@ -277,8 +281,10 @@ export function Whiteboard<T extends WhiteboardStep>({
     const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
     const superseded = () => runIdRef.current !== runId;
 
-    if (!voiceOn || !synth || !speechVoicesReady) {
+    if (!voiceOn) {
       synth?.cancel();
+      audioRef.current?.pause();
+      audioRef.current = null;
       return undefined;
     }
     if (sim.playing && sim.atEnd) {
@@ -287,10 +293,15 @@ export function Whiteboard<T extends WhiteboardStep>({
     }
 
     const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
-    const isTamil = spoken === sim.current.captionTa;
+    const isTamil = lang === 'ta' && !!sim.current.captionTa;
+    const audioSrc = isTamil ? sim.current.audioSrcTa : sim.current.audioSrcEn;
     const language = isTamil ? 'ta-IN' : 'en-US';
     const voice = pickVoice(speechVoicesRef.current, language);
     const timers: number[] = [];
+    setSpeechPlaybackError(false);
+    // A new step/language supersedes any recording currently playing.
+    audioRef.current?.pause();
+    audioRef.current = null;
     const advanceAfter = (ms: number) => {
       const id = window.setTimeout(() => {
         if (!superseded()) sim.next();
@@ -298,7 +309,36 @@ export function Whiteboard<T extends WhiteboardStep>({
       timers.push(id);
     };
 
-    synth.cancel();
+    // A supplied human recording is independent of the browser's TTS voice list.
+    if (!audioSrc && (!synth || !speechVoicesReady)) return undefined;
+    synth?.cancel();
+
+    if (audioSrc) {
+      const audio = new Audio(audioSrc);
+      audioRef.current = audio;
+      audio.onended = () => {
+        if (superseded()) return;
+        if (sim.playing) advanceAfter(BREATH_MS / pace);
+      };
+      audio.onerror = () => {
+        if (superseded()) return;
+        setSpeechPlaybackError(true);
+        if (sim.playing) advanceAfter(durationFor(spoken));
+      };
+      void audio.play().catch(() => {
+        if (superseded()) return;
+        setSpeechPlaybackError(true);
+        if (sim.playing) advanceAfter(durationFor(spoken));
+      });
+      return () => {
+        audio.pause();
+        audioRef.current = null;
+        timers.forEach((id) => window.clearTimeout(id));
+      };
+    }
+
+    if (!synth || !speechVoicesReady) return undefined;
+    const speech = synth;
 
     if (isTamil && !voice) {
       // Windows may have Tamil installed while the browser exposes no Tamil voice: never fake
@@ -362,12 +402,15 @@ export function Whiteboard<T extends WhiteboardStep>({
       utterance.onend = () => finish(true);
       utterance.onerror = (event) => {
         if (event.error === 'interrupted' || event.error === 'canceled') retry();
-        else finish(true);
+        else {
+          setSpeechPlaybackError(true);
+          sim.pause(); // show the caption and let the learner retry; do not silently skip it
+        }
       };
       // Fallback: only after the estimated sentence + grace, and never while speaking.
       const checkFinished = () => {
         if (superseded() || settled) return;
-        if (synth.speaking || synth.pending) {
+        if (speech.speaking || speech.pending) {
           fallback = window.setTimeout(checkFinished, 2000);
           timers.push(fallback);
         } else if (!didStart && retries < 4) {
@@ -378,7 +421,7 @@ export function Whiteboard<T extends WhiteboardStep>({
       };
       fallback = window.setTimeout(checkFinished, expectedMs + 8000);
       timers.push(fallback);
-      synth.speak(utterance);
+      speech.speak(utterance);
     };
     speakNext();
 
@@ -392,6 +435,8 @@ export function Whiteboard<T extends WhiteboardStep>({
   useEffect(
     () => () => {
       runIdRef.current += 1;
+      audioRef.current?.pause();
+      audioRef.current = null;
       window.speechSynthesis?.cancel();
     },
     [],
