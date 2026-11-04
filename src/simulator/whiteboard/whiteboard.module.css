@@ -86,6 +86,13 @@
   white-space: nowrap;
 }
 
+.voiceHint {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  white-space: nowrap;
+  cursor: help;
+}
+
 /* The spoken caption, attached to the tab row like a subtitle.
    It grows to fit the sentence (the stage takes whatever is left) — never clips. */
 .caption {

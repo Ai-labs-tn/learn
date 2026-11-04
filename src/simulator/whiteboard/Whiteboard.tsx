@@ -50,6 +50,28 @@ function pickVoice(synth: SpeechSynthesis, lang: string): SpeechSynthesisVoice |
   );
 }
 
+/**
+ * Split a caption into sentence-sized utterances (≤ ~170 chars). Two reasons: browsers cut a
+ * single long utterance around 15 seconds, and sentence chunks give natural pauses + progress.
+ */
+function chunkText(text: string): string[] {
+  const sentences = text.match(/[^.!?]+[.!?]+["')\]]?|[^.!?]+$/g) ?? [text];
+  const chunks: string[] = [];
+  let current = '';
+  for (const sentence of sentences) {
+    const piece = sentence.trim();
+    if (!piece) continue;
+    if (current && current.length + piece.length > 170) {
+      chunks.push(current);
+      current = piece;
+    } else {
+      current = current ? `${current} ${piece}` : piece;
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks.length > 0 ? chunks : [text];
+}
+
 export function Whiteboard<T extends WhiteboardStep>({
   title,
   steps,
@@ -66,6 +88,7 @@ export function Whiteboard<T extends WhiteboardStep>({
   const sim = useSimulator(steps, 1600, { manualAdvance: true });
   const [voiceOn, setVoiceOn] = useState(false);
   const [lang, setLang] = useState<CaptionLanguage>('en');
+  const [tamilVoiceMissing, setTamilVoiceMissing] = useState(false);
   const [pace, setPace] = useState<number>(PACES[0]);
   /** The caption in the selected language, falling back to English when no Tamil yet. */
   const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
@@ -144,9 +167,11 @@ export function Whiteboard<T extends WhiteboardStep>({
 
   /** How long a caption should stay on screen when it is not being spoken. */
   const durationFor = (text: string): number =>
-    Math.min(12000, Math.max(2400, Math.round((text.length * 55) / pace)));
+    Math.min(16000, Math.max(2400, Math.round((text.length * 60) / pace)));
 
-  // Playback: advance on the speaker's rhythm (or a reading pause when silent).
+  // Playback: advance when the SPEECH actually finishes (chunked per sentence), or a reading
+  // pause when silent. Sentences are spoken one utterance at a time: browsers (Chrome) silently
+  // cut single utterances longer than ~15s, and one long utterance also hides progress.
   useEffect(() => {
     if (!sim.playing) return undefined;
     if (sim.atEnd) {
@@ -156,57 +181,117 @@ export function Whiteboard<T extends WhiteboardStep>({
 
     const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
     let cancelled = false;
-    let timer: number | undefined;
-    let safety: number | undefined;
-    const advance = () => {
-      if (!cancelled) sim.next();
+    const timeouts: number[] = [];
+    let watchdog: number | undefined;
+    let lastProgress = Date.now();
+    const advanceAfter = (ms: number) => {
+      const id = window.setTimeout(() => {
+        if (!cancelled) sim.next();
+      }, ms);
+      timeouts.push(id);
     };
 
     if (voiceOn && synth) {
       synth.cancel();
       const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
-      const utterance = new SpeechSynthesisUtterance(spoken);
-      utterance.rate = Math.min(2, 1 * pace);
-      utterance.lang = spoken === sim.current.captionTa ? 'ta-IN' : 'en-US';
-      const voice = pickVoice(synth, utterance.lang);
-      if (voice) utterance.voice = voice;
-      utterance.onend = () => {
-        // A short beat after the sentence lands, then move on.
-        timer = window.setTimeout(advance, BREATH_MS / pace);
-      };
-      utterance.onerror = () => {
-        timer = window.setTimeout(advance, durationFor(spoken));
-      };
-      // Never stall the lecture if the speech engine swallows the event.
-      safety = window.setTimeout(advance, durationFor(spoken) + 5000);
-      synth.speak(utterance);
+      const isTamil = spoken === sim.current.captionTa;
+      const language = isTamil ? 'ta-IN' : 'en-US';
+      const voice = pickVoice(synth, language);
+
+      if (isTamil && !voice) {
+        // No Tamil voice installed: never fake Tamil with an English voice — tell the learner
+        // and let the caption carry the beat at reading pace.
+        setTamilVoiceMissing(true);
+        advanceAfter(durationFor(spoken));
+      } else {
+        setTamilVoiceMissing(false);
+        const chunks = chunkText(spoken);
+        let index = 0;
+        const speakNext = () => {
+          if (cancelled) return;
+          if (index >= chunks.length) {
+            advanceAfter(BREATH_MS / pace);
+            return;
+          }
+          const chunk = chunks[index++];
+          const startedAt = Date.now();
+          const utterance = new SpeechSynthesisUtterance(chunk);
+          utterance.rate = Math.min(2, pace);
+          utterance.lang = language;
+          if (voice) utterance.voice = voice;
+          const progressed = () => {
+            if (cancelled) return;
+            lastProgress = Date.now();
+            // Some engines report "finished" instantly (no audio available). Never let that
+            // rush the lecture: pad to the chunk's estimated speaking time.
+            const expected = Math.min(12000, (chunk.length * 62) / pace);
+            const elapsed = Date.now() - startedAt;
+            const id = window.setTimeout(() => {
+              if (!cancelled) speakNext();
+            }, Math.max(0, expected - elapsed));
+            timeouts.push(id);
+          };
+          utterance.onend = progressed;
+          utterance.onerror = progressed;
+          synth.speak(utterance);
+        };
+        speakNext();
+        // Watchdog: only if the engine truly stalls (no speaking, no pending, no progress).
+        watchdog = window.setInterval(() => {
+          if (cancelled) return;
+          if (!synth.speaking && !synth.pending && Date.now() - lastProgress > 2500) {
+            lastProgress = Date.now();
+            speakNext();
+          }
+        }, 2000);
+      }
     } else {
-      timer = window.setTimeout(advance, durationFor(spoken));
+      const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
+      advanceAfter(durationFor(spoken));
     }
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
-      window.clearTimeout(safety);
+      timeouts.forEach((id) => window.clearTimeout(id));
+      if (watchdog !== undefined) window.clearInterval(watchdog);
       synth?.cancel();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sim.playing, sim.index, voiceOn, pace, lang]);
 
-  // Stepping by hand with voice ON: read each beat as it is chosen.
+  // Stepping by hand with voice ON: read each beat as it is chosen (same chunking rules).
   useEffect(() => {
     if (sim.playing || !voiceOn) return undefined;
     const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
     if (!synth) return undefined;
     synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(spoken);
-    utterance.rate = Math.min(2, 1 * pace);
-    utterance.lang = spoken === sim.current.captionTa ? 'ta-IN' : 'en-US';
-    const voice = pickVoice(synth, utterance.lang);
-    if (voice) utterance.voice = voice;
-    synth.speak(utterance);
-    return () => synth.cancel();
-  }, [voiceOn, sim.playing, spoken, pace]);
+    const isTamil = lang === 'ta' && !!sim.current.captionTa;
+    const language = isTamil ? 'ta-IN' : 'en-US';
+    const voice = pickVoice(synth, language);
+    if (isTamil && !voice) {
+      setTamilVoiceMissing(true);
+      return undefined;
+    }
+    setTamilVoiceMissing(false);
+    let cancelled = false;
+    const chunks = chunkText(spoken);
+    let index = 0;
+    const speakNext = () => {
+      if (cancelled || index >= chunks.length) return;
+      const utterance = new SpeechSynthesisUtterance(chunks[index++]);
+      utterance.rate = Math.min(2, pace);
+      utterance.lang = language;
+      if (voice) utterance.voice = voice;
+      utterance.onend = speakNext;
+      utterance.onerror = speakNext;
+      synth.speak(utterance);
+    };
+    speakNext();
+    return () => {
+      cancelled = true;
+      synth.cancel();
+    };
+  }, [voiceOn, sim.playing, spoken, lang, pace]);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -298,6 +383,14 @@ export function Whiteboard<T extends WhiteboardStep>({
           <span className={styles.stepChip}>
             {sim.index + 1} / {sim.total}
           </span>
+          {tamilVoiceMissing && (
+            <span
+              className={styles.voiceHint}
+              title="No Tamil voice is installed in this browser. Windows: Settings → Time & Language → Language → add Tamil (speech). Best free option: open the site in Microsoft Edge — its Tamil neural voices sound natural."
+            >
+              ⚠ Tamil voice not installed
+            </span>
+          )}
         </div>
       </div>
 
