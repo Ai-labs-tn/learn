@@ -104,13 +104,48 @@ export function Whiteboard<T extends WhiteboardStep>({
 }) {
   // Playback is driven here (manualAdvance) so voice and timers share one clock.
   const sim = useSimulator(steps, 1600, { manualAdvance: true });
-  const [voiceOn, setVoiceOn] = useState(false);
-  const [lang, setLang] = useState<CaptionLanguage>('en');
+  // Lecture preferences persist across tracks and reloads (Tamil stays selected once chosen).
+  const preference = <T,>(key: string, fallback: T, valid: (value: unknown) => value is T): T => {
+    try {
+      const stored = window.localStorage.getItem(key);
+      if (stored !== null) {
+        const parsed: unknown = JSON.parse(stored);
+        if (valid(parsed)) return parsed;
+      }
+    } catch {
+      /* storage unavailable — fall through */
+    }
+    return fallback;
+  };
+
+  const [voiceOn, setVoiceOn] = useState<boolean>(() =>
+    preference('learn.voice', false, (value): value is boolean => typeof value === 'boolean'),
+  );
+  const [lang, setLang] = useState<CaptionLanguage>(() =>
+    preference('learn.captionLang', 'en', (value): value is CaptionLanguage => value === 'en' || value === 'ta'),
+  );
   const [tamilVoiceMissing, setTamilVoiceMissing] = useState(false);
   const [speechPlaybackError, setSpeechPlaybackError] = useState(false);
   const [speechVoices, setSpeechVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechVoicesReady, setSpeechVoicesReady] = useState(false);
-  const [pace, setPace] = useState<number>(PACES[0]);
+  const [pace, setPace] = useState<number>(() =>
+    preference(
+      'learn.pace',
+      PACES[0],
+      (value): value is (typeof PACES)[number] => PACES.includes(value as (typeof PACES)[number]),
+    ),
+  );
+
+  // Remember the lecture preferences (Tamil + voice + pace) across tracks and reloads.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('learn.voice', JSON.stringify(voiceOn));
+      window.localStorage.setItem('learn.captionLang', JSON.stringify(lang));
+      window.localStorage.setItem('learn.pace', JSON.stringify(pace));
+    } catch {
+      /* storage unavailable — preferences are session-only */
+    }
+  }, [voiceOn, lang, pace]);
   /** The caption in the selected language, falling back to English when no Tamil yet. */
   const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
   const caption = useTypewriter(spoken, 14);
@@ -458,9 +493,9 @@ export function Whiteboard<T extends WhiteboardStep>({
           {tamilVoiceMissing && (
             <span
               className={styles.voiceHint}
-              title="Windows has Tamil text-to-speech installed, but this browser has not exposed a Tamil speech voice yet. Restart the browser, then reload Learn with Saravana."
+              title="This browser hasn't exposed a Tamil voice. Open Learn with Saravana in Microsoft Edge — it ships natural Tamil voices. (In Chrome, fully quit and reopen the browser after installing Tamil speech.)"
             >
-              ⚠ ta voice
+              ⚠ ta voice — use Edge
             </span>
           )}
           {speechPlaybackError && (
