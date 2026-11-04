@@ -1,43 +1,51 @@
-# Render Blueprint for Learn with Saravana (https://render.com/docs/blueprint-spec)
+# Render Blueprint for Learn with Saravana
+# (https://render.com/docs/blueprint-spec — projects/environments pattern)
 #
-# The simulators are 100% client-side, so today only the static site is deployed.
-# The app uses hash routing (#/track), so no SPA rewrite rules are needed.
-# Static sites are served from Render's global CDN (region is not selectable) — that is the
-# fastest option for learners in India. A fixed region would require a paid web service.
-# Blueprint sync creates the "Learn" project and places the service inside it.
-# When auth / lesson tracking lands, re-add the API + database blocks kept below.
+# Applying this Blueprint creates the "Learn" project with the static site inside it, at
+# https://learn-with-saravana.onrender.com, auto-deploying from main.
+#
+# The simulators are 100% client-side, so only the static site ships today. Static sites are
+# served from Render's global CDN (region is not selectable — that is the fastest option for
+# learners in India; a fixed region would require a paid web service). The future API service
+# (auth/lesson progress) is pre-noted below with region: singapore for when it lands.
+
+previews:
+  generation: off
 
 projects:
   - name: Learn
-
-services:
-  - type: web
-    name: learn-with-saravana
-    project: Learn
-    runtime: static
-    buildCommand: "npm ci --include=dev && npm run build"
-    staticPublishPath: dist
-    pullRequestPreviewsEnabled: yes
+    environments:
+      - name: production
+        services:
+          - type: web
+            name: learn-with-saravana
+            runtime: static
+            buildCommand: "npm ci --include=dev && npm run build"
+            staticPublishPath: dist
+            pullRequestPreviewsEnabled: yes
 
 # --- Future phases (auth, lesson progress): re-add when the app calls the API ---
-# services:
-#   - type: web
-#     name: learn-with-saravana-api
-#     project: Learn
-#     runtime: python
-#     rootDir: backend
-#     plan: starter
-#     region: singapore
-#     buildCommand: pip install -r requirements.txt
-#     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
-#     healthCheckPath: /api/health
-#     envVars:
-#       - key: PYTHON_VERSION
-#         value: 3.13.0
-#       - key: DATABASE_URL
-#         fromDatabase:
-#           name: learn-with-saravana-db
-#           property: connectionString
-# databases:
-#   - name: learn-with-saravana-db
-#     plan: free
+# projects:
+#   - name: Learn
+#     environments:
+#       - name: production
+#         services:
+#           - type: web
+#             name: learn-with-saravana-api
+#             runtime: python
+#             rootDir: backend
+#             plan: starter
+#             region: singapore
+#             buildCommand: pip install -r requirements.txt
+#             startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+#             healthCheckPath: /api/health
+#             envVars:
+#               - key: PYTHON_VERSION
+#                 value: 3.13.0
+#               - key: DATABASE_URL
+#                 fromDatabase:
+#                   name: learn-with-saravana-db
+#                   property: connectionString
+#         databases:
+#           - name: learn-with-saravana-db
+#             plan: free
