@@ -35,8 +35,7 @@ const BREATH_MS = 550;
 const STAGE_RATIO = 1040 / 620;
 
 /** Best available voice for a language: Tamil voices for Tamil; "Natural"/neural for English. */
-function pickVoice(synth: SpeechSynthesis, lang: string): SpeechSynthesisVoice | null {
-  const voices = synth.getVoices();
+function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
   if (voices.length === 0) return null;
   if (lang.startsWith('ta')) {
     return voices.find((voice) => voice.lang.toLowerCase().startsWith('ta')) ?? null;
@@ -55,20 +54,39 @@ function pickVoice(synth: SpeechSynthesis, lang: string): SpeechSynthesisVoice |
  * single long utterance around 15 seconds, and sentence chunks give natural pauses + progress.
  */
 function chunkText(text: string): string[] {
+  const maxChars = 150;
   const sentences = text.match(/[^.!?]+[.!?]+["')\]]?|[^.!?]+$/g) ?? [text];
   const chunks: string[] = [];
   let current = '';
+
+  const flush = () => {
+    if (current) chunks.push(current);
+    current = '';
+  };
+
   for (const sentence of sentences) {
     const piece = sentence.trim();
     if (!piece) continue;
-    if (current && current.length + piece.length > 170) {
-      chunks.push(current);
+    if (piece.length > maxChars) {
+      flush();
+      let part = '';
+      for (const word of piece.split(/\s+/)) {
+        if (part && part.length + word.length + 1 > maxChars) {
+          chunks.push(part);
+          part = word;
+        } else {
+          part = part ? `${part} ${word}` : word;
+        }
+      }
+      if (part) current = part;
+    } else if (current && current.length + piece.length + 1 > maxChars) {
+      flush();
       current = piece;
     } else {
       current = current ? `${current} ${piece}` : piece;
     }
   }
-  if (current) chunks.push(current);
+  flush();
   return chunks.length > 0 ? chunks : [text];
 }
 
@@ -89,10 +107,50 @@ export function Whiteboard<T extends WhiteboardStep>({
   const [voiceOn, setVoiceOn] = useState(false);
   const [lang, setLang] = useState<CaptionLanguage>('en');
   const [tamilVoiceMissing, setTamilVoiceMissing] = useState(false);
+  const [speechPlaybackError, setSpeechPlaybackError] = useState(false);
+  const [speechVoices, setSpeechVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [speechVoicesReady, setSpeechVoicesReady] = useState(false);
   const [pace, setPace] = useState<number>(PACES[0]);
   /** The caption in the selected language, falling back to English when no Tamil yet. */
   const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
   const caption = useTypewriter(spoken, 14);
+
+  // Speech voices load asynchronously in Chromium/Edge. Listen for voiceschanged and poll briefly
+  // so an installed Tamil voice is not falsely reported as missing on first page load.
+  const voicesSigRef = useRef('');
+  useEffect(() => {
+    const synth = window.speechSynthesis;
+    let poll: number | undefined;
+    const stopPolling = () => {
+      if (poll !== undefined) {
+        window.clearInterval(poll);
+        poll = undefined;
+      }
+    };
+    const refresh = () => {
+      const available = synth.getVoices();
+      if (available.length === 0) return;
+      // Only replace state when the voice SET actually changed (order-independent): every
+      // state update re-runs the playback effect, whose cleanup cancels in-flight speech.
+      const signature = available
+        .map((voice) => `${voice.name}:${voice.lang}`)
+        .sort()
+        .join('|');
+      if (signature !== voicesSigRef.current) {
+        voicesSigRef.current = signature;
+        setSpeechVoices(available);
+      }
+      setSpeechVoicesReady(true);
+      stopPolling(); // voices are here; later changes arrive via 'voiceschanged'
+    };
+    refresh();
+    synth.addEventListener('voiceschanged', refresh);
+    poll = window.setInterval(refresh, 250);
+    return () => {
+      synth.removeEventListener('voiceschanged', refresh);
+      stopPolling();
+    };
+  }, []);
 
   const boardRef = useRef<HTMLDivElement>(null);
   const stageWrapRef = useRef<HTMLDivElement>(null);
@@ -169,131 +227,140 @@ export function Whiteboard<T extends WhiteboardStep>({
   const durationFor = (text: string): number =>
     Math.min(16000, Math.max(2400, Math.round((text.length * 60) / pace)));
 
-  // Playback: advance when the SPEECH actually finishes (chunked per sentence), or a reading
-  // pause when silent. Sentences are spoken one utterance at a time: browsers (Chrome) silently
-  // cut single utterances longer than ~15s, and one long utterance also hides progress.
+  /**
+   * One speech controller. A run is superseded (not "cancelled by a cleanup") when a new run
+   * starts — every callback checks its run id, so voice-list updates, re-renders or React
+   * bookkeeping can never interrupt an utterance that is already speaking.
+   */
+  const runIdRef = useRef(0);
+  const speechVoicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  speechVoicesRef.current = speechVoices;
+
   useEffect(() => {
-    if (!sim.playing) return undefined;
-    if (sim.atEnd) {
+    runIdRef.current += 1;
+    const runId = runIdRef.current;
+    const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
+    const superseded = () => runIdRef.current !== runId;
+
+    if (!voiceOn || !synth || !speechVoicesReady) {
+      synth?.cancel();
+      return undefined;
+    }
+    if (sim.playing && sim.atEnd) {
       sim.pause();
       return undefined;
     }
 
-    const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
-    let cancelled = false;
-    const timeouts: number[] = [];
-    let watchdog: number | undefined;
-    let lastProgress = Date.now();
+    const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
+    const isTamil = spoken === sim.current.captionTa;
+    const language = isTamil ? 'ta-IN' : 'en-US';
+    const voice = pickVoice(speechVoicesRef.current, language);
+    const timers: number[] = [];
     const advanceAfter = (ms: number) => {
       const id = window.setTimeout(() => {
-        if (!cancelled) sim.next();
+        if (!superseded()) sim.next();
       }, ms);
-      timeouts.push(id);
+      timers.push(id);
     };
 
-    if (voiceOn && synth) {
-      synth.cancel();
-      const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
-      const isTamil = spoken === sim.current.captionTa;
-      const language = isTamil ? 'ta-IN' : 'en-US';
-      const voice = pickVoice(synth, language);
-
-      if (isTamil && !voice) {
-        // No Tamil voice installed: never fake Tamil with an English voice — tell the learner
-        // and let the caption carry the beat at reading pace.
-        setTamilVoiceMissing(true);
-        advanceAfter(durationFor(spoken));
-      } else {
-        setTamilVoiceMissing(false);
-        const chunks = chunkText(spoken);
-        let index = 0;
-        const speakNext = () => {
-          if (cancelled) return;
-          if (index >= chunks.length) {
-            advanceAfter(BREATH_MS / pace);
-            return;
-          }
-          const chunk = chunks[index++];
-          const startedAt = Date.now();
-          const utterance = new SpeechSynthesisUtterance(chunk);
-          utterance.rate = Math.min(2, pace);
-          utterance.lang = language;
-          if (voice) utterance.voice = voice;
-          const progressed = () => {
-            if (cancelled) return;
-            lastProgress = Date.now();
-            // Some engines report "finished" instantly (no audio available). Never let that
-            // rush the lecture: pad to the chunk's estimated speaking time.
-            const expected = Math.min(12000, (chunk.length * 62) / pace);
-            const elapsed = Date.now() - startedAt;
-            const id = window.setTimeout(() => {
-              if (!cancelled) speakNext();
-            }, Math.max(0, expected - elapsed));
-            timeouts.push(id);
-          };
-          utterance.onend = progressed;
-          utterance.onerror = progressed;
-          synth.speak(utterance);
-        };
-        speakNext();
-        // Watchdog: only if the engine truly stalls (no speaking, no pending, no progress).
-        watchdog = window.setInterval(() => {
-          if (cancelled) return;
-          if (!synth.speaking && !synth.pending && Date.now() - lastProgress > 2500) {
-            lastProgress = Date.now();
-            speakNext();
-          }
-        }, 2000);
-      }
-    } else {
-      const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
-      advanceAfter(durationFor(spoken));
-    }
-
-    return () => {
-      cancelled = true;
-      timeouts.forEach((id) => window.clearTimeout(id));
-      if (watchdog !== undefined) window.clearInterval(watchdog);
-      synth?.cancel();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sim.playing, sim.index, voiceOn, pace, lang]);
-
-  // Stepping by hand with voice ON: read each beat as it is chosen (same chunking rules).
-  useEffect(() => {
-    if (sim.playing || !voiceOn) return undefined;
-    const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
-    if (!synth) return undefined;
     synth.cancel();
-    const isTamil = lang === 'ta' && !!sim.current.captionTa;
-    const language = isTamil ? 'ta-IN' : 'en-US';
-    const voice = pickVoice(synth, language);
+
     if (isTamil && !voice) {
+      // Windows may have Tamil installed while the browser exposes no Tamil voice: never fake
+      // it with an English voice. The caption carries the beat at reading pace.
       setTamilVoiceMissing(true);
-      return undefined;
+      if (sim.playing) advanceAfter(durationFor(spoken));
+      return () => timers.forEach((id) => window.clearTimeout(id));
     }
+
     setTamilVoiceMissing(false);
-    let cancelled = false;
+    setSpeechPlaybackError(false);
+
     const chunks = chunkText(spoken);
     let index = 0;
-    const speakNext = () => {
-      if (cancelled || index >= chunks.length) return;
-      const utterance = new SpeechSynthesisUtterance(chunks[index++]);
+    let retries = 0;
+    const speakNext = (): void => {
+      if (superseded()) return;
+      if (index >= chunks.length) {
+        if (sim.playing) advanceAfter(BREATH_MS / pace);
+        return;
+      }
+      const chunk = chunks[index];
+      const startedAt = Date.now();
+      const expectedMs = Math.min(14000, Math.max(1200, (chunk.length * 62) / pace));
+      const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.rate = Math.min(2, pace);
       utterance.lang = language;
       if (voice) utterance.voice = voice;
-      utterance.onend = speakNext;
-      utterance.onerror = speakNext;
+      let didStart = false;
+      let settled = false;
+      let fallback: number | undefined;
+      const finish = (padToExpected: boolean) => {
+        if (superseded() || settled) return;
+        settled = true;
+        if (fallback !== undefined) window.clearTimeout(fallback);
+        index += 1;
+        retries = 0;
+        // Engines that report "finished" instantly must not rush the lecture.
+        const delay = padToExpected ? Math.max(0, expectedMs - (Date.now() - startedAt)) : 0;
+        const id = window.setTimeout(speakNext, delay);
+        timers.push(id);
+      };
+      const retry = () => {
+        if (superseded() || settled) return;
+        settled = true;
+        if (fallback !== undefined) window.clearTimeout(fallback);
+        // Retry the SAME chunk (never mark it spoken) — Chromium/Windows can emit a spurious
+        // `interrupted` while voices are still warming up.
+        if (retries < 4) {
+          retries += 1;
+          const id = window.setTimeout(speakNext, 500 * retries);
+          timers.push(id);
+        } else {
+          setSpeechPlaybackError(true);
+          sim.pause();
+        }
+      };
+      utterance.onstart = () => {
+        didStart = true;
+      };
+      utterance.onend = () => finish(true);
+      utterance.onerror = (event) => {
+        if (event.error === 'interrupted' || event.error === 'canceled') retry();
+        else finish(true);
+      };
+      // Fallback: only after the estimated sentence + grace, and never while speaking.
+      const checkFinished = () => {
+        if (superseded() || settled) return;
+        if (synth.speaking || synth.pending) {
+          fallback = window.setTimeout(checkFinished, 2000);
+          timers.push(fallback);
+        } else if (!didStart && retries < 4) {
+          retry();
+        } else {
+          finish(false);
+        }
+      };
+      fallback = window.setTimeout(checkFinished, expectedMs + 8000);
+      timers.push(fallback);
       synth.speak(utterance);
     };
     speakNext();
-    return () => {
-      cancelled = true;
-      synth.cancel();
-    };
-  }, [voiceOn, sim.playing, spoken, lang, pace]);
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id));
+      // No synth.cancel() here: a superseding run cancels first, so the newest audio wins.
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceOn, sim.playing, sim.index, lang, pace, speechVoicesReady]);
+
+  useEffect(
+    () => () => {
+      runIdRef.current += 1;
+      window.speechSynthesis?.cancel();
+    },
+    [],
+  );
 
   // The agenda: phases in order of first appearance, chalked across the top.
   const agenda = useMemo(() => {
@@ -375,8 +442,13 @@ export function Whiteboard<T extends WhiteboardStep>({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setLang((current) => (current === 'en' ? 'ta' : 'en'))}
-            title="Caption language — English or Tamil (jargons stay in English)"
+            onClick={() => {
+              window.speechSynthesis?.cancel();
+              setSpeechVoices(window.speechSynthesis?.getVoices() ?? []);
+              setSpeechVoicesReady(true);
+              setLang((current) => (current === 'en' ? 'ta' : 'en'));
+            }}
+            title="Caption language — English or Tamil (jargons stay in English). Refreshes installed speech voices."
           >
             {lang === 'en' ? '🌐 தமிழ்' : '🌐 English'}
           </Button>
@@ -386,9 +458,14 @@ export function Whiteboard<T extends WhiteboardStep>({
           {tamilVoiceMissing && (
             <span
               className={styles.voiceHint}
-              title="No Tamil voice is installed in this browser. Windows: Settings → Time & Language → Language → add Tamil (speech). Best free option: open the site in Microsoft Edge — its Tamil neural voices sound natural."
+              title="Windows has Tamil text-to-speech installed, but this browser has not exposed a Tamil speech voice yet. Restart the browser, then reload Learn with Saravana."
             >
-              ⚠ Tamil voice not installed
+              ⚠ ta voice
+            </span>
+          )}
+          {speechPlaybackError && (
+            <span className={styles.voiceHint} title="Speech playback was interrupted repeatedly. Turn Voice off/on to retry.">
+              ⚠ voice paused
             </span>
           )}
         </div>
