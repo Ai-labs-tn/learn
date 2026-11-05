@@ -26,7 +26,7 @@ test('published story steps and bilingual captions work without author access', 
   await expect(page.getByRole('heading', { name: 'Power to POST' })).toBeVisible();
   await expect(page.getByText('Beat 1 of 2', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Next beat', exact: true }).click();
-  await expect(page.getByText('Memory is checked before the OS loads.', { exact: true })).toBeVisible();
+  await expect(page.locator('p[lang="en"]').first()).toHaveText('Memory is checked before the OS loads.');
   await page.getByRole('button', { name: 'தமிழ் captions', exact: true }).click();
   await expect(page.locator('p[lang=ta]')).toContainText('நினைவகம்');
   await page.getByRole('button', { name: 'Restart story', exact: true }).click();

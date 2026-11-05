@@ -129,6 +129,14 @@ export function Whiteboard<T extends WhiteboardStep>({
   );
   const [tamilVoiceMissing, setTamilVoiceMissing] = useState(false);
   const [speechPlaybackError, setSpeechPlaybackError] = useState(false);
+  const [speechUnavailable, setSpeechUnavailable] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const refresh = () => setReducedMotion(media.matches);
+    media.addEventListener('change', refresh);
+    return () => media.removeEventListener('change', refresh);
+  }, []);
   const [speechVoices, setSpeechVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechVoicesReady, setSpeechVoicesReady] = useState(false);
   const [pace, setPace] = useState<number>(() =>
@@ -158,7 +166,9 @@ export function Whiteboard<T extends WhiteboardStep>({
   const voicesSigRef = useRef('');
   useEffect(() => {
     const synth = window.speechSynthesis;
+    if (!synth) { setSpeechVoicesReady(true); return; }
     let poll: number | undefined;
+    const deadline = window.setTimeout(() => { stopPolling(); setSpeechVoicesReady(true); }, 2000);
     const stopPolling = () => {
       if (poll !== undefined) {
         window.clearInterval(poll);
@@ -186,6 +196,7 @@ export function Whiteboard<T extends WhiteboardStep>({
     poll = window.setInterval(refresh, 250);
     return () => {
       synth.removeEventListener('voiceschanged', refresh);
+      window.clearTimeout(deadline);
       stopPolling();
     };
   }, []);
@@ -280,25 +291,31 @@ export function Whiteboard<T extends WhiteboardStep>({
     const runId = runIdRef.current;
     const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
     const superseded = () => runIdRef.current !== runId;
+    const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
 
     if (!voiceOn) {
       synth?.cancel();
       audioRef.current?.pause();
       audioRef.current = null;
-      return undefined;
+      if (!sim.playing) return undefined;
+      if (sim.atEnd) { sim.pause(); return undefined; }
+      const timer = window.setTimeout(() => {
+        if (!superseded()) sim.next();
+      }, durationFor(spoken));
+      return () => { runIdRef.current += 1; window.clearTimeout(timer); };
     }
     if (sim.playing && sim.atEnd) {
       sim.pause();
       return undefined;
     }
 
-    const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
     const isTamil = lang === 'ta' && !!sim.current.captionTa;
     const audioSrc = isTamil ? sim.current.audioSrcTa : sim.current.audioSrcEn;
     const language = isTamil ? 'ta-IN' : 'en-US';
     const voice = pickVoice(speechVoicesRef.current, language);
     const timers: number[] = [];
     setSpeechPlaybackError(false);
+    setSpeechUnavailable(false);
     // A new step/language supersedes any recording currently playing.
     audioRef.current?.pause();
     audioRef.current = null;
@@ -310,7 +327,12 @@ export function Whiteboard<T extends WhiteboardStep>({
     };
 
     // A supplied human recording is independent of the browser's TTS voice list.
-    if (!audioSrc && (!synth || !speechVoicesReady)) return undefined;
+    if (!audioSrc && (!synth || typeof window.SpeechSynthesisUtterance !== 'function')) {
+      setSpeechUnavailable(true);
+      if (sim.playing) advanceAfter(durationFor(spoken));
+      return () => { runIdRef.current += 1; timers.forEach((id) => window.clearTimeout(id)); };
+    }
+    if (!audioSrc && !speechVoicesReady) return undefined;
     synth?.cancel();
 
     if (audioSrc) {
@@ -452,6 +474,9 @@ export function Whiteboard<T extends WhiteboardStep>({
   }, [steps]);
 
   const onKeyDown = (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('button, a, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"]')) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'ArrowRight') sim.next();
     else if (event.key === 'ArrowLeft') sim.prev();
     else if (event.key === ' ') {
@@ -543,6 +568,7 @@ export function Whiteboard<T extends WhiteboardStep>({
               ⚠ ta voice — use Edge
             </span>
           )}
+          {speechUnavailable && <span role="status" className={styles.voiceHint}>Browser speech unavailable — reading-paced captions</span>}
           {speechPlaybackError && (
             <span className={styles.voiceHint} title="Speech playback was interrupted repeatedly. Turn Voice off/on to retry.">
               ⚠ voice paused
@@ -571,7 +597,7 @@ export function Whiteboard<T extends WhiteboardStep>({
       </div>
       <p className={styles.caption} title={sim.current.caption}>
         <span className={styles.captionQuote}>&ldquo;</span>
-        {caption}
+        {reducedMotion ? spoken : caption}
         <span className={styles.caret} aria-hidden="true" />
       </p>
 

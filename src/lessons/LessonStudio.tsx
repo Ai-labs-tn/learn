@@ -149,7 +149,7 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
   }, [dirty]);
 
   const discard = () => !dirty || window.confirm('Discard unsaved changes and load the selected draft?');
-  const edit = (next: LessonDocument) => { if (disabled) return; setDocument(next); setPreview(false); setMessage('Unsaved changes.'); setError(''); };
+  const edit = (next: LessonDocument) => { if (disabled) return; setDocument(next); setMessage('Unsaved changes.'); setError(''); };
   const editScene = (next: LessonDocument['scenes'][number]) => {
     if (document) edit({ ...document, scenes: document.scenes.map((item) => item.id === sceneId ? next : item) });
   };
