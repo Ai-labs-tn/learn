@@ -96,13 +96,13 @@
   padding: 8px;
   box-sizing: border-box;
   border-radius: 6px;
-  background-color: #0f172a;
+  background-color: var(--color-terminal-background);
   filter: url(#ink-rough);
   pointer-events: none;
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 10.5px;
   line-height: 1.55;
-  color: #7ee787;
+  color: var(--color-terminal-text);
   overflow: hidden;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .logNew {
-  color: #4ade80;
+  color: var(--color-terminal-accent);
   font-weight: var(--font-weight-semibold, 600);
 }
 
@@ -129,7 +129,7 @@
   border: 1.5px solid var(--color-warning);
   border-radius: var(--radius-md);
   background-color: var(--color-surface);
-  box-shadow: var(--shadow-md, 0 6px 16px rgb(15 23 42 / 0.12));
+  box-shadow: var(--shadow-md);
 }
 
 .glossaryHead {

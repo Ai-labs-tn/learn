@@ -68,6 +68,8 @@ jobs:
               raise SystemExit('API failed to become ready')
           PY
       - run: npm run test:acceptance
+        env:
+          LEARN_EVIDENCE_DIR: acceptance-tests/phase-01-polish
       - name: Verify Docker image builds
         run: docker build -t learn-studio-acceptance .
       - name: Upload acceptance evidence
@@ -79,4 +81,6 @@ jobs:
             acceptance-tests/phase-01/backend/*junit.xml
             acceptance-tests/phase-01/browser-results.xml
             acceptance-tests/phase-01/screenshots/
+            acceptance-tests/phase-01-polish/browser-results.xml
+            acceptance-tests/phase-01-polish/screenshots/
           retention-days: 7

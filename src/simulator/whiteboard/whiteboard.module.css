@@ -22,7 +22,7 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .controls {
@@ -70,7 +70,7 @@
 
 .pillDone {
   text-decoration: line-through;
-  opacity: 0.55;
+  color: var(--color-text-secondary);
 }
 
 .pillCurrent {
@@ -89,7 +89,7 @@
 .voiceHint {
   font-size: var(--font-size-xs);
   color: var(--color-warning);
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   cursor: help;
 }
 
@@ -114,7 +114,14 @@
     flex-basis: 100%;
   }
 
+  .controls button,
+  .pill {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+  }
+
   .caption {
+    overflow-wrap: anywhere;
     font-size: var(--font-size-sm);
     line-height: 1.35;
     padding: 0.25rem var(--space-2);
@@ -148,6 +155,8 @@
 .stageWrap {
   flex: 1;
   min-height: 0;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   display: flex;
   overflow: auto;
   overscroll-behavior: contain;

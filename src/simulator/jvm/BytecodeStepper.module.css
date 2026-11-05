@@ -13,7 +13,7 @@
 }
 
 .shown {
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .focus {
@@ -22,7 +22,8 @@
 
 .cardContent {
   position: absolute;
-  overflow: hidden;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .frameStack {
@@ -32,8 +33,8 @@
 }
 
 .consoleContent {
-  background-color: #0f172a;
-  color: #7ee787;
+  background-color: var(--color-terminal-background);
+  color: var(--color-terminal-text);
   font-family: var(--font-family-mono, ui-monospace, Menlo, Consolas, monospace);
   font-size: 11px;
   line-height: 1.55;

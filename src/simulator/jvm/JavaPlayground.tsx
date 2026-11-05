@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import { Alert, Button, Card, Stack } from '@agiler/ui';
+import { Alert, Button, Card, Stack, useTheme } from '@agiler/ui';
 import { useState } from 'react';
 
 /**
@@ -38,6 +38,7 @@ function sourceLinesOf(source: string): Array<{ line: number; text: string }> {
 }
 
 export function JavaPlayground() {
+  const { resolvedTheme } = useTheme();
   const [source, setSource] = useState(DEFAULT_PROGRAM);
   const [output, setOutput] = useState<SimulationOutput | null>(null);
   const [runId, setRunId] = useState(0);
@@ -63,7 +64,7 @@ export function JavaPlayground() {
             <Editor
               height="260px"
               defaultLanguage="java"
-              theme="vs"
+              theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs'}
               value={source}
               onChange={(value) => setSource(value ?? '')}
               options={{

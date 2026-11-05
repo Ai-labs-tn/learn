@@ -262,9 +262,9 @@ export function JvmMachine({
           <g className={g('console')}>
             <rect
               x={L.console.x} y={L.console.y} width={L.console.w} height={L.console.h} rx={10}
-              fill="#0f172a" stroke={INK} strokeWidth={2.4} pathLength={1}
+              fill="var(--color-terminal-background)" stroke={INK} strokeWidth={2.4} pathLength={1}
             />
-            <text x={L.console.x + 12} y={L.console.y + 22} fontSize={10} fill="#4ade80" className={styles.inkTextStrong}>
+            <text x={L.console.x + 12} y={L.console.y + 22} fontSize={10} fill="var(--color-terminal-accent)">
               console — stdout
             </text>
           </g>

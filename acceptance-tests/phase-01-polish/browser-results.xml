@@ -1,0 +1,94 @@
+<testsuites id="" name="" tests="40" failures="0" skipped="0" errors="0" time="104.82494600000001">
+<testsuite name="auth.spec.ts" timestamp="2026-11-05T04:12:02.339Z" hostname="desktop-chromium" tests="12" failures="0" skipped="0" time="21.095" errors="0">
+<testcase name="anonymous users cannot read protected API or Studio" classname="auth.spec.ts" time="1.602">
+</testcase>
+<testcase name="invalid login is clear and clears password" classname="auth.spec.ts" time="1.269">
+</testcase>
+<testcase name="guest can learn, survives refresh, but cannot enter Studio" classname="auth.spec.ts" time="1.777">
+</testcase>
+<testcase name="admin accesses verified Studio; logout invalidates session" classname="auth.spec.ts" time="1.932">
+</testcase>
+<testcase name="logout without CSRF token is denied and session remains valid" classname="auth.spec.ts" time="1.448">
+</testcase>
+<testcase name="existing lesson routes remain accessible to guests" classname="auth.spec.ts" time="8.181">
+</testcase>
+<testcase name="Studio rejects a successful response with invalid content" classname="auth.spec.ts" time="0.85">
+</testcase>
+<testcase name="failed logout is not reported as success and permits recovery" classname="auth.spec.ts" time="0.932">
+</testcase>
+<testcase name="focus revalidation preserves the current learning step" classname="auth.spec.ts" time="0.804">
+</testcase>
+<testcase name="logout in another tab revokes the visible session" classname="auth.spec.ts" time="1.229">
+</testcase>
+<testcase name="revoked session on focus returns to sign in" classname="auth.spec.ts" time="0.732">
+</testcase>
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.339">
+</testcase>
+</testsuite>
+<testsuite name="learning.spec.ts" timestamp="2026-11-05T04:12:02.339Z" hostname="desktop-chromium" tests="3" failures="0" skipped="0" time="6.904" errors="0">
+<testcase name="guest can step, restart and switch caption language" classname="learning.spec.ts" time="0.972">
+</testcase>
+<testcase name="guest can explore DSA topics" classname="learning.spec.ts" time="1.971">
+</testcase>
+<testcase name="guest can run the Java playground without author privileges" classname="learning.spec.ts" time="3.961">
+</testcase>
+</testsuite>
+<testsuite name="theme-responsive.spec.ts" timestamp="2026-11-05T04:12:02.339Z" hostname="desktop-chromium" tests="5" failures="0" skipped="0" time="22.457" errors="0">
+<testcase name="login: light contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="2.027">
+</testcase>
+<testcase name="all authenticated screens: light responsive layout" classname="theme-responsive.spec.ts" time="8.91">
+</testcase>
+<testcase name="login: dark contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.76">
+</testcase>
+<testcase name="all authenticated screens: dark responsive layout" classname="theme-responsive.spec.ts" time="8.874">
+</testcase>
+<testcase name="system theme follows OS changes and explicit preference survives reload" classname="theme-responsive.spec.ts" time="0.886">
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-11-05T04:12:02.339Z" hostname="mobile-chromium" tests="12" failures="0" skipped="0" time="21.45" errors="0">
+<testcase name="anonymous users cannot read protected API or Studio" classname="auth.spec.ts" time="0.364">
+</testcase>
+<testcase name="invalid login is clear and clears password" classname="auth.spec.ts" time="1.359">
+</testcase>
+<testcase name="guest can learn, survives refresh, but cannot enter Studio" classname="auth.spec.ts" time="1.704">
+</testcase>
+<testcase name="admin accesses verified Studio; logout invalidates session" classname="auth.spec.ts" time="2.023">
+</testcase>
+<testcase name="logout without CSRF token is denied and session remains valid" classname="auth.spec.ts" time="1.529">
+</testcase>
+<testcase name="existing lesson routes remain accessible to guests" classname="auth.spec.ts" time="5.571">
+</testcase>
+<testcase name="Studio rejects a successful response with invalid content" classname="auth.spec.ts" time="1.507">
+</testcase>
+<testcase name="failed logout is not reported as success and permits recovery" classname="auth.spec.ts" time="1.787">
+</testcase>
+<testcase name="focus revalidation preserves the current learning step" classname="auth.spec.ts" time="1.541">
+</testcase>
+<testcase name="logout in another tab revokes the visible session" classname="auth.spec.ts" time="2.084">
+</testcase>
+<testcase name="revoked session on focus returns to sign in" classname="auth.spec.ts" time="1.39">
+</testcase>
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.591">
+</testcase>
+</testsuite>
+<testsuite name="learning.spec.ts" timestamp="2026-11-05T04:12:02.339Z" hostname="mobile-chromium" tests="3" failures="0" skipped="0" time="5.979" errors="0">
+<testcase name="guest can step, restart and switch caption language" classname="learning.spec.ts" time="1.791">
+</testcase>
+<testcase name="guest can explore DSA topics" classname="learning.spec.ts" time="1.747">
+</testcase>
+<testcase name="guest can run the Java playground without author privileges" classname="learning.spec.ts" time="2.441">
+</testcase>
+</testsuite>
+<testsuite name="theme-responsive.spec.ts" timestamp="2026-11-05T04:12:02.339Z" hostname="mobile-chromium" tests="5" failures="0" skipped="0" time="22.508" errors="0">
+<testcase name="login: light contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.832">
+</testcase>
+<testcase name="all authenticated screens: light responsive layout" classname="theme-responsive.spec.ts" time="9.346">
+</testcase>
+<testcase name="login: dark contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.813">
+</testcase>
+<testcase name="all authenticated screens: dark responsive layout" classname="theme-responsive.spec.ts" time="8.777">
+</testcase>
+<testcase name="system theme follows OS changes and explicit preference survives reload" classname="theme-responsive.spec.ts" time="0.74">
+</testcase>
+</testsuite>
+</testsuites>

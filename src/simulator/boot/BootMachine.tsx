@@ -344,7 +344,7 @@ export function BootMachine({
             />
             <rect
               x={L.screen.x} y={L.screen.y} width={L.screen.w} height={L.screen.h} rx={6}
-              fill="#0f172a" stroke={C.ink} strokeWidth={1.6} className={styles.crtGlow}
+              fill="var(--color-terminal-background)" stroke={C.ink} strokeWidth={1.6} className={styles.crtGlow}
             />
             <line x1={917} y1={460} x2={917} y2={476} stroke={C.ink} strokeWidth={2.2} />
             <line x1={882} y1={476} x2={952} y2={476} stroke={C.ink} strokeWidth={2.2} />

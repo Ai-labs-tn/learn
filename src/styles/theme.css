@@ -1,0 +1,105 @@
+/* App color authority. Loaded after AGILER themes; never put color tokens in
+   theme.json (its inline overrides would break light/dark foreground pairs).
+   Filled semantic/on pairs meet WCAG AA normal-text contrast in both modes. */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-primary: #2547c9;
+  --color-primary-hover: #1e39a1;
+  --color-primary-active: #1d3382;
+  --color-primary-soft: #eef4ff;
+  --color-on-primary: #ffffff;
+  --color-secondary: #525b6d;
+  --color-secondary-hover: #3d4556;
+  --color-secondary-active: #2a3140;
+  --color-secondary-soft: #eef0f4;
+  --color-on-secondary: #ffffff;
+  --color-success: #15803d;
+  --color-success-soft: #dcfce7;
+  --color-on-success: #ffffff;
+  --color-danger: #b91c1c;
+  --color-danger-hover: #991b1b;
+  --color-danger-soft: #fee2e2;
+  --color-on-danger: #ffffff;
+  --color-warning: #92400e;
+  --color-warning-soft: #fef3c7;
+  --color-on-warning: #ffffff;
+  --color-info: #0369a1;
+  --color-info-soft: #e0f2fe;
+  --color-on-info: #ffffff;
+  --color-background: #f7f8fa;
+  --color-background-elevated: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-hover: #eef0f4;
+  --color-surface-sunken: #eef0f4;
+  --color-surface-overlay: rgb(15 23 42 / 0.5);
+  --color-text-primary: #1a2030;
+  --color-text-secondary: #525b6d;
+  --color-text-muted: #525b6d;
+  --color-text-inverse: #ffffff;
+  --color-disabled-background: #e2e6ee;
+  --color-disabled-text: #525b6d;
+  --color-border: #c3cad6;
+  --color-border-strong: #6b7589;
+  --color-focus-ring: #2547c9;
+  --color-shadow: rgb(15 23 42 / 0.16);
+  --glass-background: rgb(255 255 255 / 0.95);
+  --glass-border: var(--color-border);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-primary: #8eb0ff;
+  --color-primary-hover: #bcd0ff;
+  --color-primary-active: #d9e5ff;
+  --color-primary-soft: #1c2f6b;
+  --color-on-primary: #0b1120;
+  --color-secondary: #c3cad6;
+  --color-secondary-hover: #dde1e8;
+  --color-secondary-active: #eef0f4;
+  --color-secondary-soft: #2a3140;
+  --color-on-secondary: #0b1120;
+  --color-success: #4ade80;
+  --color-success-soft: #123522;
+  --color-on-success: #0b1120;
+  --color-danger: #f87171;
+  --color-danger-hover: #fca5a5;
+  --color-danger-soft: #451d27;
+  --color-on-danger: #0b1120;
+  --color-warning: #fbbf24;
+  --color-warning-soft: #3c2b13;
+  --color-on-warning: #0b1120;
+  --color-info: #38bdf8;
+  --color-info-soft: #10334b;
+  --color-on-info: #0b1120;
+  --color-background: #0b1120;
+  --color-background-elevated: #1a2030;
+  --color-surface: #1a2030;
+  --color-surface-hover: #2a3140;
+  --color-surface-sunken: #080d18;
+  --color-surface-overlay: rgb(2 6 23 / 0.7);
+  --color-text-primary: #f7f8fa;
+  --color-text-secondary: #c3cad6;
+  --color-text-muted: #aab4c5;
+  --color-text-inverse: #0b1120;
+  --color-disabled-background: #2a3140;
+  --color-disabled-text: #c3cad6;
+  --color-border: #525b6d;
+  --color-border-strong: #97a1b3;
+  --color-focus-ring: #8eb0ff;
+  --color-shadow: rgb(0 0 0 / 0.5);
+  --glass-background: rgb(26 32 48 / 0.95);
+}
+
+:root {
+  /* The miniature simulated terminals intentionally retain a CRT identity in
+     both modes. Keep their foreground/background pair together here. */
+  --color-terminal-background: #0f172a;
+  --color-terminal-text: #b2f5ba;
+  --color-terminal-accent: #4ade80;
+  --color-terminal-glow: rgb(74 222 128 / 0.4);
+  --shadow-sm: 0 1px 2px var(--color-shadow);
+  --shadow-md: 0 4px 12px -2px var(--color-shadow);
+  --shadow-lg: 0 12px 28px -6px var(--color-shadow);
+  --shadow-xl: 0 24px 48px -12px var(--color-shadow);
+}

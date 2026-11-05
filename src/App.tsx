@@ -102,7 +102,7 @@ export function App() {
               <Button variant="outline" size="sm" isLoading={auth.loggingOut} onClick={() => void auth.logout()}>
                 {auth.loggingOut ? 'Signing out…' : 'Sign out'}
               </Button>
-              <ThemeToggle />
+              <div className={styles.themeControl}><ThemeToggle /></div>
             </div>
           }
           onNavigate={() => setRoute(routeFromHash())}

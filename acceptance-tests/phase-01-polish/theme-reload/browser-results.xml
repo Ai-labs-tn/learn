@@ -1,0 +1,10 @@
+<testsuites id="" name="" tests="2" failures="0" skipped="0" errors="0" time="6.4945330000000006">
+<testsuite name="theme-responsive.spec.ts" timestamp="2026-11-05T04:16:13.104Z" hostname="desktop-chromium" tests="1" failures="0" skipped="0" time="2.523" errors="0">
+<testcase name="system theme follows OS changes and explicit preference survives reload" classname="theme-responsive.spec.ts" time="2.523">
+</testcase>
+</testsuite>
+<testsuite name="theme-responsive.spec.ts" timestamp="2026-11-05T04:16:13.104Z" hostname="mobile-chromium" tests="1" failures="0" skipped="0" time="0.745" errors="0">
+<testcase name="system theme follows OS changes and explicit preference survives reload" classname="theme-responsive.spec.ts" time="0.745">
+</testcase>
+</testsuite>
+</testsuites>

@@ -7,9 +7,11 @@ import styles from './auth.module.css';
 function SessionFrame({ children }: { children: ReactNode }) {
   return (
     <main className={styles.page}>
-      <div className={styles.theme}><ThemeToggle /></div>
       <section className={styles.card} aria-labelledby="session-title">
-        <p>Learn with Saravana</p>
+        <header className={styles.cardHeader}>
+          <p className={styles.brand}>Learn with Saravana</p>
+          <div className={styles.themeControl}><ThemeToggle /></div>
+        </header>
         {children}
       </section>
     </main>

@@ -22,7 +22,7 @@ async function screenshot(page: Page, name: string, project: string) {
     if (fullText) await expect(caption).toContainText(fullText, { timeout: 15_000 });
   }
   await page.screenshot({
-    path: path.join('acceptance-tests/phase-01', process.env.LEARN_TEST_BASE_URL ? 'built/screenshots' : 'screenshots', `${project}-${name}.png`),
+    path: path.join(process.env.LEARN_EVIDENCE_DIR ?? 'acceptance-tests/phase-01', process.env.LEARN_TEST_BASE_URL ? 'built/screenshots' : 'screenshots', `${project}-${name}.png`),
     fullPage: true,
     scale: 'css',
   });
