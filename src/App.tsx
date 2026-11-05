@@ -109,6 +109,7 @@ export function App() {
           }
           onNavigate={() => setRoute(routeFromHash())}
         >
+          {auth.state.warning && <p role="status">{auth.state.warning}</p>}
           {auth.logoutError && <p className={styles.error} role="alert">{auth.logoutError}</p>}
           {auth.loggingOut && <p role="status">Signing out…</p>}
           {route === 'studio'

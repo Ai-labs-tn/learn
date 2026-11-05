@@ -1,0 +1,39 @@
+Phase 3 backend local validation
+Repository base: 2b259fe
+Working directory: D:\AILabsTN\Workspace_2_0\learn
+Interpreter: repository .venv\Scripts\python.exe
+Database scope: isolated temporary SQLite files; optional local PostgreSQL skipped
+
+1. Initial focused implementation run:
+   .\.venv\Scripts\python.exe -m pytest backend/test_studio.py -q
+   1 failed, 14 passed, 15 skipped, 1 warning in 86.72s.
+   Failure was a test fixture issue: the existing invalid scene-ID collision case
+   used boot-pilot but the new test changed the lesson ID to new-lesson, making
+   that case valid. Corrected the validation matrix to use pilot_document().
+
+2. Full backend run after correction:
+   .\.venv\Scripts\python.exe -m pytest backend -q
+   2 failed, 157 passed, 33 skipped, 1 warning in 352.01s.
+   All content/Phase 3 tests passed. The two failures were existing
+   test_uvicorn_http_smoke variants (backend.main:app and main:app), both hitting
+   httpx.ReadTimeout during guest login with the existing two-second timeout.
+   No production code or test timeout was changed to hide these failures.
+
+3. Isolated rerun of both failed Uvicorn smoke variants:
+   .\.venv\Scripts\python.exe -m pytest backend/test_api.py -k uvicorn_http_smoke -q
+   2 passed, 56 deselected, 1 warning in 10.06s.
+
+4. Static checks:
+   .\.venv\Scripts\python.exe -m compileall -q backend
+   Exit 0.
+   git diff --check
+   Exit 0 (only Git LF-to-CRLF working-copy notices).
+
+Warning: existing StarletteDeprecationWarning for httpx-based TestClient.
+PostgreSQL skips are not claimed as PostgreSQL validation.
+5. Final complete backend rerun (no code/test-timeout changes between full runs):
+   .\.venv\Scripts\python.exe -m pytest backend -q
+   159 passed, 33 skipped, 1 warning in 135.72s (0:02:15).
+   Exit 0. Both existing Uvicorn smoke variants passed in this full run.
+   Final local backend suite is green. Optional PostgreSQL was not configured
+   and remains unverified locally; skips are not counted as passing PG coverage.

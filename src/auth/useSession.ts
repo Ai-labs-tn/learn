@@ -6,7 +6,7 @@ type SessionState =
   | { status: 'loading' }
   | { status: 'error'; message?: string }
   | { status: 'anonymous'; message?: string }
-  | { status: 'authenticated'; session: Session; focusHeading?: boolean };
+  | { status: 'authenticated'; session: Session; focusHeading?: boolean; warning?: string };
 
 type CheckOptions = {
   anonymousMessage?: string;
@@ -54,9 +54,17 @@ export function useSession() {
       }
     } catch (error) {
       if (!mounted.current || generation.current !== current || controller.signal.aborted) return;
-      setState(error instanceof ApiError && error.status === 401
-        ? { status: 'anonymous', message: options.anonymousMessage }
-        : { status: 'error', message: options.errorMessage });
+      if (options.background && !(error instanceof ApiError && error.status === 401)) {
+        // A temporary network failure must not unmount a dirty editor. Every write
+        // remains server-authorized; known revoked sessions still return to login.
+        setState((previous) => previous.status === 'authenticated'
+          ? { ...previous, warning: 'Connection interrupted. Your local work is retained; server access will be checked again.' }
+          : { status: 'error', message: options.errorMessage });
+      } else {
+        setState(error instanceof ApiError && error.status === 401
+          ? { status: 'anonymous', message: options.anonymousMessage }
+          : { status: 'error', message: options.errorMessage });
+      }
     } finally {
       if (checkController.current === controller) checkController.current = null;
     }

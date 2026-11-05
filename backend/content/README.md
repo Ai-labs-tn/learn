@@ -1,10 +1,10 @@
-# Lesson content contract — Phase 2 / schemaVersion 1
+# Lesson content contract — Phase 3 / schemaVersion 1
 
 The authoritative validator is `backend/content/schema.py` (Pydantic v2, strict types,
 unknown fields forbidden **at every level**). The shipped example is
 `boot-pilot.v1.json`, lesson ID **`boot-pilot`**. Frontend implementations must follow
-this contract, not the legacy simulation objects. There is no publish/history API in
-Phase 2; saving a draft never changes published content. `/api/studio/status` remains
+this contract, not the legacy simulation objects. Creating, saving and restoring a
+draft never changes published content; only explicit publication does. `/api/studio/status` remains
 `{"status":"placeholder"}`.
 
 ## Exact document shape
@@ -112,12 +112,53 @@ are no direct revision/draft-publication lookup routes available to learners.
   before handler mutation, including for a missing version header. For multiple
   simultaneous errors, FastAPI body validation may return 422 before handler-level
   precondition checks. Reload after a 409 and merge deliberately; never retry blindly.
-* No create, publish, restore, delete, AI or backup HTTP routes in Phase 2.
+* `POST /api/studio/lessons` — admin + same-origin/CSRF; body is a complete
+  validated `LessonDocument`, not a wrapper. **201** exactly
+  `{document,version:1,baseRevision:null}`, **`ETag: "1"`**. Creates an unpublished
+  lesson and draft atomically. Duplicate ID: **409**, invalid document: **422**.
+  The Studio index includes this draft with `publishedRevision:null`; the learner
+  index excludes it and learner detail returns **404** until first publication.
+* `POST /api/studio/lessons/{id}/publish` — admin + same-origin/CSRF; no request
+  body needed. Requires **`If-Match` copied from the current draft ETag**, not the
+  published revision. **200** exactly `{document,version,baseRevision,revision,publishedAt}`
+  plus the new draft **ETag**. Atomically creates the next immutable revision
+  (1 for a new lesson), advances the publication pointer, sets `baseRevision` to
+  that revision, increments draft version by 1, and appends an attributed audit.
+  The returned `document` is the published draft snapshot. Publishing identical
+  content with a *fresh* ETag is allowed; reusing an old ETag cannot publish twice.
+* `GET /api/studio/lessons/{id}/history` — admin; **200** array of exactly
+  `{revision,title,publishedAt}`, newest revision first. No document or draft text.
+  Unpublished existing lesson: `[]`; missing lesson: **404**. Guests: **403**.
+* `POST /api/studio/lessons/{id}/restore` — admin + same-origin/CSRF and current
+  draft **If-Match**; body **exactly** `{"revision":1}`. Revision must be a positive
+  JSON integer (1–2147483647); strings, floats, booleans, null and extra fields
+  are **422**. **200** exactly `{document,version,baseRevision}` plus new draft
+  **ETag**. Copies that lesson's immutable revision document into the draft,
+  preserving its lesson ID, increments version by 1 and appends an attributed
+  audit with the source revision. `baseRevision` stays unchanged (the current draft
+  publication base); **the published pointer does not change**. Missing lesson or
+  revision: **404**, with no draft/version/audit changes. Publish explicitly to
+  make the restored content visible to learners as a *new* revision.
+* Save, publish and restore share the same strong ETag rules: missing **428**;
+  stale/malformed **409**; missing draft **404**. Reload after a conflict; never
+  silently overwrite or auto-publish using a freshly fetched version. Their
+  successful status is **200**. Authentication/CSRF precedes mutation; body
+  validation can precede handler-level ETag checks when both are invalid.
+* No delete, AI or backup HTTP routes. Learners cannot fetch historical revisions
+  or Studio history/drafts. Anonymous known routes require authentication (**401**).
 
 Times are UTC ISO-8601 strings ending in `Z`. Revision/version integers begin at 1.
 Strong quoted ETags are mandatory; clients must not use unquoted JSON version numbers
-as raw If-Match values. Saving uses one atomic conditional SQL UPDATE plus audit
-append in a single transaction; two clients saving version N cannot both succeed.
+as raw If-Match values. Save, publish and restore first claim the draft with one
+atomic conditional SQL UPDATE, incrementing version and taking the database write
+lock before reading content or allocating a revision. This serializes all three
+operations on the same draft in SQLite and PostgreSQL: two clients using version N
+cannot both succeed, even across different operations. Publication row, pointer,
+draft base/version and audit append commit in one transaction; any failure rolls
+all of them back. Creation likewise commits lesson, draft and audit together.
+Audit actions are `draft_created`, `draft_updated`, `lesson_published`, and
+`draft_restored`; audit `revision` on restore records the source, not publication.
+Phase 3 reuses the existing schema and immutable triggers; no new migration.
 
 ## Persistence, import, backup and rollback
 
@@ -155,8 +196,9 @@ trusted operator DB access, not a browser admin cookie. Keep backups private bec
 they include unpublished drafts; file permissions follow the operator's local ACL
 and umask. It refuses to overwrite an existing output file. Export is a content
 backup, not a PostgreSQL disaster-recovery backup or an automatic restore command.
-Retain a normal database backup separately. Restore tooling/publish APIs are deferred;
-validate backed-up documents with `LessonDocument` before any future restore.
+Retain a normal database backup separately. Backup-file restore tooling is deferred;
+the Studio restore API only copies an existing immutable revision into a draft.
+Validate backed-up documents with `LessonDocument` before any future backup restore.
 
 For rollback, roll back application code and **retain these additive tables**.
 The migration downgrade destroys Phase 2 content and is for disposable databases
