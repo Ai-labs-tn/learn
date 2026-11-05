@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "id": "boot-pilot",
+  "title": "Power on, firmware and POST",
+  "description": "Follow power-on through firmware startup and basic hardware checks. This conceptual boot-machine diagram stops before the operating system loads.",
+  "scenes": [
+    {
+      "id": "power-on",
+      "title": "Power on",
+      "beats": [
+        {
+          "id": "power-arrives",
+          "narration": {
+            "en": "Watch the board as power arrives. The power supply brings its output voltages into a stable range so the computer can begin startup. Our diagram shows the idea, not the exact electrical timing.",
+            "ta": "மின்சாரம் வரும்போது பலகையைப் பாருங்கள். கணினி தொடங்குவதற்கு மின் வழங்கி தனது வெளியீட்டு மின்னழுத்தங்களை நிலைப்படுத்துகிறது. இந்தப் படம் கருத்தை விளக்குகிறது; துல்லியமான மின் நேர வரிசையை அல்ல."
+          },
+          "visual": {"component": "boot-machine", "focus": "power", "action": "focus"}
+        },
+        {
+          "id": "cpu-reset",
+          "narration": {
+            "en": "The processor begins from a defined reset state. Its first instructions come from firmware in non-volatile storage, not from an operating system already running in RAM.",
+            "ta": "செயலி வரையறுக்கப்பட்ட reset நிலையிலிருந்து தொடங்குகிறது. அதன் முதல் instructions, மின்சாரம் இல்லாமலும் தகவலை வைத்திருக்கும் firmware சேமிப்பகத்திலிருந்து வருகின்றன. RAM-இல் ஏற்கெனவே இயங்கும் operating system-இலிருந்து அல்ல."
+          },
+          "visual": {"component": "boot-machine", "focus": "cpu", "action": "signal", "from": "power", "to": "cpu"}
+        },
+        {
+          "id": "volatile-memory",
+          "narration": {
+            "en": "RAM does not preserve a previous session when power is removed. The disk and firmware storage retain their contents. At this point the operating system has not been loaded; RAM must first be initialized.",
+            "ta": "மின்சாரம் நீங்கும்போது முந்தைய அமர்வின் தகவலை RAM தக்கவைக்காது. Disk மற்றும் firmware சேமிப்பகம் தகவலைத் தக்கவைக்கும். இப்போது operating system ஏற்றப்படவில்லை; முதலில் RAM தயார்படுத்தப்பட வேண்டும்."
+          },
+          "visual": {"component": "boot-machine", "focus": "ram", "action": "status", "status": "idle"}
+        }
+      ]
+    },
+    {
+      "id": "firmware-startup",
+      "title": "Firmware starts the machine",
+      "beats": [
+        {
+          "id": "firmware-instructions",
+          "narration": {
+            "en": "Firmware is startup software, commonly UEFI on modern computers and BIOS on older ones. The CPU executes this code to initialize the platform. Firmware is software stored on a chip, not the chip itself.",
+            "ta": "Firmware என்பது தொடக்க மென்பொருள். நவீன கணினிகளில் பொதுவாக UEFI; பழையவற்றில் BIOS. தளத்தைத் தயார்படுத்த CPU இந்த நிரலை இயக்குகிறது. Firmware என்பது chip-இல் சேமிக்கப்பட்ட மென்பொருள்; chip தானே அல்ல."
+          },
+          "visual": {"component": "boot-machine", "focus": "firmware", "action": "signal", "from": "firmware", "to": "cpu"}
+        },
+        {
+          "id": "firmware-initializes",
+          "narration": {
+            "en": "The firmware coordinates early hardware initialization, including making memory usable. The highlighted path represents control conceptually; real systems use several buses and platform-specific startup steps.",
+            "ta": "நினைவகத்தைப் பயன்படுத்தத் தயாராக்குவது உள்ளிட்ட தொடக்க வன்பொருள் பணிகளை firmware ஒருங்கிணைக்கிறது. ஒளிரும் பாதை கட்டுப்பாட்டைக் கருத்தளவில் காட்டுகிறது. உண்மையான கணினிகளில் பல buses மற்றும் தளத்திற்கேற்ற தொடக்கப் படிகள் உள்ளன."
+          },
+          "visual": {"component": "boot-machine", "focus": "firmware", "action": "status", "status": "checking"}
+        }
+      ]
+    },
+    {
+      "id": "post-checks",
+      "title": "POST: power-on self-test",
+      "beats": [
+        {
+          "id": "memory-check",
+          "narration": {
+            "en": "During power-on self-test, or POST, firmware performs basic hardware checks. Memory initialization and checks help determine whether startup can continue. Their scope and order vary by machine; POST is not a complete test of every component.",
+            "ta": "Power-on self-test, அதாவது POST-இன்போது firmware அடிப்படை வன்பொருள் சோதனைகளைச் செய்கிறது. நினைவகத் தயாரிப்பும் சோதனைகளும் தொடக்கத்தைத் தொடர முடியுமா என்பதை அறிய உதவுகின்றன. அவற்றின் வரிசையும் அளவும் கணினிக்கு ஏற்ப மாறும். POST என்பது எல்லாக் கூறுகளின் முழுமையான சோதனை அல்ல."
+          },
+          "visual": {"component": "boot-machine", "focus": "ram", "action": "status", "status": "checking"}
+        },
+        {
+          "id": "checks-pass",
+          "narration": {
+            "en": "A passed check means this illustrated startup check succeeded, not that the whole computer is fault-free. If a critical check fails, firmware may stop and report an error instead of continuing.",
+            "ta": "Passed என்பது இங்கே காட்டப்பட்ட தொடக்கச் சோதனை வெற்றியடைந்தது என்பதைத்தான் குறிக்கிறது; கணினியில் எந்தப் பிழையும் இல்லை என்று பொருளல்ல. முக்கிய சோதனை தோல்வியடைந்தால் firmware தொடராமல் பிழையை அறிவிக்கலாம்."
+          },
+          "visual": {"component": "boot-machine", "focus": "ram", "action": "status", "status": "passed"}
+        },
+        {
+          "id": "before-os",
+          "narration": {
+            "en": "We have reached the end of this pilot: power is stable, firmware has started and basic checks have passed. The operating system has not loaded yet. Choosing a boot target and handing control to a bootloader come later.",
+            "ta": "இந்தப் பாடத்தின் முடிவை அடைந்தோம்: மின்சாரம் நிலையாக உள்ளது, firmware தொடங்கியுள்ளது, அடிப்படைச் சோதனைகள் வெற்றி பெற்றுள்ளன. Operating system இன்னும் ஏற்றப்படவில்லை. Boot இலக்கைத் தேர்ந்தெடுத்து bootloader-க்கு கட்டுப்பாட்டை வழங்குவது அடுத்த கட்டம்."
+          },
+          "visual": {"component": "boot-machine", "focus": "overview", "action": "focus"}
+        }
+      ]
+    }
+  ]
+}

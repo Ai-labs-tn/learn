@@ -1,6 +1,8 @@
-# Learning Studio API — Phase 1
+# Learning Studio API — Phases 1–2
 
-Python 3.12+ / FastAPI / SQLAlchemy 2 / Alembic. Only Phase 1 authentication and the admin Studio placeholder are implemented. The frontend build and API are served by one process/origin; do not expose a separate cross-origin auth service.
+Python 3.12+ / FastAPI / SQLAlchemy 2 / Alembic. Phase 1 authentication and Phase 2 versioned lesson content are implemented; publication/editor workflows remain deferred. The admin Studio status placeholder is preserved. The frontend build and API are served by one process/origin; do not expose a separate cross-origin auth service.
+
+See [content/README.md](content/README.md) for the exact lesson JSON v1 contract, published/draft API, quoted ETags, idempotent pilot import and private content-backup CLI.
 
 ## Local setup (from the repository root)
 
@@ -32,7 +34,7 @@ Passwords are scrypt hashed with per-password random salts (N=16,384, r=8, p=5, 
 
 ## Migrations, startup and deployment handoff
 
-`backend/migrations/versions/0001_auth.py` is an actual Alembic revision creating users, sessions and persistent throttle tables. Additive revision `0002_throttle_cleanup_index.py` adds a `(window_start, key)` index for bounded expiry cleanup without replacing existing buckets, accounts or sessions. The version is recorded in `alembic_version`. No `create_all` shortcut is used.
+`backend/migrations/versions/0001_auth.py` is an actual Alembic revision creating users, sessions and persistent throttle tables. Additive revision `0002_throttle_cleanup_index.py` adds a `(window_start, key)` index for bounded expiry cleanup without replacing existing buckets, accounts or sessions. Additive revision `0003_lesson_content.py` adds lessons, mutable drafts, immutable revisions and append-only audit events without changing auth data. The version is recorded in `alembic_version`. No `create_all` shortcut is used.
 
 ```powershell
 # Migrate and bootstrap (idempotent, never resets existing passwords):
@@ -41,7 +43,7 @@ Passwords are scrypt hashed with per-password random salts (N=16,384, r=8, p=5, 
 .\.venv\Scripts\python.exe -m backend.bootstrap --migrate-only
 ```
 
-Every application startup also upgrades to Alembic head and bootstraps missing accounts before readiness. This supports free Render services without a shell or predeploy command. Production uses PostgreSQL transaction advisory locks to serialize concurrent migrations and account provisioning. Local SQLite is intended for one development server, not concurrent production workers. Invalid/missing configuration, database failure or missing initial private passwords fails startup, not silent insecure fallback.
+Every application startup also upgrades to Alembic head, bootstraps missing accounts and imports the missing bilingual `boot-pilot` publication/draft before readiness. Existing authored content is never overwritten; PostgreSQL pilot import has its own transaction advisory lock. This supports free Render services without a shell or predeploy command. Production uses PostgreSQL transaction advisory locks to serialize concurrent migrations and account provisioning. Local SQLite is intended for one development server, not concurrent production workers. Invalid/missing configuration, database failure or missing initial private passwords fails startup, not silent insecure fallback.
 
 Deployment integration (not provisioned by this change): use a **single web service**, repository root working directory, install `backend/requirements.txt`, build the frontend into `dist/`, and start:
 
@@ -62,7 +64,8 @@ All API responses use `Cache-Control: no-store`. No CORS wildcard or bearer-toke
 - `GET /api/auth/me`: same response, or 401 if missing, expired or invalid session. Restores frontend user/CSRF state on refresh.
 - `POST /api/auth/logout`: authenticated, requires exact `Origin` and `X-CSRF-Token` from login/me. Returns `{ "success": true }`, deletes the server record and expires the cookie. Replaying the old cookie fails.
 - `GET /api/studio/status`: admin only, `{ "status": "placeholder" }`; unauthenticated 401 / guest 403.
-- Existing eight feature-list placeholders require authentication and return empty arrays to either role. There are no shared-content mutation endpoints yet.
+- Existing eight feature-list placeholders require authentication and return empty arrays to either role.
+- `GET /api/lessons` and `GET /api/lessons/{id}` expose current published content to authenticated learners. Admin-only `/api/studio/lessons` and draft GET/PUT support draft reads and CSRF-protected, If-Match-versioned saves. See the [full content contract](content/README.md); draft saves never publish.
 - OTP request/verify and password forgot/reset routes return **404** without processing bodies or issuing codes. Unknown `/api` paths return JSON 404, never frontend HTML.
 
 Reusable dependencies in `backend/auth.py`: `authenticated`, `csrf_protected`, and `admin_only`. **All future admin mutations must depend on `admin_only`** (which checks CSRF and origin for unsafe methods). Non-admin authenticated mutations must use `csrf_protected`. Studio GET is read-only and does not require a CSRF header.

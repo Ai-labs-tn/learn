@@ -294,7 +294,7 @@ def test_migration_schema_and_revision(client):
     inspector = inspect(client.app.state.engine)
     assert {"users", "auth_sessions", "login_attempts", "alembic_version"} <= set(inspector.get_table_names())
     with client.app.state.engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0002_throttle_cleanup_index"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0003_lesson_content"
     assert any(index["column_names"] == ["expires_at"] for index in inspector.get_indexes("auth_sessions"))
 
 

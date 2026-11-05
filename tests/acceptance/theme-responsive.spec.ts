@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import path from 'node:path';
 
-const evidence = 'acceptance-tests/phase-01-polish';
+const evidence = process.env.LEARN_EVIDENCE_DIR ?? 'acceptance-tests/phase-01-polish';
 const sizes = [
   { width: 320, height: 740 },
   { width: 390, height: 844 },
@@ -71,6 +71,7 @@ for (const theme of ['light', 'dark'] as const) {
       ['boot-os', 'How a computer boots'], ['jvm-runtime', 'Inside the JVM'],
       ['bytecode-stepper', 'Bytecode stepper'], ['dsa', 'Binary search tree'],
       ['write-your-own', 'Your Java'], ['studio', 'Learning Studio'],
+      ['lessons', 'Lesson library'],
     ] as const;
     for (const [route, heading] of routes) {
       await page.goto(`/#/${route}`);

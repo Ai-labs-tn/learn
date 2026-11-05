@@ -11,6 +11,7 @@ import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
 import { DsaScreen } from './screens/DsaScreen';
 import { JvmRuntimeScreen } from './screens/JvmRuntimeScreen';
+import { PublishedLessonsScreen } from './screens/PublishedLessonsScreen';
 
 /**
  * The playground is lazy: Monaco's editor core is heavy and belongs only to the track that
@@ -35,6 +36,7 @@ const TRACKS: Record<TrackId, ReactNode> = {
     </Suspense>
   ),
   dsa: <DsaScreen />,
+  lessons: <PublishedLessonsScreen />,
 };
 
 type Route = TrackId | 'studio';

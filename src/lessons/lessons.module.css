@@ -1,0 +1,16 @@
+.library, .reader { display: grid; gap: var(--space-4); min-inline-size: 0; }
+.library { max-inline-size: 72rem; margin-inline: auto; }
+.reader { padding: clamp(1rem, 3vw, 2rem); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); }
+.readerHeader, .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.readerHeader > div { min-inline-size: 0; }
+.reader h2, .reader h3 { overflow-wrap: anywhere; }
+.reader button { min-block-size: 44px; max-inline-size: 100%; white-space: normal; line-height: 1.4; }
+.eyebrow { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.visual { display: grid; gap: var(--space-3); padding: var(--space-4); background: var(--color-surface-sunken); border-radius: var(--radius-md); }
+.parts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.part { display: grid; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: var(--color-surface); overflow-wrap: anywhere; }
+.part span { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.focus { border-color: var(--color-primary); outline: 2px solid var(--color-primary); background: var(--color-primary-soft); }
+.focusNote { color: var(--color-text-primary); font-weight: var(--font-weight-semibold); overflow-wrap: anywhere; }
+.caption { padding: var(--space-4); border-inline-start: 3px solid var(--color-primary); background: var(--color-surface-sunken); color: var(--color-text-primary); line-height: 1.7; overflow-wrap: anywhere; }
+@media (min-width: 48rem) { .parts { grid-template-columns: repeat(5, minmax(0, 1fr)); } }

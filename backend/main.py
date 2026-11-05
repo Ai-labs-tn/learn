@@ -14,6 +14,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import sessionmaker
 from backend.auth import admin_only, authenticated, router as auth_router
 from backend.bootstrap import bootstrap
+from backend.content.api import router as content_router
+from backend.content.store import import_pilot
 from backend.database import make_engine, migrate
 from backend.settings import Settings
 from backend.throttle_cleanup import run_cleanup
@@ -27,6 +29,7 @@ def create_app(settings: Settings | None = None):
         try:
             migrate(engine)
             bootstrap(engine)
+            import_pilot(engine)
             app.state.settings = config
             app.state.engine = engine
             app.state.sessions = sessionmaker(engine, expire_on_commit=False)
@@ -55,6 +58,7 @@ def create_app(settings: Settings | None = None):
         return {"ok": True, "service": "learn-with-saravana"}
 
     app.include_router(auth_router)
+    app.include_router(content_router)
 
     @app.get("/api/studio/status", dependencies=[Depends(admin_only)])
     def studio_status():
