@@ -1,0 +1,10 @@
+<testsuites id="" name="" tests="2" failures="0" skipped="0" errors="0" time="8.396459">
+<testsuite name="lesson-integration.spec.ts" timestamp="2026-11-05T13:35:30.871Z" hostname="desktop-chromium" tests="1" failures="0" skipped="0" time="3.534" errors="0">
+<testcase name="guest reads a real persisted publication; drafts remain server-protected" classname="lesson-integration.spec.ts" time="3.534">
+</testcase>
+</testsuite>
+<testsuite name="lesson-integration.spec.ts" timestamp="2026-11-05T13:35:30.871Z" hostname="mobile-chromium" tests="1" failures="0" skipped="0" time="3.531" errors="0">
+<testcase name="guest reads a real persisted publication; drafts remain server-protected" classname="lesson-integration.spec.ts" time="3.531">
+</testcase>
+</testsuite>
+</testsuites>

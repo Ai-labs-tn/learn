@@ -70,6 +70,23 @@ class LessonDraft(Base):
     updated_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
 
+class AiUsage(Base):
+    __tablename__ = "ai_usage"
+    __table_args__ = (
+        CheckConstraint("status IN ('ok', 'error', 'blocked')", name="valid_ai_status"),
+        CheckConstraint("input_chars >= 0 AND output_chars >= 0", name="non_negative_ai_sizes"),
+        Index("ix_ai_usage_occurred_at_status", "occurred_at", "status"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    actor_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    mode: Mapped[str] = mapped_column(String(32))
+    model: Mapped[str] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(String(16))
+    input_chars: Mapped[int] = mapped_column(Integer)
+    output_chars: Mapped[int] = mapped_column(Integer)
+    occurred_at: Mapped[str] = mapped_column(String(32))
+
+
 class LessonAudit(Base):
     __tablename__ = "lesson_audit_events"
     __table_args__ = (Index("ix_lesson_audit_lesson_id_id", "lesson_id", "id"),)

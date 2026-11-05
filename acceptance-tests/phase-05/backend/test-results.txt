@@ -1,0 +1,47 @@
+Phase 5 backend local validation
+Repository: D:\AILabsTN\Workspace_2_0\learn
+Working directory: D:\AILabsTN\Workspace_2_0\learn
+Interpreter: repository .venv\Scripts\python.exe
+Database scope: isolated temporary SQLite files; optional local PostgreSQL skipped
+Provider scope: no real OpenRouter/network calls in any test (monkeypatched startup
+catalogue verification + httpx.MockTransport for all chat traffic); .env.render was
+not read.
+
+1. Initial focused AI suite run (during development):
+   .\.venv\Scripts\python.exe -m pytest backend/test_ai.py -q
+   2 failed, 80 passed, 1 skipped-deselected-equivalent, 1 warning in 71.93s.
+   Failures were test-code issues only: a wrong local TestClient import, and the
+   daily-limit reset test injecting only the date while usage rows kept real
+   timestamps. Fixed by importing TestClient at module scope and monkeypatching
+   both today_utc and timestamp. No production code was changed to make tests pass.
+
+2. Focused AI suite after correction:
+   .\.venv\Scripts\python.exe -m pytest backend/test_ai.py -q
+   82 passed, 1 warning in 73.10s.
+
+3. Full backend run (first attempt):
+   .\.venv\Scripts\python.exe -m pytest backend -q --junitxml=acceptance-tests/phase-05/backend/junit.xml
+   1 failed, 240 passed, 33 skipped, 1 warning in 670.76s.
+   The single failure was pre-existing test_content.py::test_export_cli_roundtrip
+   _no_secrets_or_overwrite[sqlite] failing with subprocess.TimeoutExpired
+   "timed out after -432.98 seconds" — a negative timeout caused by a transient
+   local monotonic-clock anomaly on this Windows host, in a subprocess-based test
+   unrelated to the Phase 5 changes (export CLI only). No production code or test
+   was changed for it.
+
+4. Isolated rerun of that test:
+   .\.venv\Scripts\python.exe -m pytest "backend/test_content.py::test_export_cli_roundtrip_no_secrets_or_overwrite" -q
+   1 passed, 1 skipped, 1 warning in 5.01s.
+
+5. Final full backend run (clean, evidence copy):
+   .\.venv\Scripts\python.exe -m pytest backend -q --junitxml=acceptance-tests/phase-05/backend/junit.xml
+   241 passed, 33 skipped, 1 warning in 210.61s. Exit 0.
+   Output saved to full-backend-tests.txt and junit.xml. The 33 skips are the
+   opt-in disposable PostgreSQL tests (TEST_POSTGRES_URL not configured) plus the
+   starlette/httpx TestClient deprecation warning carried over from prior phases.
+
+6. Static checks:
+   .\.venv\Scripts\python.exe -m compileall -q backend
+   Exit 0.
+
+No frontend, CI, packaging, commit or deployment actions were taken.

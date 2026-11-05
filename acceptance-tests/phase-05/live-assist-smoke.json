@@ -1,0 +1,10 @@
+{
+  "ai_status": {
+    "code": 401,
+    "detail": "Authentication required"
+  },
+  "assist_code": 200,
+  "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+  "suggestion_chars": 91,
+  "suggestion_preview": "When input power is applied, the power supply regulates and stabilizes its output voltages."
+}

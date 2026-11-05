@@ -1,8 +1,8 @@
-# Learning Studio API — Phases 1–2
+# Learning Studio API — Phases 1–5
 
-Python 3.12+ / FastAPI / SQLAlchemy 2 / Alembic. Phase 1 authentication and Phase 2 versioned lesson content are implemented; publication/editor workflows remain deferred. The admin Studio status placeholder is preserved. The frontend build and API are served by one process/origin; do not expose a separate cross-origin auth service.
+Python 3.12+ / FastAPI / SQLAlchemy 2 / Alembic. Phase 1 authentication, Phase 2 versioned lesson content, Phase 3 draft/publication lifecycle and Phase 5 admin-only AI assistance are implemented; the Phase 5 AI frontend integration remains deferred. The admin Studio status placeholder is preserved. The frontend build and API are served by one process/origin; do not expose a separate cross-origin auth service.
 
-See [content/README.md](content/README.md) for the exact lesson JSON v1 contract, published/draft API, quoted ETags, idempotent pilot import and private content-backup CLI.
+See [content/README.md](content/README.md) for the exact lesson JSON v1 contract, published/draft API, quoted ETags, idempotent pilot import and private content-backup CLI, and [ai/README.md](ai/README.md) for the Phase 5 admin-only AI assistance contract.
 
 ## Local setup (from the repository root)
 
@@ -29,12 +29,17 @@ Configure secrets privately in your process environment or an untracked `backend
 | `LOGIN_LIMIT` | Default 10 attempts per IP **and** exact username per window. Counts successful attempts too to bound hash CPU. Positive integer. |
 | `LOGIN_WINDOW_SECONDS` | Default 300, positive integer. |
 | `DIST_DIR` | Defaults to repository `dist/`. API routes always precede SPA fallback. |
+| `OPEN_ROUTER_API_KEY` | Optional. Absent/empty disables AI assistance (assist 503, never fail-open). Present ⇒ required, server-side only, never logged. |
+| `LEARN_AI_MODELS` | Optional ordered comma-separated OpenRouter model ids. Defaults to three zero-cost models. With a key present, models must be verifiable as free at startup or startup fails. |
+| `LEARN_AI_DAILY_LIMIT` | Default 100 charged AI requests per UTC day per workspace (shared by all admins). |
+| `LEARN_AI_TIMEOUT_SECONDS` | Default 45 per provider attempt. |
+| `LEARN_AI_MAX_OUTPUT_CHARS` | Default 6000; longer provider output is rejected (502), never truncated. |
 
 Passwords are scrypt hashed with per-password random salts (N=16,384, r=8, p=5, 64-byte result; OWASP's memory-constrained profile). The bootstrap secrets are read only in bootstrap, never runtime login. Existing account hashes are never changed by bootstrap, even if bootstrap env values change; the variables may be removed after initial provisioning. Both missing accounts are created in a single transaction. Password reset/rotation UI is intentionally not implemented; remove active sessions and use a separately reviewed operator procedure for rotation rather than reviving demo reset routes.
 
 ## Migrations, startup and deployment handoff
 
-`backend/migrations/versions/0001_auth.py` is an actual Alembic revision creating users, sessions and persistent throttle tables. Additive revision `0002_throttle_cleanup_index.py` adds a `(window_start, key)` index for bounded expiry cleanup without replacing existing buckets, accounts or sessions. Additive revision `0003_lesson_content.py` adds lessons, mutable drafts, immutable revisions and append-only audit events without changing auth data. The version is recorded in `alembic_version`. No `create_all` shortcut is used.
+`backend/migrations/versions/0001_auth.py` is an actual Alembic revision creating users, sessions and persistent throttle tables. Additive revision `0002_throttle_cleanup_index.py` adds a `(window_start, key)` index for bounded expiry cleanup without replacing existing buckets, accounts or sessions. Additive revision `0003_lesson_content.py` adds lessons, mutable drafts, immutable revisions and append-only audit events without changing auth data. Additive revision `0004_ai_usage.py` adds the `ai_usage` accounting table (mode/model/status/sizes only — no prompt or response text) without changing content or auth data. The version is recorded in `alembic_version`. No `create_all` shortcut is used.
 
 ```powershell
 # Migrate and bootstrap (idempotent, never resets existing passwords):
@@ -67,6 +72,7 @@ All API responses use `Cache-Control: no-store`. No CORS wildcard or bearer-toke
 - Existing eight feature-list placeholders require authentication and return empty arrays to either role.
 - `GET /api/lessons` and `GET /api/lessons/{id}` expose current published content to authenticated learners. Admin-only `/api/studio/lessons` and draft GET/PUT support draft reads and CSRF-protected, If-Match-versioned saves. See the [full content contract](content/README.md); draft saves never publish.
 - OTP request/verify and password forgot/reset routes return **404** without processing bodies or issuing codes. Unknown `/api` paths return JSON 404, never frontend HTML.
+- Phase 5 admin-only AI assistance: `GET /api/studio/ai/status` and CSRF-protected `POST /api/studio/ai/assist` return advisory plain-text suggestions; AI never modifies lessons, drafts or publications, and provider credentials never leave the server. See the [full AI contract](ai/README.md).
 
 Reusable dependencies in `backend/auth.py`: `authenticated`, `csrf_protected`, and `admin_only`. **All future admin mutations must depend on `admin_only`** (which checks CSRF and origin for unsafe methods). Non-admin authenticated mutations must use `csrf_protected`. Studio GET is read-only and does not require a CSRF header.
 

@@ -5,6 +5,9 @@ import { LessonReader } from './LessonReader';
 import { readDocument, signalPairs, visualTargets, type Language, type LessonBeat, type LessonDocument, type VisualTarget } from './types';
 import styles from './studio.module.css';
 
+type AiMode = 'improve' | 'review' | 'translate' | 'shorten' | 'visual-suggestions' | 'storyboard' | 'checkpoint';
+type AiStatus = { enabled: boolean; models: string[]; remainingToday: number };
+type AiSuggestion = { mode: AiMode; target: Language | null; text: string; model: string; requestId: string };
 type Draft = { document: LessonDocument; version: number; baseRevision: number | null };
 type Entry = { id: string; title: string; description: string; version: number; baseRevision: number | null; publishedRevision: number | null; updatedAt: string };
 type Revision = { revision: number; title: string; publishedAt: string };
@@ -60,8 +63,14 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
   const token = useRef('');
   const controller = useRef<AbortController | null>(null);
   const lock = useRef(false);
+  const [aiStatus, setAiStatus] = useState<AiStatus | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>(null);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const aiLock = useRef(false);
   const dirty = !!document && JSON.stringify(document) !== saved;
   const disabled = busy || conflict || denied || !accessVerified;
+  const assistDisabled = aiBusy || !aiStatus?.enabled;
   const scene = document?.scenes.find((item) => item.id === sceneId);
   const beat = scene?.beats.find((item) => item.id === beatId);
   const sceneIndex = document?.scenes.findIndex((item) => item.id === sceneId) ?? 0;
@@ -95,6 +104,74 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
     setMessage('Draft loaded.');
     await loadHistory(id, signal);
   };
+  const readAiStatus = async (signal: AbortSignal) => {
+    const response = await request('/api/studio/ai/status', { signal });
+    const value = await response.json();
+    if (signal.aborted) return;
+    if (typeof value?.enabled !== 'boolean' || !Array.isArray(value?.models) || value.models.some((item: unknown) => typeof item !== 'string') || !Number.isInteger(value?.remainingToday) || value.remainingToday < 0) throw new Error('AI assist status returned an unexpected response.');
+    setAiStatus({ enabled: value.enabled, models: value.models, remainingToday: value.remainingToday });
+  };
+  const aiFailureMessage = (status: number, detail: string, remaining: number | null) => {
+    const extra = detail ? ` ${detail}` : '';
+    if (status === 503) return `AI assistance is disabled on this server (503): no provider key is configured. Nothing was sent to a provider.${extra}`;
+    if (status === 429) return `Daily AI request budget exhausted (429). The request did not reach the provider.${remaining !== null ? ` Requests remaining today: ${remaining}.` : ''} The budget resets at the next UTC day.${extra}`;
+    if (status === 502) return `AI provider failure (502). The provider answer was rejected, not truncated and nothing was applied.${extra}`;
+    if (status === 422) return `AI request rejected by validation (422). Check that the narration is non-empty plain text within the length limits.${extra}`;
+    if (status === 401) return `Your session expired (401). Sign in again to use AI assistance.${extra}`;
+    if (status === 403) return `Administrator access or CSRF verification was denied for AI assistance (403). Reload to verify access.${extra}`;
+    return `AI assistance request failed (${status}). Nothing was retried automatically.${extra}`;
+  };
+  const refreshAiStatus = () => { void readAiStatus(new AbortController().signal).catch(() => setAiError('AI assist status could not be refreshed. Reload to see the remaining request budget.')); };
+  const runAssist = async (mode: AiMode, target: Language | null, body: Record<string, unknown>) => {
+    if (aiLock.current || !token.current) return; // One in-flight request guard: parallel clicks are ignored.
+    aiLock.current = true;
+    setAiBusy(true); setAiError(''); setAiSuggestion(null);
+    try {
+      const response = await fetch('/api/studio/ai/assist', {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token.current },
+        body: JSON.stringify(body),
+      });
+      const value: unknown = await response.json().catch(() => null);
+      const detail = typeof (value as { detail?: unknown } | null)?.detail === 'string' ? (value as { detail: string }).detail : '';
+      if (!response.ok) {
+        setAiError(aiFailureMessage(response.status, detail, aiStatus?.remainingToday ?? null));
+        if (response.status === 429 || response.status === 401 || response.status === 403) refreshAiStatus();
+        return;
+      }
+      if (typeof (value as { suggestion?: unknown })?.suggestion !== 'string' || typeof (value as { model?: unknown })?.model !== 'string' || typeof (value as { requestId?: unknown })?.requestId !== 'string') {
+        setAiError('AI assist returned an unexpected response. No suggestion was shown or applied.');
+        return;
+      }
+      const result = value as { suggestion: string; model: string; requestId: string };
+      setAiSuggestion({ mode, target, text: result.suggestion, model: result.model, requestId: result.requestId });
+      refreshAiStatus();
+    } catch (cause) {
+      setAiError(cause instanceof Error && !(cause instanceof TypeError) ? `AI assistance request failed locally: ${cause.message}` : 'Network error contacting AI assistance. Nothing was retried automatically.');
+    } finally {
+      aiLock.current = false;
+      setAiBusy(false);
+    }
+  };
+  const beatAssist = (mode: AiMode) => {
+    if (!beat) return;
+    const target: Language | null = mode === 'translate' ? 'ta' : mode === 'improve' || mode === 'shorten' ? 'en' : null;
+    void runAssist(mode, target, { mode, language: mode === 'translate' ? 'ta' : 'en', text: beat.narration.en });
+  };
+  const sceneAssist = (mode: AiMode) => {
+    if (!document || !scene) return;
+    void runAssist(mode, null, { mode, language: 'en', sceneContext: { title: scene.title, beats: scene.beats.slice(0, 8).map((item) => ({ id: item.id, narrationEn: item.narration.en })) }, lessonTitle: document.title, maxBeats: 8 });
+  };
+  const applySuggestion = () => {
+    if (!aiSuggestion || aiSuggestion.target === null || !beat) return;
+    editBeat({ ...beat, narration: { ...beat.narration, [aiSuggestion.target]: aiSuggestion.text } }); // Local draft only; never auto-saved or published.
+    setAiSuggestion(null);
+  };
+  const copySuggestion = async () => {
+    if (!aiSuggestion) return;
+    try { await navigator.clipboard.writeText(aiSuggestion.text); }
+    catch { setAiError('Clipboard copy failed. Select the suggestion text and copy it manually.'); }
+  };
   const run = async (label: string, action: (signal: AbortSignal) => Promise<void>, versioned = false) => {
     if (lock.current) return;
     lock.current = true;
@@ -127,6 +204,7 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
       if (session.user.role !== 'admin') throw new ApiError(403);
       if (signal.aborted) return;
       token.current = session.csrfToken;
+      try { await readAiStatus(signal); } catch (cause) { if (!signal.aborted) setAiError(cause instanceof Error ? `AI assist status unavailable: ${cause.message}` : 'AI assist status unavailable.'); }
       const list = await loadIndex(signal);
       if (signal.aborted) return;
       if (list.length) await load(list[0].id, signal);
@@ -200,6 +278,12 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
       <p role="status" aria-live="polite">{message}{dirty && message !== 'Unsaved changes.' ? ' Unsaved changes.' : ''}</p>
       {error && <p role="alert" className={styles.error}>{error}</p>}
       {conflict && <p>Saving, publishing, restoring and editing are disabled until you explicitly reload. Copy any local text you need before reloading.</p>}
+      <section className={styles.aiPanel} aria-labelledby="ai-assist-title" aria-busy={aiBusy || undefined}>
+        <h2 id="ai-assist-title">AI assist</h2>
+        <p role="status" aria-live="polite">{aiStatus ? (aiStatus.enabled ? `AI assist: ${aiStatus.remainingToday} requests remaining today` : 'AI assist is disabled on this server; assistance is unavailable until the provider key is configured.') : 'AI assist status is loading…'}</p>
+        {aiBusy && <p role="status">AI request in progress…</p>}
+        {aiError && <p role="alert" className={styles.error}>{aiError}</p>}
+      </section>
       <fieldset disabled={disabled || !token.current}>
         <legend>New unpublished lesson</legend>
         <label>New lesson ID<input value={newId} maxLength={64} pattern="[a-z][a-z0-9-]*" onChange={(event) => setNewId(event.target.value)} /></label>
@@ -226,7 +310,12 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
               <Button variant="outline" disabled={sceneIndex === 0} onClick={() => edit({ ...document, scenes: move(document.scenes, sceneIndex, -1) })}>Move scene up</Button>
               <Button variant="outline" disabled={sceneIndex === document.scenes.length - 1} onClick={() => edit({ ...document, scenes: move(document.scenes, sceneIndex, 1) })}>Move scene down</Button>
             </div>
-            {scene && <><p>Scene ID: {scene.id}</p><label>Scene title<input required maxLength={160} value={scene.title} onChange={(event) => editScene({ ...scene, title: event.target.value })} /></label></>}
+            {scene && <><p>Scene ID: {scene.id}</p><label>Scene title<input required maxLength={160} value={scene.title} onChange={(event) => editScene({ ...scene, title: event.target.value })} /></label>
+              <div className={styles.aiControls}>
+                <Button variant="outline" disabled={assistDisabled} onClick={() => sceneAssist('visual-suggestions')}>AI: suggest visuals</Button>
+                <Button variant="outline" disabled={assistDisabled} onClick={() => sceneAssist('storyboard')}>AI: storyboard next beats</Button>
+                <Button variant="outline" disabled={assistDisabled} onClick={() => sceneAssist('checkpoint')}>AI: draft checkpoint</Button>
+              </div></>}
           </fieldset>
           {scene && beat && <fieldset disabled={disabled}>
             <legend>Beats</legend>
@@ -238,7 +327,24 @@ export function LessonStudio({ onSessionExpired, accessVerified = true }: { onSe
               <Button variant="outline" disabled={beatIndex === scene.beats.length - 1} onClick={() => editScene({ ...scene, beats: move(scene.beats, beatIndex, 1) })}>Move beat down</Button>
             </div>
             <p>Beat ID: {beat.id}. Plain text only; both narration languages are required. Blank caption overrides use narration.</p>
-            {(['en', 'ta'] as Language[]).map((language) => <label key={`narration-${language}`}>{language === 'en' ? 'English narration' : 'Tamil narration'}<textarea required maxLength={2000} lang={language} value={beat.narration[language]} onChange={(event) => editBeat({ ...beat, narration: { ...beat.narration, [language]: event.target.value } })} /></label>)}
+            <div className={styles.aiControls}>
+              <Button variant="outline" disabled={assistDisabled || !beat.narration.en.trim()} onClick={() => beatAssist('improve')}>AI: improve English narration</Button>
+              <Button variant="outline" disabled={assistDisabled || !beat.narration.en.trim()} onClick={() => beatAssist('review')}>AI: review English narration</Button>
+              <Button variant="outline" disabled={assistDisabled || !beat.narration.en.trim()} onClick={() => beatAssist('translate')}>AI: translate to Tamil</Button>
+              <Button variant="outline" disabled={assistDisabled || !beat.narration.en.trim()} onClick={() => beatAssist('shorten')}>AI: shorten English narration</Button>
+            </div>
+            <div className={styles.narrationGrid}>
+              {(['en', 'ta'] as Language[]).map((language) => <label key={`narration-${language}`}>{language === 'en' ? 'English narration' : 'Tamil narration'}<textarea required maxLength={2000} lang={language} value={beat.narration[language]} onChange={(event) => editBeat({ ...beat, narration: { ...beat.narration, [language]: event.target.value } })} /></label>)}
+              {aiSuggestion && <section role="region" aria-label="AI suggestion (plain text, not saved)" className={styles.aiSuggestion}>
+                <p className={styles.aiMeta}>Suggestion only — nothing is saved or published until you act. Model: {aiSuggestion.model} · Request ID: {aiSuggestion.requestId}</p>
+                <p className={styles.aiText}>{aiSuggestion.text}</p>
+                <div className={styles.actions}>
+                  {aiSuggestion.target !== null && <Button onClick={applySuggestion}>Apply suggestion</Button>}
+                  {aiSuggestion.target === null && <Button variant="outline" onClick={() => void copySuggestion()}>Copy to clipboard</Button>}
+                  <Button variant="outline" onClick={() => setAiSuggestion(null)}>Discard suggestion</Button>
+                </div>
+              </section>}
+            </div>
             {(['en', 'ta'] as Language[]).map((language) => <label key={`caption-${language}`}>{language === 'en' ? 'English caption override' : 'Tamil caption override'}<textarea maxLength={2000} lang={language} value={beat.captions?.[language] ?? ''} onChange={(event) => {
               const captions = { ...beat.captions }; if (event.target.value) captions[language] = event.target.value; else delete captions[language];
               const next = { ...beat }; if (Object.keys(captions).length) next.captions = captions; else delete next.captions; editBeat(next);

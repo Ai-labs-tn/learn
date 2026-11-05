@@ -15,3 +15,13 @@
 .history li { display: grid; gap: var(--space-3); min-inline-size: 0; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
 .history li p { margin-block: var(--space-2); }
 @media (min-width: 48rem) { .history li { grid-template-columns: minmax(0, 1fr) auto; align-items: center; } }
+/* Phase 5 AI assist: advisory plain-text suggestions only; never auto-saved. */
+.aiPanel, .aiSuggestion { display: grid; gap: var(--space-3); min-inline-size: 0; padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.aiPanel h2 { margin: 0; font-size: 1rem; font-weight: var(--font-weight-semibold); }
+.aiPanel p, .aiSuggestion p { margin: 0; }
+.aiControls { display: flex; flex-wrap: wrap; gap: var(--space-3); min-inline-size: 0; }
+.narrationGrid { display: grid; gap: var(--space-4); min-inline-size: 0; }
+.aiSuggestion { border-color: var(--color-border-strong); }
+.aiMeta { font-size: 0.875rem; color: var(--color-text-secondary); overflow-wrap: anywhere; }
+.aiText { white-space: pre-wrap; overflow-wrap: anywhere; min-inline-size: 0; }
+@media (min-width: 48rem) { .narrationGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); } }

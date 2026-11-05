@@ -44,7 +44,7 @@ jobs:
       - name: Backend functional and real PostgreSQL acceptance
         env:
           TEST_POSTGRES_URL: postgresql+psycopg://acceptance:disposable-ci-only@127.0.0.1:5432/learn_acceptance
-        run: python -m pytest backend -q --junitxml=acceptance-tests/phase-03/backend/ci-junit.xml
+        run: python -m pytest backend -q --junitxml=acceptance-tests/phase-05/backend/ci-junit.xml
       - run: npx playwright install --with-deps chromium
       - name: Start isolated browser-test API
         env:
@@ -69,16 +69,16 @@ jobs:
           PY
       - run: npm run test:acceptance
         env:
-          LEARN_EVIDENCE_DIR: acceptance-tests/phase-03/frontend
+          LEARN_EVIDENCE_DIR: acceptance-tests/phase-05/frontend
       - name: Verify Docker image builds
         run: docker build -t learn-studio-acceptance .
       - name: Upload acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: phase-03-acceptance
+          name: phase-05-acceptance
           path: |
-            acceptance-tests/phase-03/backend/*junit.xml
-            acceptance-tests/phase-03/frontend/browser-results.xml
-            acceptance-tests/phase-03/frontend/screenshots/
+            acceptance-tests/phase-05/backend/*junit.xml
+            acceptance-tests/phase-05/frontend/browser-results.xml
+            acceptance-tests/phase-05/frontend/screenshots/
           retention-days: 7

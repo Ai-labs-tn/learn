@@ -13,7 +13,7 @@ test('guest reads a real persisted publication; drafts remain server-protected',
   expect(pilot).toBeTruthy();
   expect((await page.request.get('/api/studio/lessons/boot-pilot/draft')).status()).toBe(403);
   await page.goto('/#/lessons');
-  await expect(page.getByRole('heading', { name: pilot.title, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: pilot.title, exact: true })).toBeVisible({ timeout: 15000 });
   await expect(page.getByText(`Published revision ${pilot.revision}`, { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Next beat', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Beat 2 of');

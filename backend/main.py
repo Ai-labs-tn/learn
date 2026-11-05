@@ -13,6 +13,8 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.orm import sessionmaker
 from backend.auth import admin_only, authenticated, router as auth_router
+from backend.ai.api import router as ai_router
+from backend.ai.provider import configure_ai
 from backend.bootstrap import bootstrap
 from backend.content.api import router as content_router
 from backend.content.store import import_pilot
@@ -33,6 +35,8 @@ def create_app(settings: Settings | None = None):
             app.state.settings = config
             app.state.engine = engine
             app.state.sessions = sessionmaker(engine, expire_on_commit=False)
+            # Startup-fatal when a key exists but models cannot be verified as free.
+            app.state.ai = configure_ai(config)
             async with anyio.create_task_group() as maintenance:
                 maintenance.start_soon(run_cleanup, engine, config.login_window_seconds)
                 try:
@@ -59,6 +63,7 @@ def create_app(settings: Settings | None = None):
 
     app.include_router(auth_router)
     app.include_router(content_router)
+    app.include_router(ai_router)
 
     @app.get("/api/studio/status", dependencies=[Depends(admin_only)])
     def studio_status():
