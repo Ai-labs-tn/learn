@@ -1,40 +1,39 @@
-# Free-only Render deployment gate
+# Render deployment — existing Learn UI, free API and isolated database
 
-Approval: use free tiers only. Never select a paid plan, attach a paid disk, upgrade an expired database or enable paid AI calls without separate approval.
+## Approved topology (2026-11-05)
 
-## Current state
+- Existing project **Learn**, environment **production**.
+- Existing static UI **learn-with-saravana** (`srv-dbl9dkqjnfac73f9oalg`), https://learn-with-saravana.onrender.com.
+- Free Python API **learn-with-saravana-api** (`srv-dblvaktbedkc73anbj4g`), https://learn-with-saravana-api.onrender.com.
+- The UI rewrites `/api/*` to the API without redirecting the browser. Hosted POST bodies, Origin, session cookies and CSRF have been verified through this path.
+- PostgreSQL uses **learn_studio**, with restricted login **learn_studio_app**, on the existing free **agiler-pg-pp** instance. The owner explicitly approved isolated reuse because Render permits only one free PostgreSQL instance per workspace. The physical instance stays in Agiler; do not move, delete, upgrade or manage it from Learn's Blueprint.
+- Owner accepts possible bandwidth/build overages. **Paid compute/database plans remain forbidden.** No shared billing settings were changed.
 
-The existing `render.yaml` serves the static V1 site. Do not replace or delete that service during development. A login-gated frontend requires the new API to be reachable before it is released. For a same-origin preview, deploy a separate Docker web service with its own hostname, serving frontend and API together. Leave the existing V1 URL unchanged until the replacement has passed smoke tests.
+## Isolation and credentials
 
-## Free-tier limitations verified 2026-11-05
+The new application role is not a superuser, cannot create databases/roles and cannot bypass RLS. It has CONNECT on its database and USAGE/CREATE on its own public schema, where Learn's migrations create its tables. Public access to the Learn database/schema was revoked. Read-only privilege inspection verified this role has no SELECT/INSERT/UPDATE/DELETE access to Agiler's existing application tables. No Agiler application rows were read or changed.
 
-Source: https://render.com/docs/free
+Generated initial admin/guest passwords and the restricted database URL are configured privately on the API. An ignored local `.env.render` contains the generated values for the owner/operator; never publish it or capture it in evidence. The shared instance's administrative connection string is not used by the Learn service. Password changes require a reviewed account/session rotation procedure; changing bootstrap environment values does not reset existing accounts.
 
-- Explicitly choose `free` for both the web service and PostgreSQL.
-- A workspace can have only one active free PostgreSQL database. If one already exists, stop and review rather than provisioning a paid alternative.
-- Free PostgreSQL expires after 30 days, then has a 14-day grace period before deletion. It has no managed backups. Export content before expiry; never auto-upgrade.
-- Free web services sleep after 15 idle minutes; startup can take around a minute. No keepalive traffic is introduced to circumvent this.
-- The web service filesystem is ephemeral. SQLite is suitable for local tests only, not hosted content persistence.
-- Included service hours, bandwidth and build minutes are limited. Even free instances can incur bandwidth/build overages if billing is enabled. Check workspace spend controls before deployment; free instance selection alone does not guarantee a zero invoice. If zero-cost enforcement cannot be verified, stop for the owner's decision.
+## Build and release
 
-## Access blocker
+`render.yaml` preserves the existing static service and declares the free API in the same project. Both target `main`, with auto-deploy after CI passes. The former separate-preview Blueprint was removed. Never deploy the login-dependent UI without a working same-origin API rewrite.
 
-At preflight, the tool browser navigated to Render's sign-in page and no Render credential environment variables or Render management integration were available. Owner sign-in or private configuration is required. Do not paste private credentials into tracked files or acceptance evidence.
+CI covers real disposable PostgreSQL, backend auth/concurrency, browser flows, design lint, TypeScript, npm audit and Docker build. Hosted smoke checks are separately recorded under `acceptance-tests/phase-01/`. The opt-in `scripts/verify-hosted-phase1.py` uses private generated credentials, emits no secrets and checks the deployed API through the static UI hostname. It must not be run repeatedly enough to trigger login throttles.
 
-## Prepared deployment configuration
+Keep startup migrations additive and backward-compatible because UI and API deploy independently. Re-run hosted UI smoke checks after release. A successful Git push or build is not evidence of a healthy hosted application.
 
-`render-free.yaml` is an explicitly selected, separate Blueprint for branch `learning-studio`. It declares a single Docker web service and PostgreSQL with `plan: free` for both, disables preview environments and waits for CI checks before automatic deploys. It does not replace `render.yaml` or the V1 static service. Resource names/availability and schema validation still require Render access.
+## Free-tier limitations
 
-The Docker image builds frontend assets and serves them with FastAPI. Set the exact final HTTPS `APP_ORIGIN` and the two initial passwords through Render's private environment settings. `FORWARDED_ALLOW_IPS` must contain verified proxy IPs/CIDRs for the hosting path; do not blindly trust arbitrary forwarded headers. Confirm client-IP behavior before relying on per-IP login throttling.
+Source: https://render.com/docs/free (verified 2026-11-05).
 
-CI is prepared to run backend tests with a disposable PostgreSQL service, desktop/mobile browser acceptance and a Docker build. Those CI checks are not claimed as passed until their remote results are observed.
+- The reused free PostgreSQL instance expires 30 days after its **original** creation, not 30 days after adding Learn. It was already approximately 22 days old at inspection. Creating a new logical database does not extend this deadline. Free PostgreSQL has no managed backups.
+- Export the Learn database/content before expiry and coordinate with the Agiler owner; never automatically upgrade or recreate the shared instance.
+- Storage/CPU/connection limits are shared with Agiler. Keep connection pools and tests bounded; never run destructive acceptance fixtures against this shared instance.
+- Free API sleeps after 15 idle minutes; cold start may take around a minute. Do not generate keepalive traffic to evade this.
+- Filesystems are ephemeral. No hosted SQLite or persistent paid disks.
+- Free instance hours, bandwidth and build allowances are limited. The owner has accepted overage risk, not paid plan upgrades.
 
-## Deployment acceptance (not yet run)
+## Proxy/IP caveat
 
-1. Verify free service and database plans and workspace zero-cost controls in the dashboard.
-2. Supply database connection and bootstrap credentials privately through Render environment configuration.
-3. Deploy the same-origin Docker app to a new free service; record its actual deployed commit and URL.
-4. Smoke test health, admin login, guest login, forbidden guest Studio access, logout and session invalidation over HTTPS.
-5. Verify Secure/HttpOnly session cookie attributes and absence of credentials in assets/logs.
-6. Restart/redeploy and verify database persistence.
-7. Record deployment outcome separately from local test results. Do not mark deployment green from a successful Git push alone.
+Session and origin/CSRF checks have been verified through the Render static rewrite. Per-IP throttle attribution behind multiple proxies still needs a verified trusted proxy configuration; do not blindly trust arbitrary forwarded headers. The default account-based throttle is also enforced server-side. No anonymous diagnostic endpoint exposing client networking metadata is added.

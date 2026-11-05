@@ -1,14 +1,8 @@
-# Render Blueprint for Learn with Saravana
-# (https://render.com/docs/blueprint-spec — projects/environments pattern)
-#
-# Applying this Blueprint creates the "Learn" project with the static site inside it, at
-# https://learn-with-saravana.onrender.com, auto-deploying from main.
-#
-# The simulators are 100% client-side, so only the static site ships today. Static sites are
-# served from Render's global CDN (region is not selectable — that is the fastest option for
-# learners in India; a fixed region would require a paid web service). The future API service
-# (auth/lesson progress) is pre-noted below with region: singapore for when it lands.
-
+# Existing Learn project/UI plus its free API. Never select paid compute plans.
+# Database: owner-approved isolated learn_studio database + restricted role on
+# existing free agiler-pg-pp. DATABASE_URL is configured privately, not as the
+# shared instance's administrative connection string. Do not manage/move that
+# Agiler instance from this Blueprint. Its free-tier expiry still applies.
 previews:
   generation: off
 
@@ -20,32 +14,34 @@ projects:
           - type: web
             name: learn-with-saravana
             runtime: static
+            branch: main
             buildCommand: "npm ci --include=dev && npm run build"
             staticPublishPath: dist
-            pullRequestPreviewsEnabled: yes
-
-# --- Future phases (auth, lesson progress): re-add when the app calls the API ---
-# projects:
-#   - name: Learn
-#     environments:
-#       - name: production
-#         services:
-#           - type: web
-#             name: learn-with-saravana-api
-#             runtime: python
-#             rootDir: backend
-#             plan: starter
-#             region: singapore
-#             buildCommand: pip install -r requirements.txt
-#             startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
-#             healthCheckPath: /api/health
-#             envVars:
-#               - key: PYTHON_VERSION
-#                 value: 3.13.0
-#               - key: DATABASE_URL
-#                 fromDatabase:
-#                   name: learn-with-saravana-db
-#                   property: connectionString
-#         databases:
-#           - name: learn-with-saravana-db
-#             plan: free
+            autoDeployTrigger: checksPass
+            routes:
+              - type: rewrite
+                source: /api/*
+                destination: https://learn-with-saravana-api.onrender.com/api/*
+          - type: web
+            name: learn-with-saravana-api
+            runtime: python
+            branch: main
+            plan: free
+            region: singapore
+            buildCommand: pip install -r backend/requirements.txt
+            startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+            healthCheckPath: /api/health
+            autoDeployTrigger: checksPass
+            envVars:
+              - key: PYTHON_VERSION
+                value: 3.12.10
+              - key: APP_ENV
+                value: production
+              - key: APP_ORIGIN
+                value: https://learn-with-saravana.onrender.com
+              - key: DATABASE_URL
+                sync: false
+              - key: BOOTSTRAP_ADMIN_PASSWORD
+                sync: false
+              - key: GUEST_PASSWORD
+                sync: false

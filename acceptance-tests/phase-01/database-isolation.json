@@ -1,0 +1,5 @@
+{
+  "existing_agiler_tables_accessible_by_learn_role": 0,
+  "passed": true,
+  "check": "Read-only privilege inspection; no Agiler rows read or changed"
+}

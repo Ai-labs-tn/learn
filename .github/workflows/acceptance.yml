@@ -1,7 +1,7 @@
 name: Learning Studio acceptance
 on:
   push:
-    branches: [learning-studio]
+    branches: [main, learning-studio]
   pull_request:
     branches: [main, learning-studio]
 permissions:

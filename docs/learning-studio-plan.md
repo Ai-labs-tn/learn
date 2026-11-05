@@ -149,7 +149,7 @@ The owner approved implementing phases sequentially, with functional tests, lint
 
 Hosting approval: **Render free tiers only** for every deployed resource. Never provision a paid plan or upgrade. Verify usage/spend controls; free instance selection alone does not eliminate possible usage charges. Render documentation currently states free PostgreSQL expires after 30 days and has no managed backups.
 
-Protect the existing static V1 deployment. A separate same-origin free Docker app plus free PostgreSQL is the proposed preview deployment; its live setup requires authenticated Render access. Do not push the login-dependent frontend to the current static site's auto-deployed main branch before the API is deployed and verified.
+Protect the existing static V1 deployment until API routing is verified. Updated owner instruction: reuse existing **Learn / production / learn-with-saravana** static UI service; add free API/PostgreSQL in the same project, not a separate preview UI. The owner accepts bandwidth/build overage risk, but paid resource plans remain forbidden. Authenticated Render access is available. The owner approved reusing the existing free PostgreSQL instance with isolation: separate `learn_studio` database and restricted `learn_studio_app` login. These are now provisioned; Learn migrations run only in its separate database. Read-only privilege inspection verified no access to Agiler's existing application tables. The physical instance remains in Agiler and retains its original expiry. Never run Learn migrations against Agiler's existing schema. Do not push the login-dependent frontend to the current static site's auto-deployed main branch before the API is deployed and verified.
 
 ## Immediate next step
 

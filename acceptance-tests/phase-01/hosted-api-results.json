@@ -1,0 +1,131 @@
+{
+  "status": "PASSED",
+  "ui": "https://learn-with-saravana.onrender.com",
+  "api": "https://learn-with-saravana-api.onrender.com",
+  "checks": [
+    {
+      "check": "Direct API health",
+      "passed": true
+    },
+    {
+      "check": "Static same-origin rewrite returns API JSON",
+      "passed": true
+    },
+    {
+      "check": "Anonymous Studio denied",
+      "passed": true
+    },
+    {
+      "check": "admin POST login through static rewrite",
+      "passed": true
+    },
+    {
+      "check": "admin role from server",
+      "passed": true
+    },
+    {
+      "check": "admin host-only Secure session cookie",
+      "passed": true
+    },
+    {
+      "check": "admin HttpOnly and SameSite cookie",
+      "passed": true
+    },
+    {
+      "check": "admin cookie survives proxied subsequent request",
+      "passed": true
+    },
+    {
+      "check": "admin API is not cached",
+      "passed": true
+    },
+    {
+      "check": "admin server Studio permissions",
+      "passed": true
+    },
+    {
+      "check": "admin missing CSRF denied",
+      "passed": true
+    },
+    {
+      "check": "admin foreign origin denied",
+      "passed": true
+    },
+    {
+      "check": "admin valid logout",
+      "passed": true
+    },
+    {
+      "check": "admin session revoked",
+      "passed": true
+    },
+    {
+      "check": "admin old cookie replay denied",
+      "passed": true
+    },
+    {
+      "check": "guest POST login through static rewrite",
+      "passed": true
+    },
+    {
+      "check": "guest role from server",
+      "passed": true
+    },
+    {
+      "check": "guest host-only Secure session cookie",
+      "passed": true
+    },
+    {
+      "check": "guest HttpOnly and SameSite cookie",
+      "passed": true
+    },
+    {
+      "check": "guest cookie survives proxied subsequent request",
+      "passed": true
+    },
+    {
+      "check": "guest API is not cached",
+      "passed": true
+    },
+    {
+      "check": "guest server Studio permissions",
+      "passed": true
+    },
+    {
+      "check": "guest missing CSRF denied",
+      "passed": true
+    },
+    {
+      "check": "guest foreign origin denied",
+      "passed": true
+    },
+    {
+      "check": "guest valid logout",
+      "passed": true
+    },
+    {
+      "check": "guest session revoked",
+      "passed": true
+    },
+    {
+      "check": "guest old cookie replay denied",
+      "passed": true
+    },
+    {
+      "check": "Legacy demo OTP disabled",
+      "passed": true
+    },
+    {
+      "check": "Isolated Learn database and role",
+      "passed": true
+    },
+    {
+      "check": "App role has no administrative capabilities",
+      "passed": true
+    },
+    {
+      "check": "Learn migrations persisted on PostgreSQL",
+      "passed": true
+    }
+  ]
+}
