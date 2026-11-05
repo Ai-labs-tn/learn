@@ -1,5 +1,10 @@
-import { AppTemplate, ThemeToggle } from '@agiler/ui';
+import { AppTemplate, Button, ThemeToggle } from '@agiler/ui';
 import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+
+import { LoginScreen, SessionPending, SignedInHeading } from './auth/SessionScreen';
+import { Studio, StudioDenied } from './auth/Studio';
+import { useSession } from './auth/useSession';
+import styles from './auth/auth.module.css';
 
 import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
@@ -32,10 +37,13 @@ const TRACKS: Record<TrackId, ReactNode> = {
   dsa: <DsaScreen />,
 };
 
-function trackFromHash(): TrackId {
+type Route = TrackId | 'studio';
+
+function routeFromHash(): Route {
   const path = (window.location.hash.replace(/^#/, '') || '/boot-os').split('?')[0];
+  if (path === '/studio' || path.startsWith('/studio/')) return 'studio';
   const id = path.replace(/^\//, '').replace(/[^a-z-]/g, '') as TrackId;
-  return id in TRACKS ? id : 'boot-os';
+  return Object.hasOwn(TRACKS, id) ? id : 'boot-os';
 }
 
 /**
@@ -57,28 +65,55 @@ function HashLink(props: {
 }
 
 export function App() {
-  const [track, setTrack] = useState<TrackId>(trackFromHash);
+  const [route, setRoute] = useState<Route>(routeFromHash);
+  const auth = useSession();
 
   // Back/forward gestures (hash change without a click) must switch tracks too.
   useEffect(() => {
-    const onHashChange = () => setTrack(trackFromHash());
+    const onHashChange = () => setRoute(routeFromHash());
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
+  if (auth.state.status === 'loading' || auth.state.status === 'error') {
+    return <SessionPending error={auth.state.status === 'error'}
+      message={auth.state.status === 'error' ? auth.state.message : undefined} onRetry={auth.retry} />;
+  }
+  if (auth.state.status === 'anonymous') {
+    return <LoginScreen onLogin={auth.login} message={auth.state.message} />;
+  }
+
+  const { user } = auth.state.session;
+  const items = user.role === 'admin' ? [...NAV_ITEMS, { label: 'Studio', to: '/studio' }] : NAV_ITEMS;
+
   return (
-    <Fragment key={track}>
-      <AppTemplate
-        brand={<Brand />}
-        title="Learn with Saravana"
-        items={NAV_ITEMS}
-        activePath={`/${track}`}
-        linkComponent={HashLink}
-        actions={<ThemeToggle />}
-        onNavigate={() => setTrack(trackFromHash())}
-      >
-        {TRACKS[track]}
-      </AppTemplate>
-    </Fragment>
+    <>
+      {auth.state.focusHeading && <SignedInHeading username={user.username} />}
+      <Fragment key={route}>
+        <AppTemplate
+          brand={<Brand />}
+          title="Learn with Saravana"
+          items={items}
+          activePath={`/${route}`}
+          linkComponent={HashLink}
+          actions={
+            <div className={styles.actions}>
+              <span className={styles.account}>{user.username} ({user.role})</span>
+              <Button variant="outline" size="sm" isLoading={auth.loggingOut} onClick={() => void auth.logout()}>
+                {auth.loggingOut ? 'Signing out…' : 'Sign out'}
+              </Button>
+              <ThemeToggle />
+            </div>
+          }
+          onNavigate={() => setRoute(routeFromHash())}
+        >
+          {auth.logoutError && <p className={styles.error} role="alert">{auth.logoutError}</p>}
+          {auth.loggingOut && <p role="status">Signing out…</p>}
+          {route === 'studio'
+            ? user.role === 'admin' ? <Studio onSessionExpired={auth.expire} /> : <StudioDenied />
+            : TRACKS[route]}
+        </AppTemplate>
+      </Fragment>
+    </>
   );
 }

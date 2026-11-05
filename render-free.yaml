@@ -1,0 +1,39 @@
+# Apply explicitly as a separate Blueprint; preserve the existing static V1 service.
+# FREE ONLY. Confirm workspace spend controls before creation. Free PG expires in 30 days.
+# Never fall back to a paid database if the workspace already has a free one.
+previews:
+  generation: off
+
+services:
+  - type: web
+    name: learn-studio-preview
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: learning-studio
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_ORIGIN
+        sync: false
+      # Set only the verified Render proxy IPs/CIDRs; do not blindly use '*'.
+      - key: FORWARDED_ALLOW_IPS
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: GUEST_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: learn-studio-preview-db
+          property: connectionString
+
+databases:
+  - name: learn-studio-preview-db
+    plan: free
+    region: singapore
+    ipAllowList: []

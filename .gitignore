@@ -2,3 +2,16 @@ node_modules
 dist
 .DS_Store
 *.log
+.venv/
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+.coverage
+*.db
+*.sqlite
+*.sqlite3
+acceptance-tests/**/browser-report/
+acceptance-tests/**/browser-artifacts/
+.playwright-mcp/

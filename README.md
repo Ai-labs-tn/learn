@@ -1,5 +1,7 @@
 # Learn with Saravana (Computer & JVM Simulator)
 
+> **Learning Studio branch:** Phase 1 adds API-backed admin/guest login. Run the backend using [`backend/README.md`](backend/README.md) before starting Vite; the frontend alone cannot authenticate. The existing live V1 static site is unchanged until the separate full-stack preview is deployed. See the [implementation plan](docs/learning-studio-plan.md), [free-only deployment gate](docs/render-free-deployment.md), and [acceptance evidence](acceptance-tests/README.md).
+
 **Live:** https://learn-with-saravana.onrender.com (Render static site, auto-deploys from `main`)
 
 An educational platform that teaches by **simulating the machine in 2D**: how a program really

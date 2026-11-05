@@ -8,16 +8,22 @@
     "lint:design": "node scripts/design-lint.mjs",
     "build": "npm run lint:design && tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:acceptance": "playwright test",
+    "audit:security": "npm audit --audit-level=low"
   },
   "dependencies": {
     "@agiler/ui": "github:Ai-labs-tn/agiler-ui#v0.6.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "@monaco-editor/react": "^4.7.0",
-    "monaco-editor": "^0.57.0"
+    "monaco-editor": "^0.57.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "overrides": {
+    "dompurify": "3.4.17"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",

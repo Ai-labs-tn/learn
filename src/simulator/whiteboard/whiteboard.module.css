@@ -108,9 +108,10 @@
 }
 
 @media (max-width: 640px) {
-  /* The app topbar already shows the product title on mobile — free the row for the stage. */
+  /* The product name is not the lesson title: keep the current lesson identifiable. */
   .title {
-    display: none;
+    font-size: var(--font-size-md);
+    flex-basis: 100%;
   }
 
   .caption {

@@ -1,0 +1,70 @@
+<testsuites id="" name="" tests="30" failures="0" skipped="0" errors="0" time="48.081504">
+<testsuite name="auth.spec.ts" timestamp="2026-11-05T02:56:49.691Z" hostname="desktop-chromium" tests="12" failures="0" skipped="0" time="18.113" errors="0">
+<testcase name="anonymous users cannot read protected API or Studio" classname="auth.spec.ts" time="0.489">
+</testcase>
+<testcase name="invalid login is clear and clears password" classname="auth.spec.ts" time="1.231">
+</testcase>
+<testcase name="guest can learn, survives refresh, but cannot enter Studio" classname="auth.spec.ts" time="1.427">
+</testcase>
+<testcase name="admin accesses verified Studio; logout invalidates session" classname="auth.spec.ts" time="1.518">
+</testcase>
+<testcase name="logout without CSRF token is denied and session remains valid" classname="auth.spec.ts" time="1.251">
+</testcase>
+<testcase name="existing lesson routes remain accessible to guests" classname="auth.spec.ts" time="4.77">
+</testcase>
+<testcase name="Studio rejects a successful response with invalid content" classname="auth.spec.ts" time="1.285">
+</testcase>
+<testcase name="failed logout is not reported as success and permits recovery" classname="auth.spec.ts" time="1.377">
+</testcase>
+<testcase name="focus revalidation preserves the current learning step" classname="auth.spec.ts" time="1.3">
+</testcase>
+<testcase name="logout in another tab revokes the visible session" classname="auth.spec.ts" time="1.798">
+</testcase>
+<testcase name="revoked session on focus returns to sign in" classname="auth.spec.ts" time="1.317">
+</testcase>
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.35">
+</testcase>
+</testsuite>
+<testsuite name="learning.spec.ts" timestamp="2026-11-05T02:56:49.691Z" hostname="desktop-chromium" tests="3" failures="0" skipped="0" time="5.043" errors="0">
+<testcase name="guest can step, restart and switch caption language" classname="learning.spec.ts" time="1.563">
+</testcase>
+<testcase name="guest can explore DSA topics" classname="learning.spec.ts" time="1.496">
+</testcase>
+<testcase name="guest can run the Java playground without author privileges" classname="learning.spec.ts" time="1.984">
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-11-05T02:56:49.691Z" hostname="mobile-chromium" tests="12" failures="0" skipped="0" time="17.835" errors="0">
+<testcase name="anonymous users cannot read protected API or Studio" classname="auth.spec.ts" time="0.405">
+</testcase>
+<testcase name="invalid login is clear and clears password" classname="auth.spec.ts" time="1.218">
+</testcase>
+<testcase name="guest can learn, survives refresh, but cannot enter Studio" classname="auth.spec.ts" time="1.404">
+</testcase>
+<testcase name="admin accesses verified Studio; logout invalidates session" classname="auth.spec.ts" time="1.526">
+</testcase>
+<testcase name="logout without CSRF token is denied and session remains valid" classname="auth.spec.ts" time="1.221">
+</testcase>
+<testcase name="existing lesson routes remain accessible to guests" classname="auth.spec.ts" time="4.75">
+</testcase>
+<testcase name="Studio rejects a successful response with invalid content" classname="auth.spec.ts" time="1.301">
+</testcase>
+<testcase name="failed logout is not reported as success and permits recovery" classname="auth.spec.ts" time="1.392">
+</testcase>
+<testcase name="focus revalidation preserves the current learning step" classname="auth.spec.ts" time="1.265">
+</testcase>
+<testcase name="logout in another tab revokes the visible session" classname="auth.spec.ts" time="1.752">
+</testcase>
+<testcase name="revoked session on focus returns to sign in" classname="auth.spec.ts" time="1.279">
+</testcase>
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.322">
+</testcase>
+</testsuite>
+<testsuite name="learning.spec.ts" timestamp="2026-11-05T02:56:49.691Z" hostname="mobile-chromium" tests="3" failures="0" skipped="0" time="4.569" errors="0">
+<testcase name="guest can step, restart and switch caption language" classname="learning.spec.ts" time="1.48">
+</testcase>
+<testcase name="guest can explore DSA topics" classname="learning.spec.ts" time="1.374">
+</testcase>
+<testcase name="guest can run the Java playground without author privileges" classname="learning.spec.ts" time="1.715">
+</testcase>
+</testsuite>
+</testsuites>
