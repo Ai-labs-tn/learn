@@ -14,13 +14,15 @@ async function signIn(page: import('@playwright/test').Page) {
 }
 
 test('suggestion applies locally only and is never auto-saved or published', async ({ page }) => {
-  await signIn(page);
+  // Status is fetched when Studio mounts; mocks must exist before sign-in so the
+  // assist controls are enabled regardless of the server's real key configuration.
   await page.route('**/api/studio/ai/status', (route) => route.fulfill({ json: { enabled: true, models: ['google/gemma-4-31b-it:free'], remainingToday: 99 } }));
   let payload: Record<string, unknown> = {};
   await page.route('**/api/studio/ai/assist', async (route) => {
     payload = route.request().postDataJSON();
     await route.fulfill({ json: canned });
   });
+  await signIn(page);
   const narration = page.getByRole('textbox', { name: 'English narration', exact: true });
   const original = await narration.inputValue();
   const region = page.getByRole('region', { name: 'AI suggestion (plain text, not saved)' });
