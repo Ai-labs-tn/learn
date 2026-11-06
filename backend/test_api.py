@@ -230,6 +230,21 @@ def test_invalid_configuration(values):
         Settings(**values)
 
 
+@pytest.mark.parametrize("environment", ["local", "test"])
+@pytest.mark.parametrize("host", ["dpg-example-a.singapore-postgres.render.com", "db.example.com", "10.0.0.5"])
+def test_non_production_never_connects_to_remote_postgres(environment, host):
+    # Regression: a copied production env file once made local test servers write to the
+    # hosted database. Non-production processes may only use a PostgreSQL on localhost.
+    with pytest.raises(ValueError, match="localhost"):
+        Settings(environment=environment, database_url=f"postgresql+psycopg://u:p@{host}:5432/learn")
+
+
+@pytest.mark.parametrize("host", ["localhost", "127.0.0.1"])
+def test_non_production_allows_local_postgres(host):
+    config = Settings(environment="test", database_url=f"postgresql+psycopg://u:p@{host}:5432/learn_acceptance")
+    assert not config.production
+
+
 def test_render_auto_production_and_url_normalization(monkeypatch):
     monkeypatch.delenv("APP_ENV", raising=False)
     monkeypatch.setenv("RENDER", "true")

@@ -50,6 +50,11 @@ class Settings:
             raise ValueError("Production requires HTTPS APP_ORIGIN and PostgreSQL DATABASE_URL")
         if not self.production and self.environment != "test" and origin.hostname not in {"localhost", "127.0.0.1", "::1"}:
             raise ValueError("Public deployments must set APP_ENV=production")
+        if not self.production and self.database_url.startswith("postgresql+psycopg://"):
+            # A local/test process must never reach a hosted database (e.g. through a copied
+            # production env file). Production data is only touched by the production service.
+            if urlsplit(self.database_url).hostname not in {"localhost", "127.0.0.1", "::1"}:
+                raise ValueError("Non-production environments may only use a PostgreSQL database on localhost")
         if min(self.session_seconds, self.login_limit, self.login_window_seconds) < 1:
             raise ValueError("Session and throttle settings must be positive")
         if self.open_router_api_key:

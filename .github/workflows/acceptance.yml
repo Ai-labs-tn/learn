@@ -39,6 +39,13 @@ jobs:
       - run: npm ci --include=dev
       - run: npm run build
       - run: npm run audit:security
+      - name: Production dependencies are sufficient to import the API
+        # Render installs backend/requirements.txt only. Dev-only packages (httpx, pytest)
+        # must not mask a missing runtime dependency.
+        run: |
+          python -m venv /tmp/prod-venv
+          /tmp/prod-venv/bin/pip install -r backend/requirements.txt
+          /tmp/prod-venv/bin/python -c "import backend.main"
       - run: pip install -r backend/requirements-dev.txt
       - run: pip check
       - name: Backend functional and real PostgreSQL acceptance
