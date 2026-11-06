@@ -1,5 +1,5 @@
 """Explicit persistence models; schema changes belong in migrations, not create_all."""
-from sqlalchemy import CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, Integer, JSON, String
+from sqlalchemy import Boolean, CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, Integer, JSON, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -99,3 +99,18 @@ class LessonAudit(Base):
     draft_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
     revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
     occurred_at: Mapped[str] = mapped_column(String(32))
+
+
+class Profile(Base):
+    """One portfolio profile. `entities` holds every classified entity kind (identity, contact,
+    summary, skills, awards, experience, education, projects, references, narration, privacy)."""
+    __tablename__ = "profiles"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    entities: Mapped[dict] = mapped_column(JSON)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False)
+    version: Mapped[int] = mapped_column(Integer)
+    source_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    ai_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[str] = mapped_column(String(32))
+    updated_at: Mapped[str] = mapped_column(String(32))
+    updated_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)

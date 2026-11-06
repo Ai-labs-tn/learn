@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('guest reads a real persisted publication; drafts remain server-protected', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('guest');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_GUEST_PASSWORD ?? 'LocalGuest123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

@@ -3,6 +3,8 @@ import httpx
 
 MODELS_URL = "https://openrouter.ai/api/v1/models"
 CHAT_URL = "https://openrouter.ai/api/v1/chat/completions"
+# Optional OpenRouter attribution headers: without them this app's traffic shows up as "Unknown".
+APP_HEADERS = {"HTTP-Referer": "https://learn-with-saravana.onrender.com", "X-Title": "Learn with Saravana"}
 
 
 class AiProviderError(Exception):
@@ -26,7 +28,7 @@ def free_model_ids(api_key, timeout, transport=None):
     """Fetch the provider catalogue once and return only zero-cost model ids."""
     try:
         with httpx.Client(timeout=timeout, transport=transport) as client:
-            response = client.get(MODELS_URL, headers={"Authorization": f"Bearer {api_key}"})
+            response = client.get(MODELS_URL, headers={"Authorization": f"Bearer {api_key}", **APP_HEADERS})
     except httpx.HTTPError as error:
         raise ValueError("Could not verify AI model pricing with the provider at startup") from error
     if response.status_code != 200:
@@ -83,7 +85,7 @@ class AiFeature:
             }
             try:
                 with httpx.Client(timeout=self.timeout_seconds, transport=self.transport) as client:
-                    response = client.post(CHAT_URL, headers={"Authorization": f"Bearer {self.api_key}"},
+                    response = client.post(CHAT_URL, headers={"Authorization": f"Bearer {self.api_key}", **APP_HEADERS},
                                            json=payload)
             except httpx.HTTPError:
                 raise AiProviderError("The AI provider timed out or could not be reached", model)

@@ -7,7 +7,7 @@ const credentials = {
 };
 
 async function login(page: Page, role: 'admin' | 'guest') {
-  await page.goto('/');
+  await page.goto('/#/login');
   await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
   await page.getByLabel('Username', { exact: false }).fill(role);
   await page.getByLabel('Password', { exact: false }).fill(credentials[role]);
@@ -30,13 +30,15 @@ async function screenshot(page: Page, name: string, project: string) {
 
 test('anonymous users cannot read protected API or Studio', async ({ page }) => {
   await page.goto('/#/studio');
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect(page.getByText('Administrator access verified.')).toHaveCount(0);
   expect((await page.request.get('/api/studio/status')).status()).toBe(401);
   expect((await page.request.get('/api/boot-os-simulator')).status()).toBe(401);
 });
 
 test('invalid login is clear and clears password', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('guest');
   await page.getByLabel('Password', { exact: false }).fill('IncorrectTestOnly');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -64,10 +66,12 @@ test('admin accesses verified Studio; logout invalidates session', async ({ page
   await expect(page.getByText('Administrator access verified.')).toBeVisible();
   await screenshot(page, 'admin-studio', info.project.name);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect(page.getByRole('status')).toContainText('You have signed out.');
   expect((await page.request.get('/api/auth/me')).status()).toBe(401);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
 });
 
 test('logout without CSRF token is denied and session remains valid', async ({ page }) => {
@@ -117,7 +121,8 @@ test('failed logout is not reported as success and permits recovery', async ({ p
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
   await page.unroute('**/api/auth/logout');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#\/$/);
 });
 
 test('focus revalidation preserves the current learning step', async ({ page }) => {
@@ -136,16 +141,18 @@ test('logout in another tab revokes the visible session', async ({ page, context
   await other.goto('/');
   await expect(other.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
   await other.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#\/$/);
   expect((await page.request.get('/api/auth/me')).status()).toBe(401);
   await other.close();
 });
 
-test('revoked session on focus returns to sign in', async ({ page }) => {
+test('revoked session on focus returns to the portfolio', async ({ page }) => {
   await login(page, 'admin');
   await page.route('**/api/auth/me', (route) => route.fulfill({ status: 401, body: '{}' }));
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#\/$/);
 });
 
 test('session service failure shows retry rather than exposing lessons', async ({ page }) => {

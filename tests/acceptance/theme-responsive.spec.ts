@@ -29,7 +29,7 @@ async function contrast(page: Page, label: string) {
 }
 
 async function login(page: Page) {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('admin');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_ADMIN_PASSWORD ?? 'LocalAdmin123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -39,7 +39,7 @@ async function login(page: Page) {
 for (const theme of ['light', 'dark'] as const) {
   test(`login: ${theme} contrast, mobile layout and touch targets`, async ({ page }, info) => {
     test.setTimeout(90_000);
-    await page.goto('/');
+    await page.goto('/#/login');
     await page.getByRole('radio', { name: `${theme === 'light' ? 'Light' : 'Dark'} theme` }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     for (const size of sizes) {
@@ -96,7 +96,7 @@ for (const theme of ['light', 'dark'] as const) {
 
 test('system theme follows OS changes and explicit preference survives reload', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByRole('radio', { name: 'System theme' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.emulateMedia({ colorScheme: 'light' });

@@ -27,7 +27,7 @@ async function mockSpeech(page: Page, available = true) {
 }
 
 async function signIn(page: Page, role = 'guest') {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill(role);
   await page.getByLabel('Password', { exact: false }).fill(role === 'admin' ? process.env.TEST_ADMIN_PASSWORD ?? 'LocalAdmin123!Only' : process.env.TEST_GUEST_PASSWORD ?? 'LocalGuest123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

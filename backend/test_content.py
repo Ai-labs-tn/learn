@@ -434,6 +434,6 @@ def test_additive_content_migration_preserves_auth_rows(settings):
             assert connection.execute(select(User.__table__)).all() == users
             assert connection.scalar(select(AuthSession.csrf_token)) == "local-csrf"
             assert connection.scalar(select(LoginAttempt.count)) == 4
-            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0005_session_absolute_expiry"
+            assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0006_profiles"
     finally:
         engine.dispose()

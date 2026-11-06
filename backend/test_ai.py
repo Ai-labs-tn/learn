@@ -63,6 +63,16 @@ def assist(client, body=BODY, headers=None):
 
 # --- Settings and startup configuration ---
 
+def test_provider_calls_identify_the_app_so_traffic_is_not_reported_as_unknown(ai_client):
+    calls: list[httpx.Request] = []
+    ai_client.app.state.ai.transport = httpx.MockTransport(canned(calls=calls))
+    assert assist(ai_client).status_code == 200
+    headers = calls[0].headers
+    assert headers["x-title"] == "Learn with Saravana"
+    assert headers["http-referer"] == "https://learn-with-saravana.onrender.com"
+    assert headers["authorization"] == f"Bearer {TEST_KEY}"  # the key still travels only server-side
+
+
 def test_missing_key_disables_feature(monkeypatch):
     monkeypatch.delenv("OPEN_ROUTER_API_KEY", raising=False)
     config = Settings.from_env()

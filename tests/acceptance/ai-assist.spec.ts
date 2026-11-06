@@ -4,7 +4,7 @@ const suggestion = 'A stabilized power supply brings every output voltage into r
 const canned = { suggestion, model: 'google/gemma-4-31b-it:free', requestId: '7' };
 
 async function signIn(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('admin');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_ADMIN_PASSWORD ?? 'LocalAdmin123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -49,7 +49,7 @@ test('suggestion applies locally only and is never auto-saved or published', asy
 });
 
 test('guests never see assist controls and direct assist calls are denied', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('guest');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_GUEST_PASSWORD ?? 'LocalGuest123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

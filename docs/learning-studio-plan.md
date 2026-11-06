@@ -151,6 +151,12 @@ Hosting approval: **Render free tiers only** for every deployed resource. Never 
 
 Protect the existing static V1 deployment until API routing is verified. Updated owner instruction: reuse existing **Learn / production / learn-with-saravana** static UI service; add free API/PostgreSQL in the same project, not a separate preview UI. The owner accepts bandwidth/build overage risk, but paid resource plans remain forbidden. Authenticated Render access is available. The owner approved reusing the existing free PostgreSQL instance with isolation: separate `learn_studio` database and restricted `learn_studio_app` login. These are now provisioned; Learn migrations run only in its separate database. Read-only privilege inspection verified no access to Agiler's existing application tables. The physical instance remains in Agiler and retains its original expiry. Never run Learn migrations against Agiler's existing schema. Do not push the login-dependent frontend to the current static site's auto-deployed main branch before the API is deployed and verified.
 
+## Deferred / pending (recorded 2026-11-06)
+
+- **Phase 6 — professional animated pilot (power-on → firmware → POST): deferred by the owner; resume later.** Phases 1–5 and the session-resilience work are complete and live. The visual vocabulary, storyboard and renderer work described under Phase 6 above are unchanged.
+- **Pending owner decision — production test-data cleanup.** Local test runs on 2026-11-05 (misdirected at the hosted `learn_studio` database; now prevented by a settings guard) left two published test lessons, two unpublished test drafts, a modified `boot-pilot` draft (its published revision is intact) and one AI usage row. Nothing has been deleted; append-only history triggers mean removal needs an explicitly approved procedure.
+- **In progress — public portfolio landing page** (resume-derived profile table, AI narration, 3D animated page; login moves to a top-right link). See `docs/portfolio.md`.
+
 ## Immediate next step
 
 Implement and test Phase 1, then pass the Render deployment gate before treating it as deployed and advancing the release sequence. Private initial passwords and deployment authentication must never be committed.

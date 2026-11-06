@@ -6,6 +6,7 @@ import { Studio, StudioDenied } from './auth/Studio';
 import { useSession } from './auth/useSession';
 import styles from './auth/auth.module.css';
 
+import { Portfolio } from './portfolio/Portfolio';
 import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
@@ -66,22 +67,50 @@ function HashLink(props: {
   );
 }
 
+const wantsLogin = () => window.location.hash.split('?')[0] === '#/login';
+
 export function App() {
   const [route, setRoute] = useState<Route>(routeFromHash);
+  const [loginPage, setLoginPage] = useState(wantsLogin);
+  const [dismissedNotice, setDismissedNotice] = useState<string | null>(null);
   const auth = useSession();
+  const status = auth.state.status;
 
   // Back/forward gestures (hash change without a click) must switch tracks too.
   useEffect(() => {
-    const onHashChange = () => setRoute(routeFromHash());
+    const onHashChange = () => { setRoute(routeFromHash()); setLoginPage(wantsLogin()); };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  if (auth.state.status === 'loading' || auth.state.status === 'error') {
-    return <SessionPending error={auth.state.status === 'error'} message={auth.state.message} onRetry={auth.retry} />;
-  }
-  if (auth.state.status === 'anonymous') {
-    return <LoginScreen onLogin={auth.login} message={auth.state.message} />;
+  // After signing in, leave the login URL for the learning tracks.
+  useEffect(() => {
+    if (status === 'authenticated' && wantsLogin()) window.location.replace('#/boot-os');
+  }, [status]);
+
+  // After logout or expiry the portfolio is the landing page; do not leave a stale app URL behind.
+  useEffect(() => {
+    if (status === 'anonymous' && !wantsLogin() && window.location.hash !== '' && window.location.hash !== '#/') {
+      window.history.replaceState(null, '', '#/');
+      setRoute(routeFromHash());
+    }
+  }, [status]);
+
+  if (status !== 'authenticated') {
+    if (loginPage) {
+      return auth.state.status === 'anonymous'
+        ? <LoginScreen onLogin={auth.login} message={auth.state.message} />
+        : <SessionPending error={auth.state.status === 'error'} message={auth.state.message} onRetry={auth.retry} />;
+    }
+    // The portfolio never waits for the (possibly sleeping) API: it renders from its bundled snapshot.
+    const message = auth.state.status === 'anonymous' ? auth.state.message : undefined;
+    return (
+      <Portfolio
+        onLogin={() => { window.location.hash = '#/login'; }}
+        notice={message && message !== dismissedNotice ? message : undefined}
+        onDismissNotice={() => setDismissedNotice(message ?? null)}
+      />
+    );
   }
 
   const { user } = auth.state.session;

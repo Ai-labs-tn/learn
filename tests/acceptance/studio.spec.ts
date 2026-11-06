@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 async function signIn(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('admin');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_ADMIN_PASSWORD ?? 'LocalAdmin123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

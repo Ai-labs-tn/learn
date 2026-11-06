@@ -19,7 +19,7 @@ test('a sleeping server never leaves the session screen hanging: timeout, explai
     return route.fulfill(unauthenticated);
   });
   await page.clock.install();
-  await page.goto('/');
+  await page.goto('/#/login');
   await expect(page.getByText('Loading your session…')).toBeVisible();
   await advanceUntil(page, () => page.getByText(/server is waking up/i).isVisible());
   expect(calls).toBeLessThan(3);
@@ -32,7 +32,7 @@ test('after bounded retries a persistent outage shows a clear error with a manua
   let stall = true;
   await page.route('**/api/auth/me', (route) => (stall ? undefined : route.fulfill(unauthenticated)));
   await page.clock.install();
-  await page.goto('/');
+  await page.goto('/#/login');
   // Spans several 60-second keep-alive ticks: they must not abort the initial load's retries.
   for (let step = 0; step < 8; step += 1) await page.clock.runFor(15_000);
   await expect(page.getByRole('heading', { name: 'Unable to check your session' })).toBeVisible();
@@ -45,7 +45,7 @@ test('after bounded retries a persistent outage shows a clear error with a manua
 test('an active signed-in tab keeps its session alive in the background', async ({ page }) => {
   let checks = 0;
   await page.clock.install(); // before the app registers its keep-alive timer
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('guest');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_GUEST_PASSWORD ?? 'LocalGuest123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -57,13 +57,16 @@ test('an active signed-in tab keeps its session alive in the background', async 
 });
 
 test('a session that expires while the tab is open says so instead of silently resetting', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/#/login');
   await page.getByLabel('Username', { exact: false }).fill('guest');
   await page.getByLabel('Password', { exact: false }).fill(process.env.TEST_GUEST_PASSWORD ?? 'LocalGuest123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
   await page.route('**/api/auth/me', (route) => route.fulfill(unauthenticated));
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect(page.getByRole('heading', { name: 'Sign in', exact: true })).toBeVisible();
-  await expect(page.getByText('Your session expired. Please sign in again.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect(page.getByRole('status')).toContainText('Your session expired. Please sign in again.');
+  await page.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(page.getByText('Your session expired. Please sign in again.')).toHaveCount(0);
 });

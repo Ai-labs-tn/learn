@@ -149,3 +149,13 @@
     font-size: 0.75rem;
   }
 }
+
+.backLink {
+  justify-self: start;
+  min-block-size: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}

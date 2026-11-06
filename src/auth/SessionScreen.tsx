@@ -85,6 +85,7 @@ export function LoginScreen({ onLogin, message }: {
         </Button>
         {pending && <p role="status">Signing in securely…</p>}
       </form>
+      <a className={styles.backLink} href="#/">← Back to portfolio</a>
     </SessionFrame>
   );
 }

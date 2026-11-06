@@ -15,3 +15,6 @@ __pycache__/
 acceptance-tests/**/browser-report/
 acceptance-tests/**/browser-artifacts/
 .playwright-mcp/
+
+# Resume-derived working files hold a private phone number, address and references
+profile-build/
