@@ -15,8 +15,8 @@ async function readDraft(response: Response, baseline: LessonDocument): Promise<
   return { document: readCaptionDocument(value.document, baseline), version: value.version, etag };
 }
 
-export function InlineCaptionEditor({ stepId, phase, language, onEditing, baseline = BASELINE }: {
-  stepId: string; phase: string; language: Language; onEditing: (open: boolean) => void; baseline?: LessonDocument;
+export function InlineCaptionEditor({ stepId, phase, language, onEditing, baseline = BASELINE, compact = false }: {
+  stepId: string; phase: string; language: Language; onEditing: (open: boolean) => void; baseline?: LessonDocument; compact?: boolean;
 }) {
   const draftPath = `/api/studio/lessons/${encodeURIComponent(baseline.id)}/draft`;
   const publishedPath = `/api/lessons/${encodeURIComponent(baseline.id)}`;
@@ -173,11 +173,11 @@ export function InlineCaptionEditor({ stepId, phase, language, onEditing, baseli
     setOpen(false); setSuggestion(null); setReviewPublish(false); onEditing(false);
   };
   return (
-    <section className={styles.tools} aria-label="Caption authoring">
+    <section className={styles.tools} aria-label="Caption authoring" data-compact={compact} data-open={open}>
       {!open ? <div className={styles.toolbar}>
-        <Button variant="outline" onClick={load}>✎ Edit caption</Button>
-        <Button variant="outline" title="Open the caption editor to review text before requesting an AI rewrite" onClick={load}>✨ AI Rewrite</Button>
-        <Button variant="outline" title="Open the caption editor to review context before requesting an AI fact-check" onClick={load}>✓ AI Fact-check</Button>
+        <Button variant="outline" aria-label={compact ? 'Edit caption' : undefined} title="Edit caption" onClick={load}>{compact ? '✎' : '✎ Edit caption'}</Button>
+        <Button variant="outline" aria-label={compact ? 'AI Rewrite' : undefined} title="Open the caption editor to review text before requesting an AI rewrite" onClick={load}>{compact ? '✨' : '✨ AI Rewrite'}</Button>
+        <Button variant="outline" aria-label={compact ? 'AI Fact-check' : undefined} title="Open the caption editor to review context before requesting an AI fact-check" onClick={load}>{compact ? '✓' : '✓ AI Fact-check'}</Button>
       </div> : <>
         <h3>Edit caption and narration — {phase} / {stepId} ({language === 'en' ? 'English' : 'Tamil'})</h3>
         <p>Playback is paused. Changes apply only to this step and language. The other language is not automatically translated.</p>

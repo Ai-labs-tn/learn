@@ -1,4 +1,6 @@
 .tools { color: var(--color-text-primary); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 0.75rem; min-inline-size: 0; overflow-wrap: anywhere; }
+.tools[data-compact='true'][data-open='false'] { padding: 0; border: 0; background: transparent; }
+.tools[data-compact='true'][data-open='false'] button { min-inline-size: 44px; min-block-size: 44px; padding: 0.5rem; }
 .tools p { margin: 0.6rem 0; line-height: 1.6; }
 .tools h3, .tools h4, .tools h5 { margin: 0.5rem 0; }
 .tools a { color: var(--color-primary); text-decoration: underline; }

@@ -36,6 +36,10 @@ The owner approved an eight-scene hardware-first storyboard: before power, start
 
 Resume the previously deferred Phase 6 power-on → firmware → POST animation only after the inline workflow is validated. Approve script/storyboard; distinguish illustrative scenes from literal hardware. Test replay, mobile, reduced motion, English/Tamil captions and cancellation.
 
+### Phase 3 player-first refinement
+
+Owner requested an OTT-style presentation instead of the dashboard. Inside the machine now owns the viewport without the subject introduction/roadmap. Icon transport fades during playback; subtitles remain on stage. Power starts the automatic sequence. Inspection, settings, scene navigation and transcript are contextual drawers. POST failure/prediction checkpoints pause for input. Shared narration/subtitle timing drives visual cues, with bounded speech failure fallback, stale-run cancellation and hidden-tab pause. Compact admin authoring overlays the stage and locks playback. Legacy Boot & OS remains available pending review. Evidence: `acceptance-tests/skill-phase-03-player/` (126 browser tests passed; production build/design/theme gates passed).
+
 ## Phase 4 — Expand skill areas incrementally
 
 One complete lesson at a time: plain explanation → interactive scene → appropriate exercise/editor → actual results → AI review. Include approved personal experience without confidential project information. Choose isolated execution per technology; no arbitrary user code on the application server, no cloud deployments with production credentials. Free-tier feasibility/quotas and any external runner need review before implementation. Clearly separate simulated results, real compiler/runtime results and AI advice. Never present AI output as compilation or proof of correctness.

@@ -1,148 +1,220 @@
-import { Button } from '@agiler/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useCaptionAccess } from '../captions/CaptionAccess';
 import { InlineCaptionEditor } from '../captions/InlineCaptionEditor';
 import { useBootCaptions } from '../captions/useBootCaptions';
 import { captionText } from '../captions/model';
 import { Machine } from './Machine';
+import { PlayerButton } from './PlayerButton';
+import { useGuidedPlayback } from './useGuidedPlayback';
 import { INSPECTION, PILOT, READS, SCENES, type Part, type ReadPattern } from './story';
 import s from './hardware.module.css';
 
+type Panel = 'chapters' | 'settings' | 'explore' | 'info' | null;
+type Checkpoint = 'checks' | 'failed' | 'prediction' | 'answer' | 'done' | null;
+
 export function HardwareStory() {
   const access = useCaptionAccess();
-  const { document, ready, notice } = useBootCaptions(PILOT);
+  const { document: lesson, ready, notice } = useBootCaptions(PILOT);
   const [scene, setScene] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [run, setRun] = useState(0);
   const [focus, setFocus] = useState<Part>('overview');
-  const [event, setEvent] = useState(0);
-  const [failure, setFailure] = useState(false);
-  const [checkPassed, setCheckPassed] = useState(false);
-  const [prediction, setPrediction] = useState('');
-  const [powerRemoved, setPowerRemoved] = useState(false);
+  const [manualEvent, setManualEvent] = useState<number | null>(null);
+  const [checkpoint, setCheckpoint] = useState<Checkpoint>(null);
+  const [feedback, setFeedback] = useState('');
   const [pattern, setPattern] = useState<ReadPattern>('nearby');
   const [readAt, setReadAt] = useState(-1);
   const [lang, setLang] = useState<'en' | 'ta'>('en');
+  const [voice, setVoice] = useState(false);
+  const [subtitles, setSubtitles] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
-  const [speechNotice, setSpeechNotice] = useState('');
   const [hidden, setHidden] = useState(false);
-  const [motionPaused, setMotionPaused] = useState(false);
-  useEffect(() => {
-    const visibility = () => {
-      setHidden(window.document.hidden);
-      if (window.document.hidden) { window.speechSynthesis?.cancel(); setSpeaking(false); }
-    };
-    visibility();
-    window.document.addEventListener('visibilitychange', visibility);
-    return () => window.document.removeEventListener('visibilitychange', visibility);
-  }, []);
+  const [panel, setPanel] = useState<Panel>(null);
+  const [chrome, setChrome] = useState(true);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState('');
+  const root = useRef<HTMLElement>(null);
+  const panelElement = useRef<HTMLDivElement>(null);
+  const editorElement = useRef<HTMLDivElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const hideTimer = useRef<number>();
+  const live = useRef({ playing, panel, editing }); live.current = { playing, panel, editing };
   const current = SCENES[scene];
   const beat = PILOT.scenes[0].beats[scene];
-  const text = captionText(document, beat.id, lang);
-  const powered = scene > 0 && !powerRemoved;
-  const canNext = scene > 0 && scene < 7 && (scene !== 1 || event >= 2) && (scene !== 3 || event >= 2) && (scene !== 4 || event >= 2) && (scene !== 5 || checkPassed) && (scene !== 6 || powerRemoved);
-  const goto = (next: number) => {
+  const text = captionText(lesson, beat.id, lang);
+  const goto = (next: number, autoplay = false) => {
     if (editing) return;
-    window.speechSynthesis?.cancel(); setSpeaking(false); setSpeechNotice('');
-    setScene(next); setFocus(SCENES[next].focus); setEvent(0); setFailure(false); setCheckPassed(false);
-    setPrediction(''); setPowerRemoved(false); setReadAt(-1);
+    setScene(next); setPlaying(autoplay); setRun(value => value + 1); setFocus(SCENES[next].focus);
+    setManualEvent(null); setCheckpoint(null); setFeedback(''); setReadAt(-1); setPanel(null); setChrome(true);
   };
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
-  const stopSpeech = () => { window.speechSynthesis?.cancel(); setSpeaking(false); };
-  const narrate = () => {
-    stopSpeech();
-    const synth = window.speechSynthesis;
-    if (!synth || typeof window.SpeechSynthesisUtterance !== 'function') { setSpeechNotice('Browser speech is unavailable. All narration is available in the caption.'); return; }
-    const voice = synth.getVoices().find(item => item.lang.toLowerCase().startsWith(lang));
-    if (lang === 'ta' && !voice) { setSpeechNotice('No Tamil voice is available in this browser. Tamil captions remain available.'); return; }
-    const speech = new SpeechSynthesisUtterance(text); speech.lang = lang === 'ta' ? 'ta-IN' : 'en-US'; if (voice) speech.voice = voice;
-    speech.onend = () => setSpeaking(false); speech.onerror = () => { setSpeaking(false); setSpeechNotice('Narration stopped. Read the caption or retry.'); };
-    synth.speak(speech); setSpeaking(true);
+  const playback = useGuidedPlayback({
+    text, runKey: `${scene}-${run}-${lang}`, language: lang, voice,
+    active: ready && playing && !editing && !hidden && !panel,
+    onComplete: () => {
+      if (scene < 5) goto(scene + 1, true);
+      else { setPlaying(false); setCheckpoint(scene === 5 ? 'checks' : scene === 6 ? 'prediction' : 'done'); }
+    },
+  });
+  const cue = Math.min(2, Math.floor(playback.index * 3 / playback.total));
+  const visualEvent = manualEvent ?? cue;
+  useEffect(() => {
+    if (!playing || panel) return;
+    setFocus(scene === 3 ? (cue === 0 ? 'firmware' : cue === 1 ? 'overview' : 'cpu') : scene === 4 ? (cue < 2 ? 'ram' : 'cpu') : SCENES[scene].focus);
+  }, [scene, cue, playing, panel]);
+  const wake = () => {
+    setChrome(true);
+    window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => {
+      const state = live.current;
+      const toolbar = root.current?.querySelector('[data-player-controls]');
+      const focused = document.activeElement?.matches(':focus-visible') && (toolbar?.contains(document.activeElement) || editorElement.current?.contains(document.activeElement));
+      if (state.playing && !state.panel && !state.editing && !focused && !toolbar?.matches(':hover')) setChrome(false);
+    }, 3000);
   };
-  if (!ready) return <p role="status">Loading hardware story captions…</p>;
+  useEffect(() => { wake(); return () => window.clearTimeout(hideTimer.current); }, [playing, panel, editing]);
+  useEffect(() => {
+    const visibility = () => setHidden(document.hidden);
+    document.addEventListener('visibilitychange', visibility);
+    const changed = () => setFullscreen(document.fullscreenElement === root.current);
+    document.addEventListener('fullscreenchange', changed);
+    return () => { document.removeEventListener('visibilitychange', visibility); document.removeEventListener('fullscreenchange', changed); };
+  }, []);
+  useEffect(() => {
+    if (!ready || !root.current) return;
+    const resize = () => {
+      const element = root.current;
+      if (element) element.style.setProperty('--player-height', `${Math.max(240, window.innerHeight - element.getBoundingClientRect().top - 8)}px`);
+    };
+    resize(); window.addEventListener('resize', resize);
+    const observer = new ResizeObserver(resize);
+    if (root.current.parentElement) observer.observe(root.current.parentElement);
+    return () => { window.removeEventListener('resize', resize); observer.disconnect(); };
+  }, [ready]);
+  useEffect(() => {
+    if (panel) panelElement.current?.querySelector<HTMLButtonElement>('button')?.focus();
+  }, [panel]);
+  const toggle = () => {
+    if (editing || checkpoint || panel) return;
+    if (scene === 0) goto(1, true);
+    else setPlaying(value => !value);
+  };
+  const openPanel = (next: Panel) => {
+    if (editing) return;
+    opener.current = document.activeElement as HTMLElement;
+    setPlaying(false); setPanel(next); setChrome(true);
+  };
+  const closePanel = () => { setPanel(null); setChrome(true); opener.current?.focus(); };
+  const changeFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (root.current?.requestFullscreen) await root.current.requestFullscreen();
+      else throw new Error('Fullscreen unavailable');
+    } catch { setFullscreenError('Fullscreen is unavailable in this browser. The player still works here.'); }
+  };
+  const keyboard = (event: KeyboardEvent) => {
+    const modal = editing ? editorElement.current : panel ? panelElement.current : null;
+    if (event.key === 'Tab' && modal) {
+      const items = [...modal.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]')];
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
+    if (event.key === 'Escape') {
+      if (editing) [...(editorElement.current?.querySelectorAll('button') ?? [])].find(button => button.textContent?.trim() === 'Close caption editor')?.click();
+      else if (panel) closePanel();
+      return;
+    }
+    if ((event.target as HTMLElement).closest('button, input, select, textarea, a, [contenteditable="true"]') || editing || panel || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key === ' ') { event.preventDefault(); toggle(); }
+    else if (event.key === 'ArrowLeft' && scene > 0) goto(scene - 1);
+    else if (event.key === 'ArrowRight' && scene > 0 && scene < 7 && !checkpoint) goto(scene + 1, playing);
+    else if (event.key.toLowerCase() === 'm') setVoice(value => !value);
+    else if (event.key.toLowerCase() === 'c') setSubtitles(value => !value);
+    wake();
+  };
+  if (!ready) return <p role="status">Loading hardware story…</p>;
+  const controlsVisible = chrome || !playing || !!panel || editing;
   return (
-    <section className={s.story} aria-labelledby="hardware-title" data-hidden={hidden || motionPaused || editing}>
-      <header className={s.header}>
-        <div><p className={s.kicker}>INTERACTIVE HARDWARE PILOT</p><h2 id="hardware-title">Inside the machine</h2><p>Follow one instruction. Follow one piece of data.</p></div>
-        <div className={s.controls}>
-          <Button variant="outline" disabled={editing || scene === 0} onClick={() => goto(scene - 1)}>Previous scene</Button>
-          <Button variant="outline" disabled={editing} onClick={() => goto(0)}>Restart hardware story</Button>
-          <Button disabled={editing || !canNext} onClick={() => goto(scene + 1)}>Next scene</Button>
-        </div>
+    <section ref={root} className={s.story} aria-label="Inside the machine" tabIndex={0}
+      data-controls={controlsVisible} data-editing={editing} data-hidden={hidden || !playing || !!panel || editing} data-scene={scene + 1}
+      onPointerMove={wake} onPointerDown={wake} onFocusCapture={wake} onKeyDown={keyboard}>
+      <div className={s.canvas}>
+        <Machine scene={scene} focus={focus} powered={scene > 0 && checkpoint !== 'answer'} event={visualEvent}
+          failed={checkpoint === 'failed'} readBlock={readAt < 0 ? null : READS[pattern][readAt]}
+          onPower={() => { if (!editing && !panel && scene === 0) goto(1, true); }} />
+      </div>
+      <header className={s.chromeTop}>
+        <div><h2>Inside the machine</h2><p>{current.title} <span>· {scene + 1} / 8</span></p></div>
+        <div className={s.controls}><PlayerButton icon="explore" label="Explore this scene" disabled={editing} onClick={() => openPanel('explore')} /><PlayerButton icon="info" label="Scene information and transcript" disabled={editing} onClick={() => openPanel('info')} /></div>
       </header>
-      <nav aria-label="Hardware story scenes" className={s.sceneNav}>
-        {SCENES.map((item, index) => <button key={item.title} type="button" disabled={editing} aria-current={index === scene ? 'step' : undefined} onClick={() => goto(index)}>{index + 1}. {item.title}</button>)}
-      </nav>
-      <div className={s.heading}><h3>{current.title}</h3><span>Scene {scene + 1} of 8</span></div>
-      {notice && <p role="status">{notice}</p>}
-      <p className={s.question}>{current.question}</p>
-      {access && <InlineCaptionEditor key={`${beat.id}-${lang}`} baseline={PILOT} stepId={beat.id} phase={current.title} language={lang} onEditing={open => { stopSpeech(); setEditing(open); }} />}
-      <div className={s.caption}>
-        <p>{text}</p>
-        <div className={s.controls}>
-          <Button size="sm" variant="outline" disabled={editing} onClick={() => { stopSpeech(); setLang(lang === 'en' ? 'ta' : 'en'); }}>Caption language: {lang === 'en' ? 'English' : 'Tamil'}</Button>
-          <Button size="sm" variant="outline" disabled={editing} onClick={speaking ? stopSpeech : narrate}>{speaking ? 'Stop narration' : 'Read scene aloud'}</Button>
-          <Button size="sm" variant="outline" disabled={editing} onClick={() => setMotionPaused(!motionPaused)}>{motionPaused ? 'Resume visual motion' : 'Pause visual motion'}</Button>
-        </div>
-        {speechNotice && <p role="status">{speechNotice}</p>}
-      </div>
-      <div className={s.layout}>
-        <div className={s.machinePanel}>
-          <div className={s.sceneState}><span>{scene === 7 ? 'INSPECTION LAB • not the boot timeline' : powered ? 'POWER ON • OS NOT LOADED' : 'POWER OFF'}</span><span>{focus === 'overview' ? 'Case open' : 'Inspection: ' + focus}</span></div>
-          <Machine key={`${scene}-${focus}`} scene={scene} focus={focus} powered={powered} event={event} failed={failure} readBlock={readAt < 0 ? null : READS[pattern][readAt]} onPower={() => goto(1)} />
-          {scene === 0 && <Button disabled={editing} onClick={() => goto(1)}>⏻ Press the power button</Button>}
-          <div className={s.legend}><span>● Power/control</span><span>▰ Instruction fetch</span><span>↔ Working data</span></div>
-          <p className={s.note}>Movement is slowed down to teach the idea. Highlights are not literal particles, exact wiring or measured timing.</p>
-        </div>
-        <aside className={s.inspector} aria-label="Hardware inspection and interaction">
-          <h4>Inspect the connected machine</h4>
+      {(notice || fullscreenError) && <p className={s.notice} role="status">{notice || fullscreenError}</p>}
+      {scene === 0 && !panel && !editing && <button type="button" className={s.powerStart} aria-label="Press the power button" onClick={() => goto(1, true)}>
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 2v10M6 5a9 9 0 1 0 12 0" /></svg><span>Press power to begin</span>
+      </button>}
+      {!panel && <div className={s.subtitleArea}>
+        {access && <div ref={editorElement} className={s.authoring} data-open={editing} role={editing ? 'dialog' : undefined} aria-modal={editing || undefined} aria-label={editing ? 'Caption editor' : undefined}>
+          <InlineCaptionEditor key={`${beat.id}-${lang}`} compact baseline={PILOT} stepId={beat.id} phase={current.title} language={lang}
+            onEditing={open => { setPlaying(false); setEditing(open); setChrome(true); if (!open) window.setTimeout(() => editorElement.current?.querySelector<HTMLButtonElement>('[aria-label="Edit caption"]')?.focus(), 0); }} />
+        </div>}
+        {subtitles && !editing && <p className={s.subtitle} aria-label="Subtitle">{playback.subtitle}</p>}
+      </div>}
+      {checkpoint && !panel && !editing && <div className={s.checkpoint} role="region" aria-label="Scene checkpoint">
+        {checkpoint === 'checks' && <><p>Startup checks: what would you like to see?</p><div className={s.controls}><button onClick={() => goto(6, true)}>✓ Continue normal startup</button><button onClick={() => { setCheckpoint('failed'); setFocus('ram'); }}>⚠ Try a memory failure</button></div></>}
+        {checkpoint === 'failed' && <><p role="status">Memory check failed. Startup stopped; no real hardware was changed.</p><button onClick={() => goto(5, true)}>↻ Retry startup checks</button></>}
+        {checkpoint === 'prediction' && <><p>Power is removed. Which information remains?</p><div className={s.controls}><button onClick={() => setFeedback('RAM is volatile; its working value is not reliably retained. Try again.')}>RAM working value</button><button onClick={() => { setCheckpoint('answer'); setFeedback(''); setFocus('overview'); }}>Saved file on SSD / HDD</button></div>{feedback && <p role="status">{feedback}</p>}</>}
+        {checkpoint === 'answer' && <><p role="status">Correct. RAM loses its working state; storage retains the saved file.</p><button onClick={() => goto(7, true)}>Continue to storage inspection →</button></>}
+        {checkpoint === 'done' && <><p>Ready to compare nearby and scattered reads?</p><div className={s.controls}><button onClick={() => openPanel('explore')}>Explore storage</button><button onClick={() => goto(0)}>↻ Replay story</button></div></>}
+      </div>}
+      <div className={s.bottom} data-player-controls>
+        <div className={s.progress} aria-label={`Scene ${scene + 1} of 8`}><span style={{ width: `${((scene + playback.index / playback.total) / 8) * 100}%` }} /></div>
+        <div className={s.transport} role="group" aria-label="Playback controls">
           <div className={s.controls}>
-            {(['overview','cpu','ram','firmware','storage'] as const).map(part => <button className={s.inspectButton} key={part} type="button" disabled={editing} aria-pressed={focus === part} onClick={() => setFocus(part)}>{part === 'overview' ? 'Whole machine' : part === 'cpu' ? 'CPU' : part === 'ram' ? 'RAM' : part === 'storage' ? 'SSD / HDD' : 'Firmware'}</button>)}
+            <PlayerButton icon="previous" label="Previous scene" disabled={editing || scene === 0} onClick={() => goto(scene - 1)} />
+            <PlayerButton icon={playing ? 'pause' : 'play'} label={playing ? 'Pause story' : 'Play story'} disabled={editing || !!checkpoint || !!panel} onClick={toggle} />
+            <PlayerButton icon="next" label="Next scene" disabled={editing || scene === 0 || scene === 7 || !!checkpoint} onClick={() => goto(scene + 1, playing)} />
+            <PlayerButton icon="replay" label="Restart hardware story" disabled={editing} onClick={() => goto(0)} />
           </div>
-          <p>{INSPECTION[focus]}</p>
-          <fieldset disabled={editing} className={s.experiment}>
-            <legend>Try this scene</legend>
-            {scene === 0 && <><p>Storage keeps your files; RAM does not retain its working state. The network connector is hardware—not a TCP port.</p><p>Press the physical power button below the case to begin.</p></>}
-            {scene === 1 && <>
-              <p role="status">{event === 0 ? 'Startup requested. Components are held in reset while power is prepared.' : event === 1 ? 'Supply rails stable. This is power/control activity, not Chrome travelling through a wire.' : 'Reset released. The processor can begin its startup sequence.'}</p>
-              <Button disabled={event >= 2} onClick={() => setEvent(event + 1)}>{event === 0 ? 'Stabilize the supply rails' : 'Release reset'}</Button>
-            </>}
-            {scene === 2 && <>
-              <p>Inspect the CPU cutaway. Registers sit inside a core; RAM modules sit outside the processor.</p>
-              <Button variant="outline" onClick={() => setFocus('cpu')}>Inspect a core and registers</Button>
-              <Button onClick={() => goto(3)}>Where does the first instruction come from?</Button>
-            </>}
-            {scene === 3 && <>
-              <p role="status">{event === 0 ? 'Firmware instructions remain in non-volatile storage.' : event === 1 ? 'Instruction fetched: startup code reaches the processor through the platform access path.' : 'Instruction executed: startup code begins preparing the platform. The chip stores software; the CPU executes it.'}</p>
-              <Button disabled={event >= 2} onClick={() => { setEvent(event + 1); setFocus(event === 0 ? 'overview' : 'cpu'); }}>{event === 0 ? 'Fetch a firmware instruction' : 'Execute the instruction'}</Button>
-            </>}
-            {scene === 4 && <>
-              <div className={s.memoryLocation}><span>Illustrative RAM location</span><strong>{event === 0 ? 'Initialized • no example value written' : '17'}</strong></div>
-              <p role="status">{event === 0 ? 'This diagram does not claim all RAM contains zeros after startup.' : event === 1 ? 'The CPU writes the example value 17 through the memory system.' : 'The value 17 is read back into a CPU register. RAM and a register are different locations.'}</p>
-              <Button disabled={event >= 2} onClick={() => { setEvent(event + 1); setFocus(event === 0 ? 'ram' : 'cpu'); }}>{event === 0 ? 'Write 17 to working memory' : 'Read 17 into a register'}</Button>
-            </>}
-            {scene === 5 && <>
-              <div className={s.controls}><Button variant="outline" onClick={() => { setFailure(true); setCheckPassed(false); setFocus('ram'); }}>Try a memory-check failure</Button><Button onClick={() => { setFailure(false); setCheckPassed(true); }}>Run passing checks</Button></div>
-              <p role="status">{failure ? 'Memory check failed. Startup stops in this illustration. Retry passing checks to continue; no real hardware was changed.' : checkPassed ? 'Selected checks passed. This is not a certificate that every component is fault-free. The OS has not loaded yet.' : 'Choose a branch. POST scope and order depend on the machine.'}</p>
-            </>}
-            {scene === 6 && <>
-              <div className={s.controls}><Button variant="outline" onClick={() => setPrediction('ram')}>RAM working value remains</Button><Button variant="outline" onClick={() => setPrediction('storage')}>Saved file on storage remains</Button></div>
-              {prediction && <p role="status">{prediction === 'storage' ? 'Correct: storage retains the saved file across a normal power cycle.' : 'Not reliably: volatile RAM loses its working state without power. Try the storage answer.'}</p>}
-              <Button disabled={prediction !== 'storage' || powerRemoved} onClick={() => setPowerRemoved(true)}>Remove simulated power</Button>
-              {powerRemoved && <p className={s.answer}>RAM example value: not retained. Saved file on SSD/HDD: retained.</p>}
-            </>}
-            {scene === 7 && <>
-              <p>This separate inspection lab compares read mechanisms, not a timed startup benchmark.</p>
-              <div className={s.controls}>{(['nearby','scattered'] as const).map(value => <button className={s.inspectButton} key={value} type="button" aria-pressed={pattern === value} onClick={() => { setPattern(value); setReadAt(-1); }}>{value === 'nearby' ? 'Nearby reads' : 'Scattered reads'}</button>)}</div>
-              <p>Illustrative requests: {READS[pattern].join(' → ')}. These positions are not literal mappings of logical blocks onto disk geometry.</p>
-              <Button onClick={() => { setReadAt((readAt + 1) % 4); setFocus('storage'); }}>Read next example block</Button>
-              <p role="status">{readAt < 0 ? 'Choose a pattern, then issue a read.' : `Request ${readAt + 1}: block ${READS[pattern][readAt]}. HDD: ${pattern === 'scattered' ? 'larger head repositioning may be needed' : 'targets are nearby, reducing repositioning'}. SSD: controller addresses flash; there is no moving read head.`}</p>
-              <p>Flash access is not instantaneous. Controllers, caches, interfaces and workloads all affect performance; no speed numbers here are benchmarks.</p>
-              <h4>Next question</h4><p>How do CPU, RAM and storage cooperate when you open Chrome? That is the next slice—not part of this pilot.</p>
-            </>}
-          </fieldset>
-        </aside>
+          <div className={s.controls}>
+            <PlayerButton icon={voice ? 'sound' : 'muted'} label={voice ? 'Mute narration' : 'Enable narration'} pressed={voice} disabled={editing} onClick={() => setVoice(!voice)} />
+            <PlayerButton icon="captions" label={subtitles ? 'Hide subtitles' : 'Show subtitles'} pressed={subtitles} disabled={editing} onClick={() => setSubtitles(!subtitles)} />
+            <PlayerButton icon="chapters" label="Choose scene" disabled={editing} onClick={() => openPanel('chapters')} />
+            <PlayerButton icon="settings" label="Player settings" disabled={editing} onClick={() => openPanel('settings')} />
+            <PlayerButton icon="fullscreen" label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'} disabled={editing} onClick={() => void changeFullscreen()} />
+          </div>
+        </div>
       </div>
-      <footer className={s.boundary}><strong>Teaching boundary:</strong> simplified PC internals. Firmware is software; CPU and processor refer to the same part. TCP ports are logical software endpoints, not the physical network connector. Chrome, networking and the JVM are deliberately reserved for later slices.</footer>
+      {panel && <div ref={panelElement} className={s.panel} role="dialog" aria-modal="true" aria-labelledby="player-panel-title">
+        <header className={s.panelHeader}><h3 id="player-panel-title">{panel === 'chapters' ? 'Choose a scene' : panel === 'settings' ? 'Player settings' : panel === 'info' ? 'Scene information' : 'Explore this scene'}</h3><PlayerButton icon="close" label="Close panel" onClick={closePanel} /></header>
+        {panel === 'chapters' && <nav aria-label="Hardware story scenes" className={s.sceneNav}>{SCENES.map((item, index) => <button key={item.title} aria-current={scene === index ? 'step' : undefined} onClick={() => goto(index)}>{index + 1}. {item.title}</button>)}</nav>}
+        {panel === 'settings' && <div className={s.settings}>
+          <label>Caption language<select value={lang} onChange={event => setLang(event.target.value as 'en' | 'ta')}><option value="en">English</option><option value="ta">Tamil</option></select></label>
+          <label><input type="checkbox" checked={voice} onChange={event => setVoice(event.target.checked)} /> Narration</label>
+          <label><input type="checkbox" checked={subtitles} onChange={event => setSubtitles(event.target.checked)} /> Subtitles</label>
+          <p>Play runs the story automatically. Pause to inspect; use the scene list to jump. Space: play/pause · arrows: scene · M: sound · C: subtitles.</p>
+          {playback.warning && <p role="status">{playback.warning}</p>}
+          <p>Speech failure falls back to reading-paced subtitles. Pause/resume restarts the current short subtitle. Reduced-motion preference removes decorative motion without preventing story progress.</p>
+        </div>}
+        {panel === 'info' && <>
+          <h4>{current.title}</h4><p>{text}</p><p>{INSPECTION[focus]}</p>
+          <h4>Illustration key</h4><p>Gold: power/control · blue: instruction fetch · cyan: working data. Highlights show concepts, not literal particles, wiring or measured timing.</p>
+          <p>CPU and processor name the same part. Firmware is software. TCP ports are logical software endpoints, not physical network connectors. OS launch, Chrome, remote requests and the JVM are later chapters.</p>
+        </>}
+        {panel === 'explore' && <>
+          <div className={s.controls}>{(['overview','cpu','ram','firmware','storage'] as const).map(part => <button key={part} aria-pressed={part === focus} onClick={() => setFocus(part)}>{part === 'overview' ? 'Whole machine' : part === 'storage' ? 'SSD / HDD' : part.toUpperCase()}</button>)}</div>
+          <p>{INSPECTION[focus]}</p>
+          {scene === 3 && <button onClick={() => { setManualEvent(visualEvent < 2 ? visualEvent + 1 : 0); setFocus(visualEvent < 1 ? 'overview' : 'cpu'); }}>Step instruction fetch / execution</button>}
+          {scene === 4 && <><p>RAM example: {visualEvent > 0 ? '17' : 'not written'} · CPU register: {visualEvent > 1 ? '17' : 'not read yet'}</p><button onClick={() => { setManualEvent(visualEvent < 2 ? visualEvent + 1 : 0); setFocus(visualEvent < 1 ? 'ram' : 'cpu'); }}>Step memory write / read</button></>}
+          {scene === 5 && <button onClick={() => { setPanel(null); setCheckpoint('failed'); setFocus('ram'); }}>Try a memory-check failure</button>}
+          {scene === 7 && <>
+            <p>Separate inspection lab—not the startup timeline.</p>
+            <div className={s.controls}>{(['nearby','scattered'] as const).map(value => <button key={value} aria-pressed={pattern === value} onClick={() => { setPattern(value); setReadAt(-1); }}>{value === 'nearby' ? 'Nearby reads' : 'Scattered reads'}</button>)}</div>
+            <p>Illustrative requests: {READS[pattern].join(' → ')}</p><button onClick={() => { setReadAt((readAt + 1) % 4); setFocus('storage'); }}>Read next example block</button>
+            {readAt >= 0 && <p role="status">Block {READS[pattern][readAt]}: HDD head {pattern === 'scattered' ? 'repositions farther' : 'visits nearby locations'}; SSD addresses flash with no moving read head.</p>}
+            <p>No benchmark timings are implied. Logical block numbers are not a literal disk geometry mapping. These drives use SATA; NVMe SSDs use PCIe.</p>
+          </>}
+          <p>Close this panel, then press Play to resume the story.</p>
+        </>}
+      </div>}
     </section>
   );
 }
