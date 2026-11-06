@@ -25,7 +25,7 @@ export function SessionPending({ error, message, onRetry }: { error: boolean; me
       {error ? <>
         <p role="alert">{message ?? 'We could not reach the sign-in service. Check your connection and try again.'}</p>
         <Button onClick={onRetry}>Try again</Button>
-      </> : <p role="status">Loading your session…</p>}
+      </> : <p role="status">{message ?? 'Loading your session…'}</p>}
     </SessionFrame>
   );
 }

@@ -22,6 +22,8 @@ class AuthSession(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     csrf_token: Mapped[str] = mapped_column(String(64))
     expires_at: Mapped[int] = mapped_column(Integer, index=True)
+    # Renewal never extends past this. NULL (sessions created before 0005) = not renewable.
+    absolute_expires_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class LoginAttempt(Base):

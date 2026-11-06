@@ -150,8 +150,13 @@ test('revoked session on focus returns to sign in', async ({ page }) => {
 
 test('session service failure shows retry rather than exposing lessons', async ({ page }) => {
   await page.route('**/api/auth/me', (route) => route.fulfill({ status: 503, body: '{}' }));
+  // A 503 is what a waking server returns, so the app retries (3s + 6s + 9s) before giving up.
+  await page.clock.install();
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Unable to check your session' })).toBeVisible();
+  await expect.poll(async () => {
+    await page.clock.runFor(5_000);
+    return page.getByRole('heading', { name: 'Unable to check your session' }).isVisible();
+  }, { timeout: 30_000, intervals: [50] }).toBe(true);
   await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'How a computer boots' })).toHaveCount(0);
   await page.unroute('**/api/auth/me');

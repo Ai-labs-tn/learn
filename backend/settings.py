@@ -25,6 +25,8 @@ class Settings:
     database_url: str = f"sqlite:///{Path(__file__).parent / 'data' / 'learn.db'}"
     app_origin: str = "http://localhost:5173"
     session_seconds: int = 28800
+    # Hard ceiling on a renewed session. Activity extends the idle window, never beyond this.
+    session_absolute_seconds: int = 604800
     login_limit: int = 10
     login_window_seconds: int = 300
     dist_dir: Path = Path(__file__).resolve().parents[1] / "dist"
@@ -57,6 +59,8 @@ class Settings:
                 raise ValueError("Non-production environments may only use a PostgreSQL database on localhost")
         if min(self.session_seconds, self.login_limit, self.login_window_seconds) < 1:
             raise ValueError("Session and throttle settings must be positive")
+        if self.session_absolute_seconds < self.session_seconds:
+            raise ValueError("SESSION_ABSOLUTE_SECONDS must be at least SESSION_SECONDS")
         if self.open_router_api_key:
             key = self.open_router_api_key
             if key != key.strip() or len(key) > 512:
@@ -94,6 +98,7 @@ class Settings:
             raise ValueError("APP_ORIGIN is required in production")
         return cls(environment=environment, database_url=url, app_origin=origin or cls.app_origin,
                    session_seconds=int(os.getenv("SESSION_SECONDS", "28800")),
+                   session_absolute_seconds=int(os.getenv("SESSION_ABSOLUTE_SECONDS", "604800")),
                    login_limit=int(os.getenv("LOGIN_LIMIT", "10")),
                    login_window_seconds=int(os.getenv("LOGIN_WINDOW_SECONDS", "300")),
                    dist_dir=Path(os.getenv("DIST_DIR", str(cls.dist_dir))),

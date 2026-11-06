@@ -78,8 +78,7 @@ export function App() {
   }, []);
 
   if (auth.state.status === 'loading' || auth.state.status === 'error') {
-    return <SessionPending error={auth.state.status === 'error'}
-      message={auth.state.status === 'error' ? auth.state.message : undefined} onRetry={auth.retry} />;
+    return <SessionPending error={auth.state.status === 'error'} message={auth.state.message} onRetry={auth.retry} />;
   }
   if (auth.state.status === 'anonymous') {
     return <LoginScreen onLogin={auth.login} message={auth.state.message} />;

@@ -5,7 +5,7 @@ import secrets
 import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import case, delete, select
+from sqlalchemy import case, delete, select, update
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import AuthSession, LoginAttempt, User
@@ -36,14 +36,40 @@ def require_origin(request: Request):
         raise HTTPException(403, "Cross-site request denied")
 
 
-def authenticated(request: Request, db: Session = Depends(get_db)):
+def renew_session(request: Request, response: Response, db: Session, record: AuthSession, now: int):
+    """Sliding idle window: activity extends the session, never past its absolute ceiling.
+
+    Renews at most once per half-window, so most requests are read-only. The extension is a
+    compare-and-swap on the expiry we read, so concurrent requests cannot stack extensions.
+    """
+    settings = request.app.state.settings
+    ceiling = record.absolute_expires_at
+    if ceiling is None or record.expires_at - now > settings.session_seconds // 2:
+        return
+    renewed = min(now + settings.session_seconds, ceiling)
+    if renewed <= record.expires_at:
+        return
+    changed = db.execute(update(AuthSession).where(
+        AuthSession.token_digest == record.token_digest, AuthSession.expires_at == record.expires_at,
+    ).values(expires_at=renewed)).rowcount
+    db.commit()
+    if changed:
+        db.refresh(record)
+        token = request.cookies.get(settings.cookie_name, "")
+        response.set_cookie(settings.cookie_name, token, max_age=renewed - now, httponly=True,
+                            secure=settings.production, samesite="lax", path="/")
+
+
+def authenticated(request: Request, response: Response, db: Session = Depends(get_db)):
     token = request.cookies.get(request.app.state.settings.cookie_name, "")
     record = db.get(AuthSession, digest(token)) if token and len(token) <= 128 else None
-    if record is None or record.expires_at <= int(time.time()):
+    now = int(time.time())
+    if record is None or record.expires_at <= now:
         raise HTTPException(401, "Authentication required")
     user = db.get(User, record.user_id)
     if user is None:
         raise HTTPException(401, "Authentication required")
+    renew_session(request, response, db, record, now)
     request.state.auth_session = record
     return user
 
@@ -106,7 +132,8 @@ def login(payload: LoginRequest, request: Request, response: Response, db: Sessi
     settings = request.app.state.settings
     token = secrets.token_urlsafe(32)
     record = AuthSession(token_digest=digest(token), user_id=user.id,
-                         csrf_token=secrets.token_urlsafe(32), expires_at=int(time.time()) + settings.session_seconds)
+                         csrf_token=secrets.token_urlsafe(32), expires_at=int(time.time()) + settings.session_seconds,
+                         absolute_expires_at=int(time.time()) + settings.session_absolute_seconds)
     # Rotate an existing browser session rather than retaining a fixed session identifier.
     old = request.cookies.get(settings.cookie_name, "")
     db.execute(delete(AuthSession).where((AuthSession.token_digest == digest(old)) | (AuthSession.expires_at <= int(time.time()))))

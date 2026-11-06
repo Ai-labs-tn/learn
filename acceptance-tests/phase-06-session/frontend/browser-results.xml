@@ -1,0 +1,10 @@
+<testsuites id="" name="" tests="2" failures="0" skipped="0" errors="0" time="3.914679">
+<testsuite name="auth.spec.ts" timestamp="2026-11-06T08:52:45.318Z" hostname="desktop-chromium" tests="1" failures="0" skipped="0" time="0.883" errors="0">
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.883">
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-11-06T08:52:45.318Z" hostname="mobile-chromium" tests="1" failures="0" skipped="0" time="0.92" errors="0">
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.92">
+</testcase>
+</testsuite>
+</testsuites>
