@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import path from 'node:path';
 import { PILOT } from '../../src/computerBasics/story';
-import { subtitleSegments } from '../../src/computerBasics/useGuidedPlayback';
+import { subtitleSegments } from '../../src/player/useGuidedPlayback';
 import { readCaptionDocument } from '../../src/captions/model';
 async function start(page: Page, role = 'guest') {
   await page.goto('/#/login');
@@ -16,7 +16,7 @@ async function start(page: Page, role = 'guest') {
 const player = (page: Page) => page.getByRole('region', { name: 'Inside the machine', exact: true });
 async function choose(page: Page, n: number) {
   await page.getByRole('button', { name: 'Choose scene', exact: true }).click();
-  await page.getByRole('navigation', { name: 'Hardware story scenes' }).getByRole('button').nth(n - 1).click();
+  await page.getByRole('navigation', { name: 'Story scenes' }).getByRole('button').nth(n - 1).click();
 }
 async function advanceTo(page: Page, n: number) {
   await expect.poll(async () => { await page.clock.runFor(3000); return player(page).getAttribute('data-scene'); }, { timeout: 30000, intervals: [30] }).toBe(String(n));

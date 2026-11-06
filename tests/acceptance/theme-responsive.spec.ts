@@ -85,7 +85,7 @@ for (const theme of ['light', 'dark'] as const) {
       await contrast(page, `${route} in ${theme}`);
       if (route === 'write-your-own') {
         await page.getByRole('button', { name: '▶ Run — compile to bytecode' }).click();
-        await expect(page.getByRole('button', { name: 'Next →', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Next scene', exact: true })).toBeVisible();
         await page.setViewportSize({ width: 320, height: 740 });
         await noPageOverflow(page);
         await expect.poll(() => page.locator('.monaco-editor').evaluate((element) => element.className)).toContain(theme === 'dark' ? 'vs-dark' : 'vs');

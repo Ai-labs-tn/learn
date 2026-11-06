@@ -7,7 +7,8 @@ import { useState } from 'react';
  * tabs, camera following the hot element on phones).
  */
 
-import { Whiteboard, type WhiteboardStep } from '../whiteboard/Whiteboard';
+import { SnapshotPlayer as Whiteboard } from '../../player/SnapshotPlayer';
+import type { WhiteboardStep } from '../whiteboard/Whiteboard';
 import { BST_TIMELINE } from './bstTimeline';
 import { HASH_TIMELINE } from './hashTimeline';
 import { SORT_TIMELINE } from './sortTimeline';

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import s from './hardware.module.css';
+import s from './player.module.css';
 export type PlayerIcon = 'previous' | 'play' | 'pause' | 'next' | 'replay' | 'sound' | 'muted' | 'captions' | 'chapters' | 'settings' | 'fullscreen' | 'close' | 'info' | 'explore' | 'power';
 const icons: Record<PlayerIcon, ReactNode> = {
   previous: <><path d="M6 5v14M19 5l-9 7 9 7Z" /></>,

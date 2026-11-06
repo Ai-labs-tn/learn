@@ -5,7 +5,7 @@ import styles from './learning.module.css';
 /** Subject context around the existing demos; unbuilt topics are explicitly a roadmap. */
 export function SkillTrack({ skill, chapter, children }: { skill: Skill; chapter?: Chapter; children?: ReactNode }) {
   // The theatre player owns its entire stage; unrelated subject introductions/roadmaps stay outside playback.
-  if (chapter?.id === 'inside-machine') return <div className={styles.track}>{children}</div>;
+  if (chapter && ['inside-machine', 'desktop-startup', 'chrome-launch', 'java-machine', 'jvm-runtime', 'bytecode-stepper', 'dsa'].includes(chapter.id)) return <div className={styles.track}>{children}</div>;
   return (
     <div className={styles.track}>
       <section className={styles.introduction} aria-labelledby="skill-heading">

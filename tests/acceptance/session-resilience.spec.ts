@@ -66,7 +66,9 @@ test('an active signed-in tab keeps its session alive in the background', async 
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
   await page.route('**/api/auth/me', (route) => { checks += 1; return route.continue(); });
-  await page.clock.runFor(125_000);
+  await page.clock.runFor(65_000);
+  await expect.poll(() => checks).toBeGreaterThanOrEqual(1);
+  await page.clock.runFor(65_000);
   await expect.poll(() => checks).toBeGreaterThanOrEqual(2);
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
 });

@@ -16,7 +16,7 @@ export function Brand() {
 }
 
 /** Skill areas are primary; existing content tools remain available without further development. */
-export type TrackId = 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa' | 'lessons';
+export type TrackId = 'desktop-startup' | 'chrome-launch' | 'java-machine' | 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa' | 'lessons';
 
 export const NAV_ITEMS: NavItem[] = [
   ...SKILLS.map((skill) => ({ label: skill.title, to: skillPath(skill.id), group: 'Skills' })),

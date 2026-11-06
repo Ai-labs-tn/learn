@@ -1,0 +1,326 @@
+<testsuites id="" name="" tests="136" failures="0" skipped="0" errors="0" time="270.76427499999994">
+<testsuite name="ai-assist.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="3" failures="0" skipped="0" time="4.938" errors="0">
+<testcase name="suggestion applies locally only and is never auto-saved or published" classname="ai-assist.spec.ts" time="1.739">
+</testcase>
+<testcase name="guests never see assist controls and direct assist calls are denied" classname="ai-assist.spec.ts" time="1.285">
+</testcase>
+<testcase name="disabled feature, budget exhaustion and provider failures are explicit without fail-open" classname="ai-assist.spec.ts" time="1.914">
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="12" failures="0" skipped="0" time="18.545" errors="0">
+<testcase name="anonymous users cannot read protected API or Studio" classname="auth.spec.ts" time="0.473">
+</testcase>
+<testcase name="invalid login is clear and clears password" classname="auth.spec.ts" time="1.233">
+</testcase>
+<testcase name="guest can learn, survives refresh, but cannot enter Studio" classname="auth.spec.ts" time="1.61">
+</testcase>
+<testcase name="admin accesses verified Studio; logout invalidates session" classname="auth.spec.ts" time="2.237">
+</testcase>
+<testcase name="logout without CSRF token is denied and session remains valid" classname="auth.spec.ts" time="1.303">
+</testcase>
+<testcase name="existing lesson routes remain accessible to guests" classname="auth.spec.ts" time="3.391">
+</testcase>
+<testcase name="Studio rejects a successful response with invalid content" classname="auth.spec.ts" time="1.346">
+</testcase>
+<testcase name="failed logout is not reported as success and permits recovery" classname="auth.spec.ts" time="1.598">
+</testcase>
+<testcase name="focus revalidation preserves the current learning step" classname="auth.spec.ts" time="1.405">
+</testcase>
+<testcase name="logout in another tab revokes the visible session" classname="auth.spec.ts" time="1.788">
+</testcase>
+<testcase name="revoked session on focus returns to the portfolio" classname="auth.spec.ts" time="1.416">
+</testcase>
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.745">
+</testcase>
+</testsuite>
+<testsuite name="hardware-story.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="7" failures="0" skipped="0" time="14.888" errors="0">
+<testcase name="pilot schema and subtitles preserve all edited teaching text" classname="hardware-story.spec.ts" time="0.036">
+</testcase>
+<testcase name="Power automatically runs through startup; pauses only at meaningful checkpoints" classname="hardware-story.spec.ts" time="4.251">
+</testcase>
+<testcase name="pause, scene seek and overlays stop the playback clock; controls reveal on input" classname="hardware-story.spec.ts" time="1.911">
+</testcase>
+<testcase name="guest cannot author; compact admin caption editor pauses and locks the player" classname="hardware-story.spec.ts" time="2.359">
+</testcase>
+<testcase name="speech failure falls back to subtitles and fullscreen can be exited" classname="hardware-story.spec.ts" time="1.953">
+</testcase>
+<testcase name="player light fits viewport, reduced motion and contrast" classname="hardware-story.spec.ts" time="2.201">
+</testcase>
+<testcase name="player dark fits viewport, reduced motion and contrast" classname="hardware-story.spec.ts" time="2.177">
+</testcase>
+</testsuite>
+<testsuite name="inline-captions.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="10" failures="0" skipped="0" time="16.582" errors="0">
+<testcase name="caption mapping exactly matches all 16 boot steps and rejects structural changes" classname="inline-captions.spec.ts" time="0.037">
+</testcase>
+<testcase name="guest has no inline authoring controls and direct writes/AI remain forbidden" classname="inline-captions.spec.ts" time="1.382">
+</testcase>
+<testcase name="inline draft save and explicit publication persist without changing the old pilot" classname="inline-captions.spec.ts" time="2.149">
+</testcase>
+<testcase name="AI rewrite/review are explicit, contextual and never auto-save or apply findings as captions" classname="inline-captions.spec.ts" time="1.661">
+</testcase>
+<testcase name="conflicts and AI failures retain text; cancellation rejects late suggestions" classname="inline-captions.spec.ts" time="1.787">
+</testcase>
+<testcase name="navigation warns about unsaved text, editing is pinned to its step and language" classname="inline-captions.spec.ts" time="1.693">
+</testcase>
+<testcase name="leaving unsaved text needs only one confirmation and sign-out can be cancelled" classname="inline-captions.spec.ts" time="1.589">
+</testcase>
+<testcase name="failed or incompatible draft loads never enable saves or silently substitute content" classname="inline-captions.spec.ts" time="1.469">
+</testcase>
+<testcase name="inline editor light: mobile layout, reduced motion and contrast" classname="inline-captions.spec.ts" time="2.404">
+</testcase>
+<testcase name="inline editor dark: mobile layout, reduced motion and contrast" classname="inline-captions.spec.ts" time="2.411">
+</testcase>
+</testsuite>
+<testsuite name="learning.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="3" failures="0" skipped="0" time="4.821" errors="0">
+<testcase name="legacy bookmark can step, restart and switch caption language" classname="learning.spec.ts" time="1.546">
+</testcase>
+<testcase name="guest can explore DSA topics" classname="learning.spec.ts" time="1.433">
+</testcase>
+<testcase name="guest can run the Java playground without author privileges" classname="learning.spec.ts" time="1.842">
+</testcase>
+</testsuite>
+<testsuite name="lesson-integration.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="1" failures="0" skipped="0" time="1.563" errors="0">
+<testcase name="guest reads a real persisted publication; drafts remain server-protected" classname="lesson-integration.spec.ts" time="1.563">
+</testcase>
+</testsuite>
+<testsuite name="playback.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="5" failures="0" skipped="0" time="7.162" errors="0">
+<testcase name="speech completion waits for engine state; old callbacks cannot advance after pause" classname="playback.spec.ts" time="1.401">
+</testcase>
+<testcase name="missing Tamil voice never speaks through English and captions advance" classname="playback.spec.ts" time="1.408">
+</testcase>
+<testcase name="missing browser speech API falls back to captions without breaking V1" classname="playback.spec.ts" time="1.421">
+</testcase>
+<testcase name="V1 voice-off Play advances and Space on a focused control remains native" classname="playback.spec.ts" time="1.566">
+</testcase>
+<testcase name="stalled speech pauses with explicit recovery instead of skipping" classname="playback.spec.ts" time="1.366">
+</testcase>
+</testsuite>
+<testsuite name="published-lessons.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="3" failures="0" skipped="0" time="4.153" errors="0">
+<testcase name="published story steps and bilingual captions work without author access" classname="published-lessons.spec.ts" time="1.492">
+</testcase>
+<testcase name="incompatible publication does not fall back to outdated bundled content" classname="published-lessons.spec.ts" time="1.294">
+</testcase>
+<testcase name="active reader remains pinned to its loaded publication" classname="published-lessons.spec.ts" time="1.367">
+</testcase>
+</testsuite>
+<testsuite name="session-resilience.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="5" failures="0" skipped="0" time="4.585" errors="0">
+<testcase name="a fresh visitor never gets an expiry banner after focus or visibility checks" classname="session-resilience.spec.ts" time="0.446">
+</testcase>
+<testcase name="a sleeping server never leaves the session screen hanging: timeout, explain, retry, recover" classname="session-resilience.spec.ts" time="0.857">
+</testcase>
+<testcase name="after bounded retries a persistent outage shows a clear error with a manual retry" classname="session-resilience.spec.ts" time="0.325">
+</testcase>
+<testcase name="an active signed-in tab keeps its session alive in the background" classname="session-resilience.spec.ts" time="1.465">
+</testcase>
+<testcase name="a session that expires while the tab is open says so instead of silently resetting" classname="session-resilience.spec.ts" time="1.492">
+</testcase>
+</testsuite>
+<testsuite name="shared-player.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="5" failures="0" skipped="0" time="13.01" errors="0">
+<testcase name="legacy boot is hidden, still reachable; new scripts have isolated valid caption documents" classname="shared-player.spec.ts" time="1.603">
+</testcase>
+<testcase name="player and settings are shared by hardware, JVM, bytecode, DSA and new chapters" classname="shared-player.spec.ts" time="3.387">
+</testcase>
+<testcase name="three approved journeys show causal state and play without network activity" classname="shared-player.spec.ts" time="1.903">
+</testcase>
+<testcase name="new journeys light mobile fit and contrast" classname="shared-player.spec.ts" time="3.087">
+</testcase>
+<testcase name="new journeys dark mobile fit and contrast" classname="shared-player.spec.ts" time="3.03">
+</testcase>
+</testsuite>
+<testsuite name="skill-navigation.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="5" failures="0" skipped="0" time="11.57" errors="0">
+<testcase name="skill map routes preserve legacy bookmarks and reject invalid chapter/skill combinations" classname="skill-navigation.spec.ts" time="0.02">
+</testcase>
+<testcase name="nine skills are the primary navigation; old content tools are preserved" classname="skill-navigation.spec.ts" time="1.789">
+</testcase>
+<testcase name="unbuilt skill tracks are honest roadmaps, not fake editors or AI verification" classname="skill-navigation.spec.ts" time="2.91">
+</testcase>
+<testcase name="skill layout and contrast in light, including 320px and reduced motion" classname="skill-navigation.spec.ts" time="3.427">
+</testcase>
+<testcase name="skill layout and contrast in dark, including 320px and reduced motion" classname="skill-navigation.spec.ts" time="3.424">
+</testcase>
+</testsuite>
+<testsuite name="studio.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="4" failures="0" skipped="0" time="6.839" errors="0">
+<testcase name="admin creates, saves, previews, publishes and restores without deploying" classname="studio.spec.ts" time="2.102">
+</testcase>
+<testcase name="temporary background verification failures retain unsaved text and disable writes" classname="studio.spec.ts" time="1.423">
+</testcase>
+<testcase name="admin can add and order scene beats using registered visuals" classname="studio.spec.ts" time="1.819">
+</testcase>
+<testcase name="stale admin draft save surfaces conflict rather than overwriting" classname="studio.spec.ts" time="1.495">
+</testcase>
+</testsuite>
+<testsuite name="theme-responsive.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="desktop-chromium" tests="5" failures="0" skipped="0" time="21.631" errors="0">
+<testcase name="login: light contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.33">
+</testcase>
+<testcase name="all authenticated screens: light responsive layout" classname="theme-responsive.spec.ts" time="9.492">
+</testcase>
+<testcase name="login: dark contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.26">
+</testcase>
+<testcase name="all authenticated screens: dark responsive layout" classname="theme-responsive.spec.ts" time="9.118">
+</testcase>
+<testcase name="system theme follows OS changes and explicit preference survives reload" classname="theme-responsive.spec.ts" time="0.431">
+</testcase>
+</testsuite>
+<testsuite name="ai-assist.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="3" failures="0" skipped="0" time="4.806" errors="0">
+<testcase name="suggestion applies locally only and is never auto-saved or published" classname="ai-assist.spec.ts" time="1.666">
+</testcase>
+<testcase name="guests never see assist controls and direct assist calls are denied" classname="ai-assist.spec.ts" time="1.233">
+</testcase>
+<testcase name="disabled feature, budget exhaustion and provider failures are explicit without fail-open" classname="ai-assist.spec.ts" time="1.907">
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="12" failures="0" skipped="0" time="17.808" errors="0">
+<testcase name="anonymous users cannot read protected API or Studio" classname="auth.spec.ts" time="0.424">
+</testcase>
+<testcase name="invalid login is clear and clears password" classname="auth.spec.ts" time="1.205">
+</testcase>
+<testcase name="guest can learn, survives refresh, but cannot enter Studio" classname="auth.spec.ts" time="1.538">
+</testcase>
+<testcase name="admin accesses verified Studio; logout invalidates session" classname="auth.spec.ts" time="1.796">
+</testcase>
+<testcase name="logout without CSRF token is denied and session remains valid" classname="auth.spec.ts" time="1.296">
+</testcase>
+<testcase name="existing lesson routes remain accessible to guests" classname="auth.spec.ts" time="3.302">
+</testcase>
+<testcase name="Studio rejects a successful response with invalid content" classname="auth.spec.ts" time="1.29">
+</testcase>
+<testcase name="failed logout is not reported as success and permits recovery" classname="auth.spec.ts" time="1.598">
+</testcase>
+<testcase name="focus revalidation preserves the current learning step" classname="auth.spec.ts" time="1.462">
+</testcase>
+<testcase name="logout in another tab revokes the visible session" classname="auth.spec.ts" time="1.811">
+</testcase>
+<testcase name="revoked session on focus returns to the portfolio" classname="auth.spec.ts" time="1.352">
+</testcase>
+<testcase name="session service failure shows retry rather than exposing lessons" classname="auth.spec.ts" time="0.734">
+</testcase>
+</testsuite>
+<testsuite name="hardware-story.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="7" failures="0" skipped="0" time="16.155" errors="0">
+<testcase name="pilot schema and subtitles preserve all edited teaching text" classname="hardware-story.spec.ts" time="0.023">
+</testcase>
+<testcase name="Power automatically runs through startup; pauses only at meaningful checkpoints" classname="hardware-story.spec.ts" time="3.188">
+</testcase>
+<testcase name="pause, scene seek and overlays stop the playback clock; controls reveal on input" classname="hardware-story.spec.ts" time="1.957">
+</testcase>
+<testcase name="guest cannot author; compact admin caption editor pauses and locks the player" classname="hardware-story.spec.ts" time="2.506">
+</testcase>
+<testcase name="speech failure falls back to subtitles and fullscreen can be exited" classname="hardware-story.spec.ts" time="1.889">
+</testcase>
+<testcase name="player light fits viewport, reduced motion and contrast" classname="hardware-story.spec.ts" time="3.547">
+</testcase>
+<testcase name="player dark fits viewport, reduced motion and contrast" classname="hardware-story.spec.ts" time="3.045">
+</testcase>
+</testsuite>
+<testsuite name="inline-captions.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="10" failures="0" skipped="0" time="16.833" errors="0">
+<testcase name="caption mapping exactly matches all 16 boot steps and rejects structural changes" classname="inline-captions.spec.ts" time="0.047">
+</testcase>
+<testcase name="guest has no inline authoring controls and direct writes/AI remain forbidden" classname="inline-captions.spec.ts" time="1.37">
+</testcase>
+<testcase name="inline draft save and explicit publication persist without changing the old pilot" classname="inline-captions.spec.ts" time="2.269">
+</testcase>
+<testcase name="AI rewrite/review are explicit, contextual and never auto-save or apply findings as captions" classname="inline-captions.spec.ts" time="1.693">
+</testcase>
+<testcase name="conflicts and AI failures retain text; cancellation rejects late suggestions" classname="inline-captions.spec.ts" time="1.712">
+</testcase>
+<testcase name="navigation warns about unsaved text, editing is pinned to its step and language" classname="inline-captions.spec.ts" time="1.718">
+</testcase>
+<testcase name="leaving unsaved text needs only one confirmation and sign-out can be cancelled" classname="inline-captions.spec.ts" time="1.622">
+</testcase>
+<testcase name="failed or incompatible draft loads never enable saves or silently substitute content" classname="inline-captions.spec.ts" time="1.419">
+</testcase>
+<testcase name="inline editor light: mobile layout, reduced motion and contrast" classname="inline-captions.spec.ts" time="2.493">
+</testcase>
+<testcase name="inline editor dark: mobile layout, reduced motion and contrast" classname="inline-captions.spec.ts" time="2.49">
+</testcase>
+</testsuite>
+<testsuite name="learning.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="3" failures="0" skipped="0" time="4.72" errors="0">
+<testcase name="legacy bookmark can step, restart and switch caption language" classname="learning.spec.ts" time="1.523">
+</testcase>
+<testcase name="guest can explore DSA topics" classname="learning.spec.ts" time="1.411">
+</testcase>
+<testcase name="guest can run the Java playground without author privileges" classname="learning.spec.ts" time="1.786">
+</testcase>
+</testsuite>
+<testsuite name="lesson-integration.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="1" failures="0" skipped="0" time="1.618" errors="0">
+<testcase name="guest reads a real persisted publication; drafts remain server-protected" classname="lesson-integration.spec.ts" time="1.618">
+</testcase>
+</testsuite>
+<testsuite name="playback.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="5" failures="0" skipped="0" time="7.243" errors="0">
+<testcase name="speech completion waits for engine state; old callbacks cannot advance after pause" classname="playback.spec.ts" time="1.504">
+</testcase>
+<testcase name="missing Tamil voice never speaks through English and captions advance" classname="playback.spec.ts" time="1.492">
+</testcase>
+<testcase name="missing browser speech API falls back to captions without breaking V1" classname="playback.spec.ts" time="1.428">
+</testcase>
+<testcase name="V1 voice-off Play advances and Space on a focused control remains native" classname="playback.spec.ts" time="1.46">
+</testcase>
+<testcase name="stalled speech pauses with explicit recovery instead of skipping" classname="playback.spec.ts" time="1.359">
+</testcase>
+</testsuite>
+<testsuite name="published-lessons.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="3" failures="0" skipped="0" time="4.07" errors="0">
+<testcase name="published story steps and bilingual captions work without author access" classname="published-lessons.spec.ts" time="1.508">
+</testcase>
+<testcase name="incompatible publication does not fall back to outdated bundled content" classname="published-lessons.spec.ts" time="1.271">
+</testcase>
+<testcase name="active reader remains pinned to its loaded publication" classname="published-lessons.spec.ts" time="1.291">
+</testcase>
+</testsuite>
+<testsuite name="session-resilience.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="5" failures="0" skipped="0" time="4.533" errors="0">
+<testcase name="a fresh visitor never gets an expiry banner after focus or visibility checks" classname="session-resilience.spec.ts" time="0.446">
+</testcase>
+<testcase name="a sleeping server never leaves the session screen hanging: timeout, explain, retry, recover" classname="session-resilience.spec.ts" time="0.858">
+</testcase>
+<testcase name="after bounded retries a persistent outage shows a clear error with a manual retry" classname="session-resilience.spec.ts" time="0.338">
+</testcase>
+<testcase name="an active signed-in tab keeps its session alive in the background" classname="session-resilience.spec.ts" time="1.446">
+</testcase>
+<testcase name="a session that expires while the tab is open says so instead of silently resetting" classname="session-resilience.spec.ts" time="1.445">
+</testcase>
+</testsuite>
+<testsuite name="shared-player.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="5" failures="0" skipped="0" time="12.899" errors="0">
+<testcase name="legacy boot is hidden, still reachable; new scripts have isolated valid caption documents" classname="shared-player.spec.ts" time="1.325">
+</testcase>
+<testcase name="player and settings are shared by hardware, JVM, bytecode, DSA and new chapters" classname="shared-player.spec.ts" time="3.463">
+</testcase>
+<testcase name="three approved journeys show causal state and play without network activity" classname="shared-player.spec.ts" time="1.904">
+</testcase>
+<testcase name="new journeys light mobile fit and contrast" classname="shared-player.spec.ts" time="3.123">
+</testcase>
+<testcase name="new journeys dark mobile fit and contrast" classname="shared-player.spec.ts" time="3.084">
+</testcase>
+</testsuite>
+<testsuite name="skill-navigation.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="5" failures="0" skipped="0" time="14.678" errors="0">
+<testcase name="skill map routes preserve legacy bookmarks and reject invalid chapter/skill combinations" classname="skill-navigation.spec.ts" time="0.021">
+</testcase>
+<testcase name="nine skills are the primary navigation; old content tools are preserved" classname="skill-navigation.spec.ts" time="2.08">
+</testcase>
+<testcase name="unbuilt skill tracks are honest roadmaps, not fake editors or AI verification" classname="skill-navigation.spec.ts" time="5.542">
+</testcase>
+<testcase name="skill layout and contrast in light, including 320px and reduced motion" classname="skill-navigation.spec.ts" time="3.462">
+</testcase>
+<testcase name="skill layout and contrast in dark, including 320px and reduced motion" classname="skill-navigation.spec.ts" time="3.573">
+</testcase>
+</testsuite>
+<testsuite name="studio.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="4" failures="0" skipped="0" time="6.872" errors="0">
+<testcase name="admin creates, saves, previews, publishes and restores without deploying" classname="studio.spec.ts" time="2.172">
+</testcase>
+<testcase name="temporary background verification failures retain unsaved text and disable writes" classname="studio.spec.ts" time="1.437">
+</testcase>
+<testcase name="admin can add and order scene beats using registered visuals" classname="studio.spec.ts" time="1.792">
+</testcase>
+<testcase name="stale admin draft save surfaces conflict rather than overwriting" classname="studio.spec.ts" time="1.471">
+</testcase>
+</testsuite>
+<testsuite name="theme-responsive.spec.ts" timestamp="2026-11-06T19:39:12.818Z" hostname="mobile-chromium" tests="5" failures="0" skipped="0" time="22.838" errors="0">
+<testcase name="login: light contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.452">
+</testcase>
+<testcase name="all authenticated screens: light responsive layout" classname="theme-responsive.spec.ts" time="9.765">
+</testcase>
+<testcase name="login: dark contrast, mobile layout and touch targets" classname="theme-responsive.spec.ts" time="1.423">
+</testcase>
+<testcase name="all authenticated screens: dark responsive layout" classname="theme-responsive.spec.ts" time="9.777">
+</testcase>
+<testcase name="system theme follows OS changes and explicit preference survives reload" classname="theme-responsive.spec.ts" time="0.421">
+</testcase>
+</testsuite>
+</testsuites>

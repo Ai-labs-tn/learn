@@ -1,4 +1,4 @@
-import { Whiteboard } from '../whiteboard/Whiteboard';
+import { SnapshotPlayer as Whiteboard } from '../../player/SnapshotPlayer';
 import { JVM_TIMELINE } from './classLoadingTimeline';
 import { JVM_CAPTIONS_TA } from './jvmCaptions.ta';
 import { JvmMachine, focusAnchorOf } from './JvmMachine';

@@ -1,0 +1,11 @@
+.stage { position: relative; width: 100%; height: 100%; }
+.stage > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.software { position: absolute; top: 2%; right: 1%; width: 30%; max-height: 94%; box-sizing: border-box; overflow: auto; padding: 0.75rem; border: 1px solid var(--color-primary); border-radius: 10px; color: var(--color-text-primary); background: var(--color-surface); box-shadow: var(--shadow-md); font-size: clamp(0.75rem, 1.25vw, 1rem); }
+.stage[data-focus='storage'] .software { right: auto; left: 1%; }
+.software h3, .software h4 { margin: 0.25rem 0 0.5rem; font-size: inherit; }
+.software ul { margin: 0.5rem 0; padding-inline-start: 1.1rem; line-height: 1.5; }
+.software p { line-height: 1.5; margin: 0.5rem 0; }
+.cpu { padding: 0.5rem; border-inline-start: 3px solid var(--color-primary); background: var(--color-background); }
+.monitor { background: var(--color-terminal-background); color: var(--color-terminal-text); border: 2px solid var(--color-border-strong); padding: 0.5rem; border-radius: 6px; }
+.software small { color: var(--color-text-secondary); }
+@media (max-width: 620px) { .stage > svg { height: 55%; top: 0; } .software, .stage[data-focus='storage'] .software { top: 52%; right: 0; left: 0; width: 100%; height: 48%; max-height: none; font-size: 0.85rem; padding: 0.5rem; } .software ul { display: flex; flex-wrap: wrap; gap: 4px 18px; } }

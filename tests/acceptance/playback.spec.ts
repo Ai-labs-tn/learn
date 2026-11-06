@@ -84,6 +84,7 @@ test('V1 voice-off Play advances and Space on a focused control remains native',
   await mockSpeech(page);
   await page.addInitScript(() => localStorage.setItem('learn.voice', 'false'));
   await signIn(page);
+  await page.goto('/#/boot-os');
   const next = page.getByRole('button', { name: 'Next step', exact: true });
   await next.focus(); await next.press('Space');
   await expect(page.getByText('2 / 16', { exact: true })).toBeVisible();

@@ -48,12 +48,15 @@ test('nine skills are the primary navigation; old content tools are preserved', 
   await expect(nav.getByRole('link', { name: 'Computer Basics', exact: true })).toHaveAttribute('aria-current', 'page');
   await nav.getByRole('link', { name: 'Core Java Internals', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Inside the JVM', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Choose scene', exact: true }).click();
   const chapters = page.getByRole('navigation', { name: 'Core Java Internals chapters' });
   await chapters.getByRole('link', { name: 'Bytecode stepper', exact: true }).click();
   await expect(page).toHaveURL(/#\/skills\/core-java\/bytecode-stepper$/);
   await expect(page.getByRole('heading', { name: 'Bytecode stepper', exact: true })).toBeVisible();
   await page.reload();
+  await page.getByRole('button', { name: 'Choose scene', exact: true }).click();
   await expect(chapters.getByRole('link', { name: 'Bytecode stepper', exact: true })).toHaveAttribute('aria-current', 'page');
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Inside the JVM', exact: true })).toBeVisible();
   await page.goForward();

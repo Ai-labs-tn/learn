@@ -10,6 +10,8 @@ async function login(page: Page, role = 'admin') {
   await page.getByLabel('Username', { exact: false }).fill(role);
   await page.getByLabel('Password', { exact: false }).fill(role === 'admin' ? process.env.TEST_ADMIN_PASSWORD ?? 'LocalAdmin123!Only' : process.env.TEST_GUEST_PASSWORD ?? 'LocalGuest123!Only');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
+  await page.goto('/#/boot-os');
   await expect(page.getByRole('heading', { name: 'How a computer boots', exact: true })).toBeVisible();
 }
 const draftUrl = '**/api/studio/lessons/boot-whiteboard/draft';
@@ -129,7 +131,7 @@ test('navigation warns about unsaved text, editing is pinned to its step and lan
   await page.getByRole('button', { name: '✎ Edit caption', exact: true }).click();
   await editor(page).fill('Unsaved local wording.');
   page.once('dialog', dialog => dialog.dismiss());
-  await page.getByRole('navigation', { name: 'Computer Basics chapters' }).getByRole('link', { name: 'Boot & OS', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Computer Basics chapters' }).getByRole('link', { name: 'Inside the machine', exact: true }).click();
   await expect(editor(page)).toHaveValue('Unsaved local wording.');
   await expect(page.getByRole('button', { name: '🌐 தமிழ்', exact: true })).toBeDisabled();
   page.once('dialog', dialog => dialog.accept());
@@ -148,8 +150,8 @@ test('leaving unsaved text needs only one confirmation and sign-out can be cance
   await expect(editor(page)).toHaveValue('Keep this unsaved caption until I confirm.');
   let prompts = 0;
   page.on('dialog', async dialog => { prompts++; await dialog.accept(); });
-  await page.getByRole('navigation', { name: 'Computer Basics chapters' }).getByRole('link', { name: 'Boot & OS', exact: true }).click();
-  await expect(page).toHaveURL(/#\/skills\/computer-basics\/boot-os$/);
+  await page.getByRole('navigation', { name: 'Computer Basics chapters' }).getByRole('link', { name: 'Inside the machine', exact: true }).click();
+  await expect(page).toHaveURL(/#\/skills\/computer-basics\/inside-machine$/);
   await expect(page.getByRole('textbox', { name: 'Caption and narration', exact: true })).toHaveCount(0);
   expect(prompts).toBe(1);
 });

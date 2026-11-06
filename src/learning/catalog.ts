@@ -1,5 +1,5 @@
 /** Skill-first learning map. Only chapters with an existing implementation are launchable. */
-export type DemoId = 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa';
+export type DemoId = 'desktop-startup' | 'chrome-launch' | 'java-machine' | 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa';
 export type SkillId = 'computer-basics' | 'core-java' | 'spring-jpa' | 'gcp' | 'ai-ml' | 'sql-geospatial' | 'python-fastapi' | 'angular' | 'react';
 
 export type Chapter = { id: DemoId; title: string; description: string };
@@ -16,8 +16,9 @@ export const SKILLS: readonly Skill[] = [
     id: 'computer-basics', title: 'Computer Basics',
     introduction: 'Start with the machine beneath every application: how power becomes a running program.',
     chapters: [
-      { id: 'boot-os', title: 'Boot & OS', description: 'Step through power, firmware, POST, the bootloader, kernel and a running process.' },
       { id: 'inside-machine', title: 'Inside the machine', description: 'Press Power, inspect CPU/RAM/storage, explore a startup failure, and compare SSD/HDD read mechanisms in an eight-scene pilot.' },
+      { id: 'desktop-startup', title: 'Reach the desktop', description: 'Follow a UEFI/Linux example from bootloader to kernel, services and a graphical session.' },
+      { id: 'chrome-launch', title: 'Launch Chrome', description: 'Follow process creation, memory mappings, demand paging and CPU scheduling to a local browser window.' },
     ],
     plannedTopics: ['Memory and storage', 'Processes, threads and scheduling', 'Networking fundamentals'],
   },
@@ -29,6 +30,7 @@ export const SKILLS: readonly Skill[] = [
       { id: 'bytecode-stepper', title: 'Bytecode stepper', description: 'Watch instructions change the operand stack and local variables.' },
       { id: 'write-your-own', title: 'Java playground', description: 'Edit and run the supported Java subset in our educational compiler and interpreter—not a full JDK.' },
       { id: 'dsa', title: 'Data structures & algorithms', description: 'Explore trees, sorting and hash maps one step at a time.' },
+      { id: 'java-machine', title: 'Java on the machine', description: 'Connect OS processes and CPU execution to JVM frames, heap objects, primitives, Strings and shared state.' },
     ],
     plannedTopics: ['Garbage collection', 'Collections internals', 'Concurrency and the Java memory model'],
   },
@@ -83,6 +85,11 @@ export function resolveLearningRoute(hash: string): LearningRoute {
   const path = (hash.replace(/^#/, '').split('?')[0] || DEFAULT_LEARNING_PATH).replace(/\/$/, '');
   if (path === '/studio' || path.startsWith('/studio/')) return { kind: 'studio', path: '/studio' };
   if (path === '/lessons') return { kind: 'lessons', path };
+  if (path === '/boot-os' || path === '/skills/computer-basics/boot-os') {
+    return { kind: 'skill', path: '/skills/computer-basics/boot-os', skill: SKILLS[0], chapter: {
+      id: 'boot-os', title: 'Boot & OS (legacy)', description: 'Archived boot whiteboard. Preserved for existing bookmarks.',
+    } };
+  }
   for (const skill of SKILLS) {
     if (path === skillPath(skill.id)) return { kind: 'skill', path, skill, chapter: skill.chapters[0] };
     for (const chapter of skill.chapters) {

@@ -1,9 +1,10 @@
 import { useId } from 'react';
 import type { Part } from './story';
-import s from './hardware.module.css';
+import s from '../player/player.module.css';
 
-export function Machine({ scene, focus, powered, event, failed, readBlock, onPower }: {
+export function Machine({ scene, focus, powered, event, failed, readBlock, onPower, transfer }: {
   scene: number; focus: Part; powered: boolean; event: number; failed: boolean; readBlock: number | null; onPower: () => void;
+  transfer?: 'storage-ram' | 'cpu-ram' | 'firmware-cpu';
 }) {
   const uid = useId().replace(/:/g, '');
   const views: Record<Part, string> = { overview: '0 0 1080 650', cpu: '190 80 530 390', ram: '415 70 460 430', firmware: '300 230 440 330', storage: '680 140 390 480' };
@@ -89,6 +90,11 @@ export function Machine({ scene, focus, powered, event, failed, readBlock, onPow
         <g transform={`rotate(${readBlock === null ? 0 : (readBlock-7)*3} 974 566)`} className={s.head}><path d="M974 566L878 519L888 509L977 554Z" fill="var(--color-border-strong)" /><circle cx="974" cy="566" r="11" fill="var(--color-surface)" stroke="var(--color-border-strong)" /></g>
       </g>
       <text x="825" y="435" className={s.smallLabel}>Saved files retained without power</text>
+      {powered && transfer && <g fill="none" stroke="var(--color-info)" strokeWidth="5" className={s.activity}>
+        {transfer === 'storage-ram' && <path d="M807 377C717 377 744 508 680 508H650V340H635" />}
+        {transfer === 'cpu-ram' && <path d="M431 291H500V270H526" />}
+        {transfer === 'firmware-cpu' && <path d="M346 477V397H340V364" />}
+      </g>}
       {/* Instruction/data highlights follow conceptual interconnect routes, not the PSU cable. */}
       {moving && <g fill="none" strokeWidth="5" className={s.activity}>
         {scene === 1 && <path d="M785 191C732 209 754 129 702 130H477V209" stroke="var(--color-warning)" />}

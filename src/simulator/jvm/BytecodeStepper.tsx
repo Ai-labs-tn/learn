@@ -1,5 +1,3 @@
-import { Badge, Button, Card, ProgressBar, Stack } from '@agiler/ui';
-
 /**
  * The bytecode stepper — now a whiteboard lecture: source, bytecode, frame inspector and console
  * live as cards on the board; each micro-step is a spoken beat (the operand stack pushes and
@@ -8,8 +6,7 @@ import { Badge, Button, Card, ProgressBar, Stack } from '@agiler/ui';
  */
 
 import { cn } from '../../utils/cn';
-import { useSimulator } from '../useSimulator';
-import { Whiteboard } from '../whiteboard/Whiteboard';
+import { SnapshotPlayer as Whiteboard } from '../../player/SnapshotPlayer';
 import { ADDER_SOURCE, BYTECODE, BYTECODE_TIMELINE } from './bytecodeTimeline';
 import { BYTECODE_CAPTIONS_TA } from './bytecodeCaptions.ta';
 import type { BytecodeFrame, BytecodeStep } from './types';
@@ -232,103 +229,26 @@ export function BytecodeTrace(props: {
   listings: TraceListing[];
   steps: BytecodeStep[];
 }) {
-  const sim = useSimulator(props.steps);
-  const step = sim.current;
-  const [current, ...frozen] = step.frames;
-
-  return (
-    <div className={styles.grid}>
-      <div className={styles.column}>
-        <Card padding="lg">
-          <Stack gap={3}>
-            <h3>Source</h3>
-            <SourceView lines={props.sourceLines} activeLine={step.sourceLine} />
-          </Stack>
-        </Card>
-        <Card padding="lg">
-          <Stack gap={3}>
-            <h3>Bytecode</h3>
-            <BytecodeView listings={props.listings} method={current?.method ?? ''} pc={step.pc} />
-          </Stack>
-        </Card>
-      </div>
-
-      <div className={styles.column}>
-        <Card padding="lg">
-          <Stack gap={4}>
-            <Badge variant="info" size="sm">
-              {step.phase}
-            </Badge>
-            <h2>{step.title}</h2>
-            <p>{step.narration}</p>
-            <ProgressBar label="Program progress" value={sim.progress} size="md" />
-            <div className={styles.controls}>
-              <Button variant="outline" size="sm" onClick={sim.prev} disabled={sim.atStart}>
-                ← Prev
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={sim.toggle}
-                disabled={sim.atEnd && !sim.playing}
-              >
-                {sim.playing ? 'Pause' : 'Play'}
-              </Button>
-              <Button variant="outline" size="sm" onClick={sim.next} disabled={sim.atEnd}>
-                Next →
-              </Button>
-              <span className={styles.spacer} />
-              <Button variant="ghost" size="sm" onClick={sim.reset}>
-                Restart
-              </Button>
-            </div>
-            <span className={styles.stepChip}>
-              Micro-step {sim.index + 1} of {sim.total}
-            </span>
-          </Stack>
-        </Card>
-
-        {current && <FrameView frame={current} top />}
-        {frozen.map((frame) => (
-          <FrameView key={frame.method} frame={frame} top={false} />
-        ))}
-        {step.frames.length === 0 && (
-          <Card padding="lg">
-            <Stack gap={2}>
-              <h3>Frames</h3>
-              <p>The stack is empty — main() has returned and the JVM is shutting down.</p>
-            </Stack>
-          </Card>
-        )}
-
-        <Card padding="lg">
-          <Stack gap={3}>
-            <h3>Console (stdout)</h3>
-            <pre className={styles.console}>{step.console.length === 0 ? '—' : step.console.join('\n')}</pre>
-          </Stack>
-        </Card>
-      </div>
-    </div>
-  );
+  return <Whiteboard title="Program execution" microsteps
+    steps={props.steps.map(step => ({ ...step, caption: step.narration }))}
+    anchorFor={sim => ANCHORS[focusPartOf(sim.current)]}
+    renderCanvas={sim => <BytecodeBoard step={sim.current} sourceLines={props.sourceLines} listings={props.listings} />} />;
 }
 
 /** The curated Adder lecture — same trace, hand-authored exact javap listing. */
 export function BytecodeStepper() {
-  const sim = useSimulator(
-    BYTECODE_TIMELINE.map((step) => ({
-      ...step,
-      caption: step.narration,
-      captionTa: BYTECODE_CAPTIONS_TA[step.id],
-      phase: ADD_METHOD_STEPS.has(step.id) ? 'add()' : 'main()',
-    })),
-  );
-  const anchor = ANCHORS[focusPartOf(sim.current)];
+  const steps = BYTECODE_TIMELINE.map((step) => ({
+    ...step,
+    caption: step.narration,
+    captionTa: BYTECODE_CAPTIONS_TA[step.id],
+    phase: ADD_METHOD_STEPS.has(step.id) ? 'add()' : 'main()',
+  }));
 
   return (
     <Whiteboard
       title="Bytecode stepper"
-      steps={sim.steps}
-      anchorFor={() => anchor}
+      steps={steps}
+      anchorFor={sim => ANCHORS[focusPartOf(sim.current)]}
       renderCanvas={(boardSim) => (
         <BytecodeBoard
           step={boardSim.current}

@@ -48,7 +48,7 @@ test('invalid login is clear and clears password', async ({ page }) => {
 
 test('guest can learn, survives refresh, but cannot enter Studio', async ({ page }, info) => {
   await login(page, 'guest');
-  await expect(page.getByRole('heading', { name: 'How a computer boots' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Inside the machine' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
   expect((await page.request.get('/api/studio/status')).status()).toBe(403);
@@ -127,6 +127,7 @@ test('failed logout is not reported as success and permits recovery', async ({ p
 
 test('focus revalidation preserves the current learning step', async ({ page }) => {
   await login(page, 'guest');
+  await page.goto('/#/boot-os');
   await page.getByRole('button', { name: 'Next step', exact: true }).click();
   await expect(page.getByText('2 / 16', { exact: true })).toBeVisible();
   const refreshed = page.waitForResponse((response) => response.url().endsWith('/api/auth/me'));

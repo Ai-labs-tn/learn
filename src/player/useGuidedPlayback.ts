@@ -13,8 +13,8 @@ export function subtitleSegments(text: string): string[] {
 }
 
 /** One clock owns subtitle progress, narration and visual cue indices. Pause replays the current short unit. */
-export function useGuidedPlayback({ text, runKey, active, voice, language, onComplete }: {
-  text: string; runKey: string; active: boolean; voice: boolean; language: 'en' | 'ta'; onComplete: () => void;
+export function useGuidedPlayback({ text, runKey, active, voice, language, rate = 1, onComplete }: {
+  text: string; runKey: string; active: boolean; voice: boolean; language: 'en' | 'ta'; rate?: number; onComplete: () => void;
 }) {
   const segments = useMemo(() => subtitleSegments(text), [text]);
   const [index, setIndex] = useState(0);
@@ -30,7 +30,7 @@ export function useGuidedPlayback({ text, runKey, active, voice, language, onCom
     const synth = window.speechSynthesis;
     let speech: SpeechSynthesisUtterance | null = null;
     const start = Date.now();
-    const readingMs = Math.max(2100, Math.min(6000, segments[index].length * 55));
+    const readingMs = Math.max(2100, Math.min(6000, segments[index].length * 55 / rate));
     const valid = () => generation.current === id && !settled;
     const finish = () => {
       if (!valid()) return;
@@ -55,6 +55,7 @@ export function useGuidedPlayback({ text, runKey, active, voice, language, onCom
         synth.cancel();
         speech = new SpeechSynthesisUtterance(segments[index]);
         speech.lang = language === 'ta' ? 'ta-IN' : 'en-US';
+        speech.rate = rate;
         if (selected) speech.voice = selected;
         speech.onend = () => { if (valid()) afterReading(); };
         speech.onerror = () => fallback('Narration interrupted. Subtitles continue at reading pace.');
@@ -68,6 +69,6 @@ export function useGuidedPlayback({ text, runKey, active, voice, language, onCom
       timers.forEach(timer => window.clearTimeout(timer));
       if (speech) { speech.onend = null; speech.onerror = null; synth?.cancel(); }
     };
-  }, [active, voice, language, segments, index, runKey]);
+  }, [active, voice, language, segments, index, runKey, rate]);
   return { subtitle: segments[Math.min(index, segments.length - 1)], index, total: segments.length, warning };
 }
