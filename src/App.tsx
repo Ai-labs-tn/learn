@@ -74,6 +74,7 @@ export function App() {
   const [loginPage, setLoginPage] = useState(wantsLogin);
   const [dismissedNotice, setDismissedNotice] = useState<string | null>(null);
   const auth = useSession();
+  const { hadSession } = auth;
   const status = auth.state.status;
 
   // Back/forward gestures (hash change without a click) must switch tracks too.
@@ -103,7 +104,8 @@ export function App() {
         : <SessionPending error={auth.state.status === 'error'} message={auth.state.message} onRetry={auth.retry} />;
     }
     // The portfolio never waits for the (possibly sleeping) API: it renders from its bundled snapshot.
-    const message = auth.state.status === 'anonymous' ? auth.state.message : undefined;
+    // A session-expiry banner only matters if there was an actual session that ended.
+    const message = (hadSession && auth.state.status === 'anonymous') ? auth.state.message : undefined;
     return (
       <Portfolio
         onLogin={() => { window.location.hash = '#/login'; }}

@@ -53,6 +53,8 @@ export function useSession() {
   const [state, setState] = useState<SessionState>({ status: 'loading' });
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
+  // A "session expired" banner only means something if there was an actual session.
+  const [hadSession, setHadSession] = useState(false);
   const mounted = useRef(false);
   const generation = useRef(0);
   const checkController = useRef<AbortController | null>(null);
@@ -87,6 +89,7 @@ export function useSession() {
           if (mounted.current && generation.current === current) setState({ status: 'loading', message });
         });
       if (mounted.current && generation.current === current) {
+        setHadSession(true);
         setState({ status: 'authenticated', session, focusHeading: options.focusHeading });
       }
     } catch (error) {
@@ -99,7 +102,8 @@ export function useSession() {
           : { status: 'error', message: options.errorMessage ?? NOT_RESPONDING });
       } else if (options.background && error instanceof ApiError && error.status === 401) {
         // An active user must learn why they were returned to sign-in, not just see a form.
-        setState({ status: 'anonymous', message: options.anonymousMessage ?? 'Your session expired. Please sign in again.' });
+        // A visitor who never signed in has no session to expire — stay silent.
+        setState({ status: 'anonymous', message: hadSession ? (options.anonymousMessage ?? 'Your session expired. Please sign in again.') : undefined });
       } else {
         setState(error instanceof ApiError && error.status === 401
           ? { status: 'anonymous', message: options.anonymousMessage }
@@ -169,6 +173,7 @@ export function useSession() {
       notifyOtherTabs();
       if (mounted.current && generation.current === current && !checkQueued.current) {
         setLogoutError(null);
+        setHadSession(true);
         setState({ status: 'authenticated', session, focusHeading: true });
       }
     } finally {
@@ -225,5 +230,5 @@ export function useSession() {
     void check({ anonymousMessage: 'Your session has expired. Please sign in again.' });
   }, [check]);
 
-  return { state, login, logout, expire, loggingOut, logoutError, retry: () => void check() };
+  return { state, login, logout, expire, loggingOut, logoutError, retry: () => void check(), hadSession };
 }
