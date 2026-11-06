@@ -101,9 +101,11 @@ export function useSession() {
           ? { ...previous, warning: 'Connection interrupted. Your local work is retained; server access will be checked again.' }
           : { status: 'error', message: options.errorMessage ?? NOT_RESPONDING });
       } else if (options.background && error instanceof ApiError && error.status === 401) {
-        // An active user must learn why they were returned to sign-in, not just see a form.
-        // A visitor who never signed in has no session to expire — stay silent.
-        setState({ status: 'anonymous', message: hadSession ? (options.anonymousMessage ?? 'Your session expired. Please sign in again.') : undefined });
+        // Use the current state, not a captured hadSession value in this stable callback.
+        // Preserve anonymous notices (including an intentional logout) on later focus checks.
+        setState((previous) => previous.status === 'authenticated'
+          ? { status: 'anonymous', message: options.anonymousMessage ?? 'Your session expired. Please sign in again.' }
+          : previous.status === 'anonymous' ? previous : { status: 'anonymous' });
       } else {
         setState(error instanceof ApiError && error.status === 401
           ? { status: 'anonymous', message: options.anonymousMessage }

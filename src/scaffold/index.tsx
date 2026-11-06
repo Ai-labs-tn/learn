@@ -1,5 +1,6 @@
 import { AuthMethods, DataTable, Pagination, Sidebar, TopBar, type Column, type NavItem } from '@agiler/ui';
 import { useState } from 'react';
+import { SKILLS, skillPath } from '../learning/catalog';
 
 /** Learning simulators (the app's domain layer, exposed to screens through the scaffold). */
 export { BootSimulator } from '../simulator/boot/BootSimulator';
@@ -13,16 +14,12 @@ export function Brand() {
   return <strong>Learn with Saravana</strong>;
 }
 
-/** The learning tracks shipped so far (Phase 3 — DSA — lands next). */
+/** Skill areas are primary; existing content tools remain available without further development. */
 export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa' | 'lessons';
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Boot & OS', to: '/boot-os' },
-  { label: 'JVM runtime', to: '/jvm-runtime' },
-  { label: 'Bytecode stepper', to: '/bytecode-stepper' },
-  { label: 'Write your own', to: '/write-your-own' },
-  { label: 'DSA', to: '/dsa' },
-  { label: 'Lesson library', to: '/lessons' },
+  ...SKILLS.map((skill) => ({ label: skill.title, to: skillPath(skill.id), group: 'Skills' })),
+  { label: 'Lesson library', to: '/lessons', group: 'Existing tools' },
 ];
 
 

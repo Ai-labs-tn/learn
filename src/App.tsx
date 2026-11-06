@@ -7,6 +7,8 @@ import { useSession } from './auth/useSession';
 import styles from './auth/auth.module.css';
 
 import { Portfolio } from './portfolio/Portfolio';
+import { DEFAULT_LEARNING_PATH, resolveLearningRoute } from './learning/catalog';
+import { SkillTrack } from './learning/SkillTrack';
 import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
@@ -40,14 +42,7 @@ const TRACKS: Record<TrackId, ReactNode> = {
   lessons: <PublishedLessonsScreen />,
 };
 
-type Route = TrackId | 'studio';
-
-function routeFromHash(): Route {
-  const path = (window.location.hash.replace(/^#/, '') || '/boot-os').split('?')[0];
-  if (path === '/studio' || path.startsWith('/studio/')) return 'studio';
-  const id = path.replace(/^\//, '').replace(/[^a-z-]/g, '') as TrackId;
-  return Object.hasOwn(TRACKS, id) ? id : 'boot-os';
-}
+const routeFromHash = () => resolveLearningRoute(window.location.hash);
 
 /**
  * Router-agnostic link for the template: renders a plain anchor around `#<to>` so the browser's
@@ -61,7 +56,8 @@ function HashLink(props: {
   children?: ReactNode;
 }) {
   return (
-    <a href={`#${props.to}`} className={props.className} title={props.title} onClick={props.onClick}>
+    <a href={`#${props.to}`} className={props.className} title={props.title} onClick={props.onClick}
+      aria-current={routeFromHash().path === props.to || routeFromHash().path.startsWith(`${props.to}/`) ? 'page' : undefined}>
       {props.children}
     </a>
   );
@@ -70,7 +66,7 @@ function HashLink(props: {
 const wantsLogin = () => window.location.hash.split('?')[0] === '#/login';
 
 export function App() {
-  const [route, setRoute] = useState<Route>(routeFromHash);
+  const [route, setRoute] = useState(routeFromHash);
   const [loginPage, setLoginPage] = useState(wantsLogin);
   const [dismissedNotice, setDismissedNotice] = useState<string | null>(null);
   const auth = useSession();
@@ -86,7 +82,7 @@ export function App() {
 
   // After signing in, leave the login URL for the learning tracks.
   useEffect(() => {
-    if (status === 'authenticated' && wantsLogin()) window.location.replace('#/boot-os');
+    if (status === 'authenticated' && wantsLogin()) window.location.replace(`#${DEFAULT_LEARNING_PATH}`);
   }, [status]);
 
   // After logout or expiry the portfolio is the landing page; do not leave a stale app URL behind.
@@ -116,17 +112,17 @@ export function App() {
   }
 
   const { user } = auth.state.session;
-  const items = user.role === 'admin' ? [...NAV_ITEMS, { label: 'Studio', to: '/studio' }] : NAV_ITEMS;
+  const items = user.role === 'admin' ? [...NAV_ITEMS, { label: 'Studio', to: '/studio', group: 'Existing tools' }] : NAV_ITEMS;
 
   return (
     <>
       {auth.state.focusHeading && <SignedInHeading username={user.username} />}
-      <Fragment key={route}>
+      <Fragment key={route.path}>
         <AppTemplate
           brand={<Brand />}
           title="Learn with Saravana"
           items={items}
-          activePath={`/${route}`}
+          activePath={route.path}
           linkComponent={HashLink}
           actions={
             <div className={styles.actions}>
@@ -142,9 +138,12 @@ export function App() {
           {auth.state.warning && <p role="status">{auth.state.warning}</p>}
           {auth.logoutError && <p className={styles.error} role="alert">{auth.logoutError}</p>}
           {auth.loggingOut && <p role="status">Signing out…</p>}
-          {route === 'studio'
+          {route.kind === 'studio'
             ? user.role === 'admin' ? <Studio onSessionExpired={auth.expire} /> : <StudioDenied />
-            : TRACKS[route]}
+            : route.kind === 'lessons' ? TRACKS.lessons
+              : <SkillTrack skill={route.skill} chapter={route.chapter}>
+                  {route.chapter && TRACKS[route.chapter.id]}
+                </SkillTrack>}
         </AppTemplate>
       </Fragment>
     </>

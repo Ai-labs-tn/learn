@@ -1,0 +1,15 @@
+.track { min-inline-size: 0; color: var(--color-text-primary); }
+.introduction, .roadmap { padding: 1rem; margin: 0.75rem; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-surface); overflow-wrap: anywhere; }
+.introduction h2 { margin: 0.25rem 0 0.5rem; font-size: clamp(1.3rem, 3vw, 1.8rem); }
+.introduction p, .roadmap p { line-height: 1.6; margin: 0.5rem 0; }
+.eyebrow { font-size: 0.875rem; color: var(--color-text-secondary); }
+.chapters { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0; margin: 1rem 0 0.5rem; list-style: none; }
+.chapters li { min-inline-size: 0; max-inline-size: 100%; }
+.chapters a { display: inline-flex; align-items: center; min-block-size: 44px; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border-strong); border-radius: 8px; background: var(--color-background); color: var(--color-text-primary); text-decoration: none; }
+.chapters a:hover { text-decoration: underline; }
+.chapters a[aria-current='page'] { color: var(--color-on-primary); background: var(--color-primary); border-color: var(--color-primary); font-weight: 700; }
+.chapters a:focus-visible { outline: 3px solid var(--color-focus-ring); outline-offset: 3px; }
+.chapterDescription { color: var(--color-text-secondary); }
+.planned { padding: 0.75rem; border-inline-start: 3px solid var(--color-primary); background: var(--color-background); }
+.roadmap h3 { margin: 0 0 0.5rem; }
+.roadmap ul { padding-inline-start: 1.5rem; line-height: 1.8; }

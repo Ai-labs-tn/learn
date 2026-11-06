@@ -159,7 +159,7 @@ test('session service failure shows retry rather than exposing lessons', async (
   await page.route('**/api/auth/me', (route) => route.fulfill({ status: 503, body: '{}' }));
   // A 503 is what a waking server returns, so the app retries (3s + 6s + 9s) before giving up.
   await page.clock.install();
-  await page.goto('/');
+  await page.goto('/#/login');
   await expect.poll(async () => {
     await page.clock.runFor(5_000);
     return page.getByRole('heading', { name: 'Unable to check your session' }).isVisible();

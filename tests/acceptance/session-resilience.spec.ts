@@ -10,6 +10,21 @@ async function advanceUntil(page: Page, done: () => boolean | Promise<boolean>, 
   await expect.poll(async () => { await page.clock.runFor(stepMs); return done(); }, { timeout: 30_000, intervals: [50] }).toBe(true);
 }
 
+test('a fresh visitor never gets an expiry banner after focus or visibility checks', async ({ page, context }) => {
+  let calls = 0;
+  await page.route('**/api/auth/me', (route) => { calls += 1; return route.fulfill(unauthenticated); });
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Saravanamanikandan S', exact: true })).toBeVisible();
+  await expect.poll(() => calls).toBeGreaterThan(0);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const checked = page.waitForResponse('**/api/auth/me');
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await checked;
+    await expect(page.getByText(/session.*expir/i)).toHaveCount(0);
+  }
+  expect((await context.cookies()).filter((cookie) => cookie.httpOnly)).toHaveLength(0);
+});
+
 test('a sleeping server never leaves the session screen hanging: timeout, explain, retry, recover', async ({ page }) => {
   let calls = 0;
   await page.route('**/api/auth/me', (route) => {
