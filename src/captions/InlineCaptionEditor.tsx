@@ -3,25 +3,27 @@ import { useEffect, useRef, useState } from 'react';
 import { ApiError, request } from '../auth/api';
 import type { Language, LessonDocument } from '../lessons/types';
 import { useCaptionAccess } from './CaptionAccess';
-import { BASELINE, CAPTION_LESSON, captionText, changedCaptions, draftPath, publishedPath, readCaptionDocument, replaceCaption } from './model';
+import { BASELINE, captionText, changedCaptions, readCaptionDocument, replaceCaption } from './model';
 import styles from './captions.module.css';
 
 type Draft = { document: LessonDocument; version: number; etag: string };
 type Suggestion = { text: string; model: string; mode: 'improve' | 'review' };
-async function readDraft(response: Response): Promise<Draft> {
+async function readDraft(response: Response, baseline: LessonDocument): Promise<Draft> {
   const value = await response.json();
   const etag = response.headers.get('ETag');
   if (!Number.isInteger(value.version) || value.version < 1 || etag !== `"${value.version}"`) throw new Error('Invalid draft version. Reload before saving.');
-  return { document: readCaptionDocument(value.document), version: value.version, etag };
+  return { document: readCaptionDocument(value.document, baseline), version: value.version, etag };
 }
 
-export function InlineCaptionEditor({ stepId, phase, language, onEditing }: {
-  stepId: string; phase: string; language: Language; onEditing: (open: boolean) => void;
+export function InlineCaptionEditor({ stepId, phase, language, onEditing, baseline = BASELINE }: {
+  stepId: string; phase: string; language: Language; onEditing: (open: boolean) => void; baseline?: LessonDocument;
 }) {
+  const draftPath = `/api/studio/lessons/${encodeURIComponent(baseline.id)}/draft`;
+  const publishedPath = `/api/lessons/${encodeURIComponent(baseline.id)}`;
   const access = useCaptionAccess();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [publication, setPublication] = useState<LessonDocument>(BASELINE);
+  const [publication, setPublication] = useState<LessonDocument>(baseline);
   const [text, setText] = useState('');
   const [savedText, setSavedText] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -118,50 +120,50 @@ export function InlineCaptionEditor({ stepId, phase, language, onEditing }: {
     setOpen(true); onEditing(true); setLoaded(false); setSuggestion(null); setReviewPublish(false);
     void run(async signal => {
       let next: Draft | null = null;
-      try { next = await readDraft(await request(draftPath, { signal })); }
+      try { next = await readDraft(await request(draftPath, { signal }), baseline); }
       catch (cause) { if (!(cause instanceof ApiError && cause.status === 404)) throw cause; }
-      let published = BASELINE;
-      try { const body = await (await request(publishedPath, { signal })).json(); published = readCaptionDocument(body.document); }
+      let published = baseline;
+      try { const body = await (await request(publishedPath, { signal })).json(); published = readCaptionDocument(body.document, baseline); }
       catch (cause) { if (!(cause instanceof ApiError && cause.status === 404)) throw cause; }
       if (signal.aborted) return;
-      const value = captionText(next?.document ?? BASELINE, stepId, language);
+      const value = captionText(next?.document ?? baseline, stepId, language);
       setDraft(next); setPublication(published); setText(value); setSavedText(value); setLoaded(true); setConflict(false); setDenied(false);
-      setMessage(next ? `Saved draft v${next.version} loaded. This is not necessarily the published caption.` : 'No draft yet. Saving creates a separate 16-step boot caption draft; the older pilot is not changed.');
+      setMessage(next ? `Saved draft v${next.version} loaded. This is not necessarily the published caption.` : `No draft yet. Saving creates a separate ${baseline.scenes[0].beats.length}-step caption draft for this chapter; other lessons are not changed.`);
       await checkAi(signal);
     });
   };
   const save = () => void run(async signal => {
-    const document = replaceCaption(draft?.document ?? BASELINE, stepId, language, text);
+    const document = replaceCaption(draft?.document ?? baseline, stepId, language, text, baseline);
     const result = await readDraft(await request(draft ? draftPath : '/api/studio/lessons', {
       method: draft ? 'PUT' : 'POST', headers: { ...headers, ...(draft ? { 'If-Match': draft.etag } : {}) }, body: JSON.stringify(document), signal,
-    }));
+    }), baseline);
     if (signal.aborted) return;
     setDraft(result); setSavedText(text); setSuggestion(null); setReviewPublish(false);
     setMessage('Draft saved. Learners still see the published caption. Publishing requires a separate review and confirmation.');
   });
   const assist = (mode: 'improve' | 'review') => void run(async signal => {
-    replaceCaption(draft?.document ?? BASELINE, stepId, language, text); // validate locally, also on the server
+    replaceCaption(draft?.document ?? baseline, stepId, language, text, baseline); // validate locally, also on the server
     setSuggestion(null);
     const value = await (await request('/api/studio/ai/assist', {
       method: 'POST', signal, timeoutMs: 65_000, headers,
-      body: JSON.stringify({ mode, language, text, lessonTitle: BASELINE.title, sceneContext: {
-        title: `${phase}: ${stepId}`, beats: [{ id: stepId, narrationEn: captionText(draft?.document ?? BASELINE, stepId, 'en') }],
+      body: JSON.stringify({ mode, language, text, lessonTitle: baseline.title, sceneContext: {
+        title: `${phase}: ${stepId}`, beats: [{ id: stepId, narrationEn: captionText(draft?.document ?? baseline, stepId, 'en') }],
         summary: 'Conceptual PC boot illustration, not literal electrical timing. Firmware is software in non-volatile storage; POST checks vary by platform; BIOS legacy boot and UEFI boot differ. CPU cores and hardware threads are not interchangeable. Reference notes: UEFI Specification, boot manager and platform initialization; Intel Software Developer Manuals, processor initialization. These are bundled notes, not live source retrieval. Flag uncertainty and OS or hardware-specific assumptions. Never invent citations or claim verification.',
       }, maxBeats: 1 }),
     })).json();
     if (signal.aborted) return;
     if (typeof value.suggestion !== 'string' || typeof value.model !== 'string' || !value.suggestion.trim()) throw new Error('Invalid AI response; nothing was applied.');
-    if (mode === 'improve') replaceCaption(draft?.document ?? BASELINE, stepId, language, value.suggestion);
+    if (mode === 'improve') replaceCaption(draft?.document ?? baseline, stepId, language, value.suggestion, baseline);
     setSuggestion({ mode, text: value.suggestion, model: value.model });
     await checkAi(signal);
   });
   const changes = draft ? changedCaptions(publication, draft.document) : [];
   const publish = () => void run(async signal => {
     if (!draft || dirty || !reviewPublish) return;
-    const response = await request(`/api/studio/lessons/${CAPTION_LESSON}/publish`, {
+    const response = await request(`/api/studio/lessons/${encodeURIComponent(baseline.id)}/publish`, {
       method: 'POST', signal, headers: { ...headers, 'If-Match': draft.etag },
     });
-    const next = await readDraft(response);
+    const next = await readDraft(response, baseline);
     if (signal.aborted) return;
     setDraft(next); setPublication(next.document); setReviewPublish(false);
     setMessage('Published successfully. Reload the boot scene to load this revision. Active playback remains pinned to its loaded captions.');
@@ -208,7 +210,7 @@ export function InlineCaptionEditor({ stepId, phase, language, onEditing }: {
           </div>
           {reviewPublish && <div className={styles.suggestion}>
             <h4>Publish all saved caption changes in this boot lesson?</h4>
-            <p>This publishes the entire saved 16-step caption draft, including changes from other editing sessions. Review every difference below.</p>
+            <p>This publishes the entire saved caption draft for this chapter, including changes from other editing sessions. Review every difference below.</p>
             {changes.map(change => <div key={`${change.step}-${change.language}`}><h5>{change.step} ({change.language})</h5><p>Published/baseline: {change.before}</p><p>Saved draft: {change.after}</p></div>)}
             <Button disabled={busy || conflict || dirty || denied} onClick={publish}>Confirm publish captions</Button>
             <Button variant="outline" disabled={busy} onClick={() => setReviewPublish(false)}>Cancel publication</Button>

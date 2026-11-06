@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { ApiError, request } from '../auth/api';
 import { readPublished, type LessonDocument } from '../lessons/types';
-import { BASELINE, publishedPath, readCaptionDocument } from './model';
+import { BASELINE, readCaptionDocument } from './model';
 
 /** Pin captions for this mounted scene; later publications never hot-swap active playback. */
-export function useBootCaptions() {
-  const [document, setDocument] = useState<LessonDocument>(BASELINE);
+export function useBootCaptions(baseline: LessonDocument = BASELINE) {
+  const [document, setDocument] = useState<LessonDocument>(baseline);
   const [notice, setNotice] = useState('');
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     void (async () => {
       try {
-        const result = readPublished(await (await request(publishedPath, { signal: controller.signal })).json());
-        const next = readCaptionDocument(result.document);
+        const result = readPublished(await (await request(`/api/lessons/${encodeURIComponent(baseline.id)}`, { signal: controller.signal })).json());
+        const next = readCaptionDocument(result.document, baseline);
         if (!controller.signal.aborted) setDocument(next);
       } catch (error) {
         if (!controller.signal.aborted && !(error instanceof ApiError && error.status === 404)) {
@@ -24,6 +24,6 @@ export function useBootCaptions() {
       }
     })();
     return () => controller.abort();
-  }, []);
+  }, [baseline]);
   return { document, notice, ready };
 }

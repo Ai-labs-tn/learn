@@ -16,6 +16,7 @@ import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
 import { DsaScreen } from './screens/DsaScreen';
 import { JvmRuntimeScreen } from './screens/JvmRuntimeScreen';
 import { PublishedLessonsScreen } from './screens/PublishedLessonsScreen';
+import { HardwareStoryScreen } from './screens/HardwareStoryScreen';
 
 /**
  * The playground is lazy: Monaco's editor core is heavy and belongs only to the track that
@@ -32,6 +33,7 @@ const LazyPlaygroundScreen = lazy(() =>
  */
 const TRACKS: Record<TrackId, ReactNode> = {
   'boot-os': <BootSimulatorScreen />,
+  'inside-machine': <HardwareStoryScreen />,
   'jvm-runtime': <JvmRuntimeScreen />,
   'bytecode-stepper': <BytecodeStepperScreen />,
   'write-your-own': (

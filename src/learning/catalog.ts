@@ -1,5 +1,5 @@
 /** Skill-first learning map. Only chapters with an existing implementation are launchable. */
-export type DemoId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa';
+export type DemoId = 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa';
 export type SkillId = 'computer-basics' | 'core-java' | 'spring-jpa' | 'gcp' | 'ai-ml' | 'sql-geospatial' | 'python-fastapi' | 'angular' | 'react';
 
 export type Chapter = { id: DemoId; title: string; description: string };
@@ -17,6 +17,7 @@ export const SKILLS: readonly Skill[] = [
     introduction: 'Start with the machine beneath every application: how power becomes a running program.',
     chapters: [
       { id: 'boot-os', title: 'Boot & OS', description: 'Step through power, firmware, POST, the bootloader, kernel and a running process.' },
+      { id: 'inside-machine', title: 'Inside the machine', description: 'Press Power, inspect CPU/RAM/storage, explore a startup failure, and compare SSD/HDD read mechanisms in an eight-scene pilot.' },
     ],
     plannedTopics: ['Memory and storage', 'Processes, threads and scheduling', 'Networking fundamentals'],
   },

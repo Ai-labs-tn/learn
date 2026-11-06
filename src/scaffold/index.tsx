@@ -4,6 +4,7 @@ import { SKILLS, skillPath } from '../learning/catalog';
 
 /** Learning simulators (the app's domain layer, exposed to screens through the scaffold). */
 export { BootSimulator } from '../simulator/boot/BootSimulator';
+export { HardwareStory } from '../computerBasics/HardwareStory';
 export { JvmRuntime } from '../simulator/jvm/JvmRuntime';
 export { BytecodeStepper } from '../simulator/jvm/BytecodeStepper';
 export { DsaVisualizer } from '../simulator/dsa/DsaVisualizer';
@@ -15,7 +16,7 @@ export function Brand() {
 }
 
 /** Skill areas are primary; existing content tools remain available without further development. */
-export type TrackId = 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa' | 'lessons';
+export type TrackId = 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa' | 'lessons';
 
 export const NAV_ITEMS: NavItem[] = [
   ...SKILLS.map((skill) => ({ label: skill.title, to: skillPath(skill.id), group: 'Skills' })),

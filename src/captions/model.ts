@@ -7,12 +7,12 @@ export const draftPath = `/api/studio/lessons/${CAPTION_LESSON}/draft`;
 export const publishedPath = `/api/lessons/${CAPTION_LESSON}`;
 
 /** Caption-only workflow: reject structural/visual changes, never silently discard them. */
-export function readCaptionDocument(value: unknown): LessonDocument {
+export function readCaptionDocument(value: unknown, expected: LessonDocument = BASELINE): LessonDocument {
   const doc = readDocument(value);
   const skeleton = (document: LessonDocument) => ({ ...document, scenes: document.scenes.map(scene => ({
     ...scene, beats: scene.beats.map(({ narration: _n, captions: _c, ...beat }) => beat),
   })) });
-  if (JSON.stringify(skeleton(doc)) !== JSON.stringify(skeleton(BASELINE))) {
+  if (JSON.stringify(skeleton(doc)) !== JSON.stringify(skeleton(expected))) {
     throw new Error('The saved lesson structure does not match this boot scene. Inline editing is blocked to protect existing content.');
   }
   if (doc.scenes[0].beats.some(beat => (['en', 'ta'] as const).some(language =>
@@ -26,13 +26,13 @@ export function captionText(doc: LessonDocument, step: string, language: Languag
   if (!beat) throw new Error('The caption step was not found.');
   return beat.captions?.[language] ?? beat.narration[language];
 }
-export function replaceCaption(doc: LessonDocument, step: string, language: Language, text: string) {
+export function replaceCaption(doc: LessonDocument, step: string, language: Language, text: string, expected: LessonDocument = BASELINE) {
   const copy = structuredClone(doc);
   const beat = copy.scenes[0].beats.find(item => item.id === step);
   if (!beat) throw new Error('The caption step was not found.');
   beat.narration[language] = text;
   if (beat.captions?.[language] !== undefined) beat.captions[language] = text;
-  return readCaptionDocument(copy);
+  return readCaptionDocument(copy, expected);
 }
 export function changedCaptions(previous: LessonDocument, next: LessonDocument) {
   return next.scenes[0].beats.flatMap(beat => (['en', 'ta'] as const).flatMap(language => {

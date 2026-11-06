@@ -30,7 +30,9 @@ Fact-checking is advisory technical review using the supplied caption, scene con
 
 Evidence: `acceptance-tests/skill-phase-02/`. Production build/design lint/theme lint pass; security audit reports zero vulnerabilities. Full browser suite: 112 passed, including real local persistence/publication, English/Tamil isolation, guest/API denial, AI failures, stale response cancellation, conflicts, unsaved-navigation/sign-out guards, reduced motion and light/dark contrast. Backend: 277 passed, 34 skipped (PostgreSQL-only checks run in CI). All functional tests used isolated local data and mocked AI; no production test data or paid/provider calls were created.
 
-## Phase 3 — Computer Basics animated pilot
+## Phase 3 — Computer Basics animated pilot (slice 1 implemented)
+
+The owner approved an eight-scene hardware-first storyboard: before power, startup request, processor, firmware fetch/execute, RAM write/read, POST failure/retry, power-loss prediction, and SSD/HDD read inspection. Implemented as a separate Inside the machine chapter; the legacy Boot & OS stays intact. Includes contextual hardware zoom, English/Tamil captions, motion pause and reused admin caption editing under the isolated `computer-hardware-pilot` document. Evidence and limitations: `acceptance-tests/skill-phase-03/README.md`. Full browser suite: 122 passed; production build and backend schema validation passed. Review this slice before extending to Chrome/OS launch, remote requests or JVM internals.
 
 Resume the previously deferred Phase 6 power-on → firmware → POST animation only after the inline workflow is validated. Approve script/storyboard; distinguish illustrative scenes from literal hardware. Test replay, mobile, reduced motion, English/Tamil captions and cancellation.
 
