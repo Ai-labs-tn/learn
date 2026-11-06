@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "id": "boot-whiteboard",
+  "title": "How a computer boots",
+  "description": "Caption and narration text for the 16-step boot whiteboard. Illustrative hardware scenes, not a literal electrical simulation.",
+  "scenes": [
+    {
+      "id": "boot-sequence",
+      "title": "Boot sequence — conceptual PC overview",
+      "beats": [
+        {
+          "id": "power",
+          "narration": {
+            "en": "Watch the board — the moment power arrives, everything wakes up empty. RAM remembers nothing; the disks and this small firmware chip are the only things that know anything.",
+            "ta": "பேனலைப் பாருங்கள் — power வந்ததும் எல்லாம் காலியாக எழுகிறது. RAM எதையும் நினைவில் வைக்காது; disk மற்றும் இந்தச் சின்ன firmware chip மட்டுமே எல்லாத் தகவலையும் தெரிந்து வைத்திருக்கின்றன."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "cpu-wake",
+          "narration": {
+            "en": "Here is our processor. It wakes up knowing nothing at all — its very first instruction has to come from a chip that never forgets.",
+            "ta": "இதோ நமது processor. அது எழுந்ததும் எதுவும் தெரியாது — அதன் முதல் instruction எப்போதும் மறக்காத ஒரு chip-லிருந்து தான் வர வேண்டும்."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "firmware",
+          "narration": {
+            "en": "This small chip is the BIOS — or UEFI today. Non-volatile memory wired straight to the CPU: it hands over the very first instruction, then gets out of the way.",
+            "ta": "இந்தச் சின்ன chip தான் BIOS — இன்றைக்கு UEFI. Non-volatile memory, CPU-க்கு நேரடியாக இணைக்கப்பட்டது: மிக முதல் instruction-ஐ இது கொடுத்துவிட்டு, தன் வேலை முடிந்ததும் விலகிக்கொள்கிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "post",
+          "narration": {
+            "en": "Before anything else, the machine tests itself — POST. The CPU pokes the RAM banks, the keyboard, the disks. And look: RAM is still completely empty.",
+            "ta": "வேறு எதற்கும் முன், machine தன்னையே சோதிக்கிறது — POST. CPU, RAM banks, keyboard, disks — எல்லாவற்றையும் தொட்டுப் பார்க்கிறது. இதைப் பாருங்கள்: RAM இன்னும் முற்றிலும் காலியாக இருக்கிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "boot-device",
+          "narration": {
+            "en": "The firmware walks its boot order and reads the first sector of the SSD. The operating system is still asleep on disk — nothing lives in RAM yet.",
+            "ta": "Firmware தனது boot order-ஐப் பின்பற்றி SSD-ன் முதல் sector-ஐப் படிக்கிறது. Operating system இன்னும் disk-ல் தூங்கிக்கொண்டிருக்கிறது — RAM-ல் இன்னும் எதுவும் இல்லை."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "bootloader",
+          "narration": {
+            "en": "That boot sector is tiny — its only job is to load a real bootloader, GRUB or the Windows Boot Manager, into low memory. Watch it fly in from disk.",
+            "ta": "அந்த boot sector மிகச் சிறியது — அதன் வேலை ஒன்றே ஒன்று: உண்மையான bootloader-ஐ (GRUB அல்லது Windows Boot Manager) low memory-க்குள் load செய்துவிட்டுப் போவது. Disk-லிருந்து அது பறந்து வருவதைப் பாருங்கள்."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "kernel-load",
+          "narration": {
+            "en": "Now the big one. The kernel comes off the disk into a protected zone — kernel space. User programs may never touch this part of memory.",
+            "ta": "இப்போது முக்கியமான பகுதி. Kernel disk-லிருந்து ஒரு பாதுகாக்கப்பட்ட பகுதிக்குள் — kernel space — வருகிறது. User programs இந்தப் பகுதியைத் தொடவே முடியாது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "kernel-takeover",
+          "narration": {
+            "en": "The bootloader hands the machine to the kernel and stops existing. From this moment, the OS owns the CPU, the memory maps and every device.",
+            "ta": "Bootloader, machine-ஐ kernel-ிடம் ஒப்படைத்துவிட்டு மறைந்துவிடுகிறது. இந்த நொடியிலிருந்து OS தான் CPU, memory map, எல்லா devices — எல்லாவற்றையும் ஆளுகிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "hardware",
+          "narration": {
+            "en": "Drivers probe every device, and the root filesystem mounts from the SSD — the first real files the OS reads as its own.",
+            "ta": "Drivers ஒவ்வொரு device-ஐயும் probe செய்கின்றன; root filesystem SSD-லிருந்து mount ஆகிறது — OS தனக்காக முதன்முறையாக உண்மையான files-ஐப் படிக்கிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "user-space",
+          "narration": {
+            "en": "The kernel’s first act: start a process in user space — init on Linux, smss.exe on Windows. Everything you will ever run lives in this lower region.",
+            "ta": "Kernel-ின் முதல் செயல்: user space-ல் ஒரு process-ஐத் தொடங்குவது — Linux-ல் init, Windows-ல் smss.exe. இனி நீங்கள் run செய்யும் எதுவும் இந்தப் பகுதியில் தான் வாழும்."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "services",
+          "narration": {
+            "en": "Services come up one by one — networking, logging — and each one is its own process, kept apart by the kernel.",
+            "ta": "Services ஒவ்வொன்றாக எழுகின்றன — networking, logging — ஒவ்வொன்றும் தனித்தனி process-கள்; kernel அவற்றைப் பிரித்து வைத்து, schedule செய்கிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "gui",
+          "narration": {
+            "en": "The graphics stack starts and the screen comes alive — the machine is finally something you can point at.",
+            "ta": "Graphics stack தொடங்கி, screen உயிர் பெறுகிறது — machine இப்போது நீங்கள் சுட்டிக்காட்டக்கூடிய ஒன்றாக மாறிவிட்டது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "login",
+          "narration": {
+            "en": "Your credentials, please. The OS checks them against its user database — then it starts your session.",
+            "ta": "உங்கள் credentials, தயவுசெய்து. OS அவற்றை user database-உடன் சரிபார்த்துவிட்டு — உங்களுக்கான session-ஐத் தொடங்குகிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "desktop",
+          "narration": {
+            "en": "Booted. Every piece of software you can see is a process in user space, scheduled onto the cores.",
+            "ta": "Boot முடிந்தது. நீங்கள் பார்க்கும் ஒவ்வொரு software-ம் user space-ல் ஓர் OS process தான்; cores-களுக்குள் scheduler அவற்றைப் பிரித்துத் தருகிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "launch",
+          "narration": {
+            "en": "You double-click an app — and the OS goes to work: it reads the program image from disk and maps it into a fresh address space. A new process is born.",
+            "ta": "நீங்கள் ஒரு app-ஐ double-click செய்கிறீர்கள் — OS உடனேயே வேலைக்குத் தூண்டப்படுகிறது: disk-லிருந்து program image-ஐப் படித்து, ஒர் புதிய address space-ல் map செய்கிறது. ஒர் புதிய process பிறக்கிறது."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        },
+        {
+          "id": "running",
+          "narration": {
+            "en": "The scheduler places your app on a core. Four cores can truly run four things at the same instant — and everything you just watched happened inside this machine.",
+            "ta": "Scheduler உங்கள் app-ஐ ஒரு core-ல் வைக்கிறது. நான்கு cores ஒரே நொடியில் நான்கு வேலைகளை உண்மையாகவே இணையாகச் செய்யும் — நீங்கள் இப்போது பார்த்த ஒவ்வொன்றும் இந்த machine-க்குள் நடந்ததே."
+          },
+          "visual": {
+            "component": "boot-machine",
+            "focus": "overview",
+            "action": "focus"
+          }
+        }
+      ]
+    }
+  ]
+}

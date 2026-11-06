@@ -16,11 +16,19 @@ Nine primary skill areas: Computer Basics; Core Java Internals; Advanced Java �
 
 Evidence: `acceptance-tests/skill-phase-01/`. Production build/design lint/theme lint pass. Complete browser suite: 92 passed. Backend: 274 passed, 33 skipped (PostgreSQL unavailable locally; CI supplies PostgreSQL). Tests used explicit isolated SQLite settings on localhost, no production database or OpenRouter calls.
 
-## Phase 2 — Inline caption authoring (next, not implemented)
+## Phase 2 — Inline caption authoring (implemented, locally validated)
 
 Admin-only Edit / Rewrite / AI fact-check controls above the current scene's caption. Pause playback while editing; address the current scene/beat and language explicitly. Compare original/suggestion; require acceptance. Reuse existing versioned storage and authorisation behind the scenes without extending Studio. Save draft and explicit publication must remain distinct. Handle conflicts, cancellation, provider failure, stale responses and unsaved edits. Guests cannot read drafts or invoke writes/AI directly.
 
-Fact-check against scene context, technology version and authoritative documentation where available. Show uncertainty; AI review is not a guarantee. Never fabricate citations or claim source checking when no sources were retrieved.
+Implemented on the 16-step Boot & OS whiteboard, in both English and Tamil. Controls sit immediately above the active caption and are provided only by the authenticated admin context. Opening a control loads the editor first; an AI call requires an explicit action inside it. No automatic AI calls, saves or publication.
+
+Storage reuses the existing lesson draft/revision/audit endpoints under the separate ID `boot-whiteboard`. This draft is created only on the first Save, not by viewing the scene or opening the editor. The existing 8-beat `boot-pilot` is never overwritten. As ordinary lesson content, the new record can also appear in the existing Studio/library listings; their UI has not been extended or changed. Caption/narration stay synchronized per language. Incompatible structural edits and divergent caption overrides block inline editing rather than silently removing content.
+
+Save draft and publication are distinct. Publication review shows all saved text differences across this boot lesson; explicit confirmation publishes the entire saved draft with If-Match protection. Active readers remain pinned; reload loads the new caption revision. Until a first publication exists, the original bundled text is used. Other load failures show an explicit baseline warning.
+
+Fact-checking is advisory technical review using the supplied caption, scene context and bundled PC/UEFI notes. The UI links reference documentation and explicitly says there is **no live source retrieval** and no guarantee of factual verification. Review findings cannot be applied as caption text; rewrites require explicit acceptance into the editor. Free-model credentials, budgets and permissions remain server-side.
+
+Evidence: `acceptance-tests/skill-phase-02/`. Production build/design lint/theme lint pass; security audit reports zero vulnerabilities. Full browser suite: 112 passed, including real local persistence/publication, English/Tamil isolation, guest/API denial, AI failures, stale response cancellation, conflicts, unsaved-navigation/sign-out guards, reduced motion and light/dark contrast. Backend: 277 passed, 34 skipped (PostgreSQL-only checks run in CI). All functional tests used isolated local data and mocked AI; no production test data or paid/provider calls were created.
 
 ## Phase 3 — Computer Basics animated pilot
 

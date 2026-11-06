@@ -9,6 +9,7 @@ import styles from './auth/auth.module.css';
 import { Portfolio } from './portfolio/Portfolio';
 import { DEFAULT_LEARNING_PATH, resolveLearningRoute } from './learning/catalog';
 import { SkillTrack } from './learning/SkillTrack';
+import { CaptionAccessProvider } from './captions/CaptionAccess';
 import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
@@ -141,9 +142,11 @@ export function App() {
           {route.kind === 'studio'
             ? user.role === 'admin' ? <Studio onSessionExpired={auth.expire} /> : <StudioDenied />
             : route.kind === 'lessons' ? TRACKS.lessons
-              : <SkillTrack skill={route.skill} chapter={route.chapter}>
-                  {route.chapter && TRACKS[route.chapter.id]}
-                </SkillTrack>}
+              : <CaptionAccessProvider access={user.role === 'admin' ? { csrfToken: auth.state.session.csrfToken, onSessionExpired: auth.expire } : null}>
+                  <SkillTrack skill={route.skill} chapter={route.chapter}>
+                    {route.chapter && TRACKS[route.chapter.id]}
+                  </SkillTrack>
+                </CaptionAccessProvider>}
         </AppTemplate>
       </Fragment>
     </>

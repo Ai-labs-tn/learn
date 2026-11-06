@@ -98,8 +98,10 @@ export function Whiteboard<T extends WhiteboardStep>({
   steps,
   renderCanvas,
   anchorFor,
+  renderCaptionTools,
 }: {
   title: string;
+  renderCaptionTools?: (step: T, language: CaptionLanguage, onEditing: (open: boolean) => void) => ReactNode;
   steps: readonly T[];
   renderCanvas: (sim: UseSimulatorResult<T>) => ReactNode;
   /** Board-space point (viewBox 1040×620) the phone camera should centre on this step. */
@@ -107,6 +109,8 @@ export function Whiteboard<T extends WhiteboardStep>({
 }) {
   // Playback is driven here (manualAdvance) so voice and timers share one clock.
   const sim = useSimulator(steps, 1600, { manualAdvance: true });
+  const [captionEditing, setCaptionEditing] = useState(false);
+  const onCaptionEditing = (open: boolean) => { sim.pause(); setCaptionEditing(open); };
   // Lecture preferences persist across tracks and reloads (Tamil stays selected once chosen).
   const preference = <T,>(key: string, fallback: T, valid: (value: unknown) => value is T): T => {
     try {
@@ -293,6 +297,12 @@ export function Whiteboard<T extends WhiteboardStep>({
     const superseded = () => runIdRef.current !== runId;
     const spoken = lang === 'ta' && sim.current.captionTa ? sim.current.captionTa : sim.current.caption;
 
+    if (captionEditing) {
+      synth?.cancel();
+      audioRef.current?.pause();
+      audioRef.current = null;
+      return undefined;
+    }
     if (!voiceOn) {
       synth?.cancel();
       audioRef.current?.pause();
@@ -452,7 +462,7 @@ export function Whiteboard<T extends WhiteboardStep>({
       // No synth.cancel() here: a superseding run cancels first, so the newest audio wins.
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [voiceOn, sim.playing, sim.index, lang, pace, speechVoicesReady]);
+  }, [voiceOn, sim.playing, sim.index, lang, pace, speechVoicesReady, captionEditing]);
 
   useEffect(
     () => () => {
@@ -476,7 +486,7 @@ export function Whiteboard<T extends WhiteboardStep>({
   const onKeyDown = (event: KeyboardEvent) => {
     const target = event.target as HTMLElement;
     if (target.closest('button, a, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"]')) return;
-    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (captionEditing || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'ArrowRight') sim.next();
     else if (event.key === 'ArrowLeft') sim.prev();
     else if (event.key === ' ') {
@@ -491,7 +501,7 @@ export function Whiteboard<T extends WhiteboardStep>({
   };
 
   return (
-    <div ref={boardRef} className={styles.board} onKeyDown={onKeyDown} tabIndex={0}>
+    <div ref={boardRef} className={styles.board} data-editing={captionEditing} onKeyDown={onKeyDown} tabIndex={0}>
       {/* One compact top bar: the title, the voice config and the lecture controls. */}
       <div className={styles.topBar}>
         <h2 className={styles.title}>{title}</h2>
@@ -502,7 +512,7 @@ export function Whiteboard<T extends WhiteboardStep>({
             size="sm"
             variant="outline"
             onClick={sim.prev}
-            disabled={sim.atStart}
+            disabled={captionEditing || sim.atStart}
           >
             ←
           </IconButton>
@@ -512,7 +522,7 @@ export function Whiteboard<T extends WhiteboardStep>({
             size="sm"
             variant="solid"
             onClick={sim.toggle}
-            disabled={sim.atEnd && !sim.playing}
+            disabled={captionEditing || (sim.atEnd && !sim.playing)}
           >
             {sim.playing ? '⏸' : '▶'}
           </IconButton>
@@ -522,7 +532,7 @@ export function Whiteboard<T extends WhiteboardStep>({
             size="sm"
             variant="outline"
             onClick={sim.next}
-            disabled={sim.atEnd}
+            disabled={captionEditing || sim.atEnd}
           >
             →
           </IconButton>
@@ -532,6 +542,7 @@ export function Whiteboard<T extends WhiteboardStep>({
             size="sm"
             variant="ghost"
             onClick={sim.reset}
+            disabled={captionEditing}
           >
             ↺
           </IconButton>
@@ -553,6 +564,7 @@ export function Whiteboard<T extends WhiteboardStep>({
               setSpeechVoicesReady(true);
               setLang((current) => (current === 'en' ? 'ta' : 'en'));
             }}
+            disabled={captionEditing}
             title="Caption language — English or Tamil (jargons stay in English). Refreshes installed speech voices."
           >
             {lang === 'en' ? '🌐 தமிழ்' : '🌐 English'}
@@ -587,6 +599,7 @@ export function Whiteboard<T extends WhiteboardStep>({
               key={item.phase}
               type="button"
               className={cn(styles.pill, done && styles.pillDone, current && styles.pillCurrent)}
+              disabled={captionEditing}
               onClick={() => sim.jumpTo(item.at)}
               title={steps[item.at].caption}
             >
@@ -595,7 +608,8 @@ export function Whiteboard<T extends WhiteboardStep>({
           );
         })}
       </div>
-      <p className={styles.caption} title={sim.current.caption}>
+      {renderCaptionTools?.(sim.current, lang, onCaptionEditing)}
+      <p className={styles.caption} title={spoken}>
         <span className={styles.captionQuote}>&ldquo;</span>
         {reducedMotion ? spoken : caption}
         <span className={styles.caret} aria-hidden="true" />
@@ -607,7 +621,7 @@ export function Whiteboard<T extends WhiteboardStep>({
           className={styles.stage}
           style={stage ? { width: stage.w, height: stage.h } : undefined}
         >
-          {renderCanvas(sim)}
+          {renderCanvas(captionEditing ? { ...sim, jumpTo: () => {} } : sim)}
         </div>
       </div>
     </div>

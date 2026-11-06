@@ -8,6 +8,10 @@
   outline: none;
 }
 
+/* Inline authoring needs document scrolling rather than a fixed-height stage. */
+.board[data-editing='true'] { height: auto !important; }
+.board[data-editing='true'] .stageWrap { min-height: 320px; }
+
 /* Top bar: title + controls + voice config, always visible. */
 .topBar {
   display: flex;
