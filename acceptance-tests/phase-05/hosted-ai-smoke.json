@@ -1,0 +1,17 @@
+{
+  "health": 200,
+  "guest_login": 200,
+  "guest_ai_status_denied": 403,
+  "admin_login": 200,
+  "ai_status": {
+    "code": 200,
+    "enabled": true,
+    "remainingToday": 100
+  },
+  "assist": {
+    "code": 200,
+    "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "chars": 846,
+    "detail": null
+  }
+}
