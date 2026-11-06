@@ -1,7 +1,7 @@
 {
-  "profileId": "local-preview",
-  "version": 0,
-  "updatedAt": "2026-11-06T15:05:25Z",
+  "profileId": "prf-fbfa0b052d9149da",
+  "version": 1,
+  "updatedAt": "2026-11-06T11:49:23.982Z",
   "profile": {
     "schemaVersion": 1,
     "identity": {
@@ -130,22 +130,18 @@
       },
       {
         "title": "Star of the Month",
-        "date": null,
         "description": "Successful implementation of CICD automation for the Spring Batch and SOAP based applications with zero defects."
       },
       {
         "title": "Star of the Month",
-        "date": null,
         "description": "Successful migration of monolithic Spring MVC to spring boot micro-services."
       },
       {
         "title": "ACE",
-        "date": null,
         "description": "Successful implementation of ELK log monitoring in Spring Boot micro services."
       },
       {
         "title": "B’Con",
-        "date": null,
         "description": "Successful implementation of SOAP based web-services and validator framework."
       }
     ],
@@ -155,8 +151,7 @@
         "role": "Staff Engineer",
         "company": "Altimetrik Corp",
         "location": "Chennai, Tamil Nadu",
-        "start": "2021-05",
-        "end": null
+        "start": "2021-05"
       },
       {
         "id": "cognizant",
