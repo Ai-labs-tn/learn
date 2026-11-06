@@ -9,6 +9,7 @@ permissions:
 jobs:
   acceptance:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17
@@ -52,7 +53,20 @@ jobs:
         env:
           TEST_POSTGRES_URL: postgresql+psycopg://acceptance:disposable-ci-only@127.0.0.1:5432/learn_acceptance
         run: python -m pytest backend -q --junitxml=acceptance-tests/phase-05/backend/ci-junit.xml
-      - run: npx playwright install --with-deps chromium
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Chromium (fast path; apt fallback only if it cannot launch)
+        # `--with-deps` also apt-installs fonts from a mirror that is sometimes very slow
+        # (one run stalled for 7+ minutes). The runner image already provides Chrome's system
+        # libraries, so try the browser alone first and fall back to the full install.
+        timeout-minutes: 10
+        run: |
+          npx playwright install chromium
+          node -e "require('@playwright/test').chromium.launch().then(b => b.close()).then(() => console.log('chromium launches'))" \
+            || npx playwright install --with-deps chromium
       - name: Start isolated browser-test API
         env:
           APP_ENV: test
