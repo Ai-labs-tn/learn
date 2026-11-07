@@ -37,7 +37,7 @@ export function SnapshotPlayer<T extends WhiteboardStep>({ title, steps, renderC
   const translated = language === 'ta' && !!sim.current.captionTa;
   const text = translated ? sim.current.captionTa! : sim.current.caption;
   const seek = (index: number) => { sim.pause(); sim.jumpTo(index); setRun(value => value + 1); c.setPanel(null); };
-  const playback = useGuidedPlayback({ text, runKey: `${sim.index}-${run}-${language}`, language: translated ? 'ta' : 'en', voice, rate,
+  const playback = useGuidedPlayback({ text, runKey: `${sim.index}-${run}-${language}`, language: translated ? 'ta' : 'en', voice, rate, voiceId: translated ? c.preferences.voiceTa : c.preferences.voiceEn,
     active: sim.playing && !c.hidden && !c.panel && !c.editing,
     onComplete: () => { if (sim.atEnd) sim.pause(); else sim.next(); },
   });

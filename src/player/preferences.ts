@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
-export type PlayerPreferences = { language: 'en' | 'ta'; voice: boolean; subtitles: boolean; rate: 1 | 1.5 | 2 };
+export type PlayerPreferences = { language: 'en' | 'ta'; voice: boolean; subtitles: boolean; rate: 0.85 | 1 | 1.5 | 2; voiceEn: string; voiceTa: string };
 const KEY = 'learn.player.preferences';
-const defaults: PlayerPreferences = { language: 'en', voice: false, subtitles: true, rate: 1 };
+const defaults: PlayerPreferences = { language: 'en', voice: false, subtitles: true, rate: 1, voiceEn: '', voiceTa: '' };
 function read(): PlayerPreferences {
   try {
     if (typeof window === 'undefined') return defaults;
@@ -15,7 +15,9 @@ function read(): PlayerPreferences {
       language: value.language === 'ta' ? 'ta' : 'en',
       voice: typeof value.voice === 'boolean' ? value.voice : defaults.voice,
       subtitles: typeof value.subtitles === 'boolean' ? value.subtitles : defaults.subtitles,
-      rate: [1, 1.5, 2].includes(value.rate) ? value.rate : 1,
+      rate: [0.85, 1, 1.5, 2].includes(value.rate) ? value.rate : 1,
+      voiceEn: typeof value.voiceEn === 'string' && value.voiceEn.length <= 1000 ? value.voiceEn : '',
+      voiceTa: typeof value.voiceTa === 'string' && value.voiceTa.length <= 1000 ? value.voiceTa : '',
     };
   } catch { return defaults; }
 }

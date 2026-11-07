@@ -32,7 +32,7 @@ export function HardwareStory() {
     setScene(next); setPlaying(autoplay); setRun(value => value + 1); setFocus(SCENES[next].focus);
     setManualEvent(null); setCheckpoint(null); setFeedback(''); setReadAt(-1); c.setPanel(null); c.setChrome(true);
   };
-  const playback = useGuidedPlayback({ text, runKey: `${scene}-${run}-${lang}`, language: lang, voice, rate,
+  const playback = useGuidedPlayback({ text, runKey: `${scene}-${run}-${lang}`, language: lang, voice, rate, voiceId: lang === 'ta' ? c.preferences.voiceTa : c.preferences.voiceEn,
     active: ready && playing && !c.editing && !c.hidden && !c.panel,
     onComplete: () => {
       if (scene < 5) goto(scene + 1, true);

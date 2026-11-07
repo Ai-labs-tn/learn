@@ -3,6 +3,7 @@ import { PlayerButton } from './PlayerButton';
 import type { PlayerController } from './usePlayerController';
 import s from './player.module.css';
 import { chapterPath, resolveLearningRoute } from '../learning/catalog';
+import { VoiceSettings } from './VoiceSettings';
 
 /** Shared learning player. Domain modules supply snapshots/actions; this component owns presentation only. */
 export function ScenePlayer({ controller: c, title, sceneTitle, index, chapters, playing, subtitle, transcript, warning,
@@ -77,7 +78,8 @@ export function ScenePlayer({ controller: c, title, sceneTitle, index, chapters,
       {c.panel === 'chapters' && <nav aria-label="Story scenes" className={s.sceneNav}>{chapters.map((chapter, i) => <button key={`${chapter}-${i}`} aria-current={i === index ? 'step' : undefined} onClick={() => { c.setPanel(null); onSeek(i); }}>{i + 1}. {chapter}</button>)}</nav>}
       {c.panel === 'settings' && <div className={s.settings}>
         <label>Caption language<select value={prefs.language} onChange={event => c.updatePreferences({ language: event.target.value as 'en' | 'ta' })}><option value="en">English</option><option value="ta">Tamil</option></select></label>
-        <label>Playback speed<select value={prefs.rate} onChange={event => c.updatePreferences({ rate: Number(event.target.value) as 1 | 1.5 | 2 })}><option value={1}>1×</option><option value={1.5}>1.5×</option><option value={2}>2×</option></select></label>
+        <label>Playback speed<select value={prefs.rate} onChange={event => c.updatePreferences({ rate: Number(event.target.value) as 0.85 | 1 | 1.5 | 2 })}><option value={0.85}>0.85×</option><option value={1}>1×</option><option value={1.5}>1.5×</option><option value={2}>2×</option></select></label>
+        <VoiceSettings controller={c} />
         <label><input type="checkbox" checked={prefs.voice} onChange={event => c.updatePreferences({ voice: event.target.checked })} /> Narration</label>
         <label><input type="checkbox" checked={prefs.subtitles} onChange={event => c.updatePreferences({ subtitles: event.target.checked })} /> Subtitles</label>
         <p>These preferences are shared across learning modules and remembered on this browser. Playback position and Play state are not shared.</p>
