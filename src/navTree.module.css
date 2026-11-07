@@ -1,0 +1,5 @@
+.parent { cursor: pointer; justify-content: space-between; }
+.parent::after { content: ''; flex: none; width: 0.45rem; height: 0.45rem; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(-45deg); transition: transform var(--duration-fast) var(--easing-standard); }
+.parent[aria-expanded='true']::after { transform: rotate(45deg); }
+.child { margin-inline-start: var(--space-5); padding-block: var(--space-1); font-size: var(--font-size-xs); border-inline-start: 2px solid var(--color-border); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+@media (prefers-reduced-motion: reduce) { .parent::after { transition: none; } }

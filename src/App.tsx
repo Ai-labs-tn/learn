@@ -1,5 +1,5 @@
 import { AppTemplate, Button, ThemeToggle } from '@agiler/ui';
-import { Fragment, lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { createContext, Fragment, lazy, Suspense, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { LoginScreen, SessionPending, SignedInHeading } from './auth/SessionScreen';
 import { Studio, StudioDenied } from './auth/Studio';
@@ -10,15 +10,14 @@ import { Portfolio } from './portfolio/Portfolio';
 import { DEFAULT_LEARNING_PATH, resolveLearningRoute } from './learning/catalog';
 import { SkillTrack } from './learning/SkillTrack';
 import { CaptionAccessProvider } from './captions/CaptionAccess';
-import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
-import { ComputerBasicsNav } from './scaffold';
+import { Brand, NAV_CHILDREN, NAV_PARENTS, buildNavItems, type TrackId } from './scaffold';
+import nav from './navTree.module.css';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
 import { DsaScreen } from './screens/DsaScreen';
 import { JvmRuntimeScreen } from './screens/JvmRuntimeScreen';
 import { PublishedLessonsScreen } from './screens/PublishedLessonsScreen';
 import { HardwareStoryScreen } from './screens/HardwareStoryScreen';
-import { JOURNEYS } from './computerBasics/journeys';
 import { SystemJourney } from './computerBasics/SystemJourney';
 
 /**
@@ -57,6 +56,8 @@ const routeFromHash = () => resolveLearningRoute(window.location.hash);
  * Router-agnostic link for the template: renders a plain anchor around `#<to>` so the browser's
  * history (and its back/forward gestures) work, without pulling in a router.
  */
+const NavTree = createContext<{ expanded: ReadonlySet<string>; toggle: (skill: string) => void }>({ expanded: new Set(), toggle: () => {} });
+
 function HashLink(props: {
   to: string;
   className?: string;
@@ -64,9 +65,25 @@ function HashLink(props: {
   onClick?: () => void;
   children?: ReactNode;
 }) {
+  const { expanded, toggle } = useContext(NavTree);
+  const skill = NAV_PARENTS.get(props.to);
+  const current = routeFromHash().path === props.to || routeFromHash().path.startsWith(`${props.to}/`) ? 'page' : undefined;
+  if (skill) {
+    // Choosing another skill opens it and reveals its chapters; choosing the open, current skill collapses it.
+    const open = expanded.has(skill);
+    return (
+      <a href={`#${props.to}`} className={`${props.className ?? ''} ${nav.parent}`} title={props.title} aria-expanded={open} aria-current={current}
+        onClick={event => {
+          if (open && current) { event.preventDefault(); toggle(skill); return; }
+          if (!open) toggle(skill);
+          props.onClick?.();
+        }}>
+        {props.children}
+      </a>
+    );
+  }
   return (
-    <a href={`#${props.to}`} className={props.className} title={props.title} onClick={props.onClick}
-      aria-current={routeFromHash().path === props.to || routeFromHash().path.startsWith(`${props.to}/`) ? 'page' : undefined}>
+    <a href={`#${props.to}`} className={`${props.className ?? ''} ${NAV_CHILDREN.has(props.to) ? nav.child : ''}`} title={props.title} onClick={props.onClick} aria-current={current}>
       {props.children}
     </a>
   );
@@ -78,8 +95,19 @@ export function App() {
   const [route, setRoute] = useState(routeFromHash);
   const [loginPage, setLoginPage] = useState(wantsLogin);
   const [dismissedNotice, setDismissedNotice] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set(route.kind === 'skill' ? [route.skill.id] : []));
   const auth = useSession();
   const { hadSession } = auth;
+  const activeSkill = route.kind === 'skill' ? route.skill.id : '';
+  // Opening a chapter (or a bookmark) reveals its skill; the learner can still collapse it afterwards.
+  useEffect(() => {
+    if (activeSkill) setExpanded(current => current.has(activeSkill) ? current : new Set(current).add(activeSkill));
+  }, [activeSkill]);
+  const toggle = (skill: string) => setExpanded(current => {
+    const next = new Set(current);
+    if (!next.delete(skill)) next.add(skill);
+    return next;
+  });
   const status = auth.state.status;
 
   // Back/forward gestures (hash change without a click) must switch tracks too.
@@ -121,25 +149,10 @@ export function App() {
   }
 
   const { user } = auth.state.session;
-  const items = user.role === 'admin' ? [...NAV_ITEMS, { label: 'Studio', to: '/studio', group: 'Existing tools' }] : NAV_ITEMS;
-
-  // Build a collapsible scene list for the “Computer Basics” top‑level nav item.
-  const computerBasicsSceneTitles = JOURNEYS['desktop-startup']
-    ?.steps.map((step) => step.caption) ?? [];
-
-  const enhancedItems = items.map(item => {
-    if (item.label === 'Computer Basics') {
-      return {
-        ...item,
-        // we store the scene titles; the UI will read this prop.
-        _sceneTitles: computerBasicsSceneTitles,
-      };
-    }
-    return item;
-  });
+  const items = buildNavItems(expanded, user.role === 'admin');
 
   return (
-    <>
+    <NavTree.Provider value={{ expanded, toggle }}>
       {auth.state.focusHeading && <SignedInHeading username={user.username} />}
       <Fragment key={route.path}>
         <AppTemplate
@@ -172,7 +185,6 @@ export function App() {
                 </CaptionAccessProvider>}
         </AppTemplate>
       </Fragment>
-      <ComputerBasicsNav />
-    </>
+    </NavTree.Provider>
   );
 }

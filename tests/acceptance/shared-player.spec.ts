@@ -13,7 +13,7 @@ test('legacy boot is hidden, still reachable; new scripts have isolated valid ca
   await login(page);
   await page.getByRole('button', { name: 'Choose scene', exact: true }).click();
   await expect(page.getByRole('link', { name: /Boot & OS/ })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Reach the desktop', exact: true })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Computer Basics chapters' }).getByRole('link', { name: 'Reach the desktop', exact: true })).toBeVisible();
   await page.goto('/#/boot-os'); await expect(page.getByRole('heading', { name: 'How a computer boots', exact: true })).toBeVisible();
   for (const id of Object.keys(JOURNEYS) as JourneyId[]) {
     const doc = journeyDocument(id);

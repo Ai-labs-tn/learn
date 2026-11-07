@@ -44,8 +44,14 @@ test('nine skills are the primary navigation; old content tools are preserved', 
   await login(page);
   await expect(page).toHaveURL(/#\/skills\/computer-basics$/);
   const nav = await primary(page);
-  await expect(nav.getByRole('link')).toHaveText([...SKILLS.map((skill) => skill.title), 'Lesson library']);
+  const computerBasics = SKILLS[0];
+  await expect(nav.getByRole('link')).toHaveText([
+    ...SKILLS.flatMap((skill) => [skill.title, ...(skill === computerBasics ? skill.chapters.map((chapter) => chapter.title) : [])]),
+    'Lesson library',
+  ]);
   await expect(nav.getByRole('link', { name: 'Computer Basics', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link', { name: 'Computer Basics', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await expect(nav.getByRole('link', { name: 'Core Java Internals', exact: true })).toHaveAttribute('aria-expanded', 'false');
   await nav.getByRole('link', { name: 'Core Java Internals', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Inside the JVM', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Choose scene', exact: true }).click();
@@ -62,6 +68,26 @@ test('nine skills are the primary navigation; old content tools are preserved', 
   await page.goForward();
   await expect(page.getByRole('heading', { name: 'Bytecode stepper', exact: true })).toBeVisible();
   expect((await page.request.get('/api/studio/status')).status()).toBe(403);
+});
+
+test('skills with chapters are an expandable tree: collapsed until chosen, collapsible again, chapters navigate', async ({ page }) => {
+  await login(page);
+  let nav = await primary(page);
+  await expect(nav.getByRole('link', { name: 'Reach the desktop', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'JVM runtime', exact: true })).toHaveCount(0);
+  await nav.getByRole('link', { name: 'Computer Basics', exact: true }).click();
+  await expect(nav.getByRole('link', { name: 'Reach the desktop', exact: true })).toHaveCount(0);
+  await expect(nav.getByRole('link', { name: 'Computer Basics', exact: true })).toHaveAttribute('aria-expanded', 'false');
+  await nav.getByRole('link', { name: 'Core Java Internals', exact: true }).click();
+  await expect(page).toHaveURL(/#\/skills\/core-java$/);
+  nav = await primary(page);
+  await expect(nav.getByRole('link', { name: 'JVM runtime', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Java on the machine', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Reach the desktop', exact: true })).toHaveCount(0);
+  await nav.getByRole('link', { name: 'Java on the machine', exact: true }).click();
+  await expect(page).toHaveURL(/#\/skills\/core-java\/java-machine$/);
+  nav = await primary(page);
+  await expect(nav.getByRole('link', { name: 'Java on the machine', exact: true })).toHaveAttribute('aria-current', 'page');
 });
 
 test('unbuilt skill tracks are honest roadmaps, not fake editors or AI verification', async ({ page }) => {

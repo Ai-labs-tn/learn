@@ -1,8 +1,6 @@
-import React from 'react';
 import { AuthMethods, DataTable, Pagination, Sidebar, TopBar, type Column, type NavItem } from '@agiler/ui';
 import { useState } from 'react';
-import { SKILLS, skillPath } from '../learning/catalog';
-import { JOURNEYS } from '../computerBasics/journeys';
+import { SKILLS, chapterPath, skillPath } from '../learning/catalog';
 
 /** Learning simulators (the app's domain layer, exposed to screens through the scaffold). */
 export { BootSimulator } from '../simulator/boot/BootSimulator';
@@ -20,10 +18,26 @@ export function Brand() {
 /** Skill areas are primary; existing content tools remain available without further development. */
 export type TrackId = 'desktop-startup' | 'chrome-launch' | 'java-machine' | 'inside-machine' | 'boot-os' | 'jvm-runtime' | 'bytecode-stepper' | 'write-your-own' | 'dsa' | 'lessons';
 
-export const NAV_ITEMS: NavItem[] = [
-  ...SKILLS.map((skill) => ({ label: skill.title, to: skillPath(skill.id), group: 'Skills' })),
-  { label: 'Lesson library', to: '/lessons', group: 'Existing tools' },
-];
+/** Skills that own chapters can be expanded; the map goes from the skill's path to its id. */
+export const NAV_PARENTS: ReadonlyMap<string, string> = new Map(
+  SKILLS.filter((skill) => skill.chapters.length > 0).map((skill) => [skillPath(skill.id), skill.id]),
+);
+export const NAV_CHILDREN: ReadonlySet<string> = new Set(
+  SKILLS.flatMap((skill) => skill.chapters.map((chapter) => chapterPath(skill.id, chapter.id))),
+);
+
+/** Skills are a tree: an expanded skill is followed by its chapters. Collapsed skills show only themselves. */
+export function buildNavItems(expanded: ReadonlySet<string>, admin: boolean): NavItem[] {
+  const items: NavItem[] = SKILLS.flatMap((skill) => [
+    { label: skill.title, to: skillPath(skill.id), group: 'Skills' },
+    ...(expanded.has(skill.id)
+      ? skill.chapters.map((chapter) => ({ label: chapter.title, to: chapterPath(skill.id, chapter.id), group: 'Skills' }))
+      : []),
+  ]);
+  items.push({ label: 'Lesson library', to: '/lessons', group: 'Existing tools' });
+  if (admin) items.push({ label: 'Studio', to: '/studio', group: 'Existing tools' });
+  return items;
+}
 
 
 /** Sidebar with its required `brand` wiring supplied. */
@@ -169,63 +183,4 @@ export function AppAuthMethods(
   );
 }
 
-/** Collapsible “Computer Basics” navigation – shows the six scenes for the chapter.
- *  Closed by default; clicking the label toggles the list open/closed.
- *  Uses the existing journey step captions, so no new data is required. */
-export function ComputerBasicsNav() {
-  const [open, setOpen] = useState(false);
-  const sceneTitles = JOURNEYS['desktop-startup']?.steps.map((step) => step.caption) ?? [];
-  return (
-    <div
-      className="computer-basics-nav"
-      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
-      onClick={() => setOpen(!open)}
-    >
-      <span style={{ marginRight: 6 }}>Computer Basics</span>
-      <svg
-        viewBox="0 0 24 24"
-        width={16}
-        height={16}
-        style={{ marginLeft: 8, transition: 'transform 180ms ease' }}
-        aria-label="Expand computer basics scenes"
-      >
-        <path
-          d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
-          fill={open ? 'currentColor' : 'var(--color-text-muted)'}
-        />
-      </svg>
-      {open && (
-        <ul
-          className="computer-basics-nav-list"
-          style={{
-            position: 'absolute',
-            marginTop: 8,
-            left: 0,
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border-strong)',
-            borderRadius: 4,
-            padding: '6px 10px',
-            minWidth: 200,
-            zIndex: 1000,
-            listStyle: 'none',
-            marginBottom: 4,
-          }}
-        >
-          {sceneTitles.map((title, i) => (
-            <li
-              key={i}
-              style={{
-                padding: '4px 8px',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              {title}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+
