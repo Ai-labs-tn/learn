@@ -11,12 +11,14 @@ import { DEFAULT_LEARNING_PATH, resolveLearningRoute } from './learning/catalog'
 import { SkillTrack } from './learning/SkillTrack';
 import { CaptionAccessProvider } from './captions/CaptionAccess';
 import { Brand, NAV_ITEMS, type TrackId } from './scaffold';
+import { ComputerBasicsNav } from './scaffold';
 import { BootSimulatorScreen } from './screens/BootSimulatorScreen';
 import { BytecodeStepperScreen } from './screens/BytecodeStepperScreen';
 import { DsaScreen } from './screens/DsaScreen';
 import { JvmRuntimeScreen } from './screens/JvmRuntimeScreen';
 import { PublishedLessonsScreen } from './screens/PublishedLessonsScreen';
 import { HardwareStoryScreen } from './screens/HardwareStoryScreen';
+import { JOURNEYS } from './computerBasics/journeys';
 import { SystemJourney } from './computerBasics/SystemJourney';
 
 /**
@@ -121,6 +123,21 @@ export function App() {
   const { user } = auth.state.session;
   const items = user.role === 'admin' ? [...NAV_ITEMS, { label: 'Studio', to: '/studio', group: 'Existing tools' }] : NAV_ITEMS;
 
+  // Build a collapsible scene list for the “Computer Basics” top‑level nav item.
+  const computerBasicsSceneTitles = JOURNEYS['desktop-startup']
+    ?.steps.map((step) => step.caption) ?? [];
+
+  const enhancedItems = items.map(item => {
+    if (item.label === 'Computer Basics') {
+      return {
+        ...item,
+        // we store the scene titles; the UI will read this prop.
+        _sceneTitles: computerBasicsSceneTitles,
+      };
+    }
+    return item;
+  });
+
   return (
     <>
       {auth.state.focusHeading && <SignedInHeading username={user.username} />}
@@ -155,6 +172,7 @@ export function App() {
                 </CaptionAccessProvider>}
         </AppTemplate>
       </Fragment>
+      <ComputerBasicsNav />
     </>
   );
 }
