@@ -1,0 +1,17 @@
+{
+  "commit": "581c797",
+  "apiHealth": true,
+  "defaultHardware": true,
+  "legacyHidden": true,
+  "sharedChapters": [
+    "desktop-startup",
+    "chrome-launch",
+    "java-machine",
+    "jvm-runtime",
+    "bytecode-stepper",
+    "dsa"
+  ],
+  "adminEditor": true,
+  "noContentWrites": true,
+  "noAiGeneration": true
+}

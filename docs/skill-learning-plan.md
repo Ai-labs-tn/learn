@@ -48,11 +48,11 @@ New chapters: Reach the desktop (UEFI/Linux example, 6 scenes), Launch Chrome (l
 
 Validation/evidence: `acceptance-tests/shared-player/README.md` — 136 browser tests passed, targeted backend content tests 63 passed with 10 PostgreSQL-only skips, production build/theme/design gates and zero-vulnerability audit passed. New chapter documents also passed backend schema validation. Unbuilt skill areas stay planned; Lesson Library and Studio were not developed further.
 
-## Voice pilot and desktop storyboard (awaiting owner review)
+## Voice pilot and Windows desktop continuation
 
 The owner requested a more natural voice and approved a browser-first pilot. Shared player settings now list installed/browser-provided voices, allow an explicit sample, remember independent English/Tamil choices and offer 0.85× speed. Sentence-oriented units target 125 characters to reduce unnatural fragmentation; this remains browser TTS with device-dependent expressiveness, not recorded audio or a guaranteed natural voice. Browser/OS providers may use network services. No new app-side audio provider or voice cloning. Playback falls back to captions for unavailable Tamil speech or speech failures. Evidence: `acceptance-tests/voice-pilot/README.md` (144 browser tests and 277 backend tests passed; 34 PostgreSQL-only tests skipped locally, covered in CI).
 
-The proposed replacement storyboard for the UEFI/Linux desktop startup chapter is `docs/reach-the-desktop-storyboard.md`. It requires owner approval before implementation; the existing snapshot chapter and its published captions remain intact. Chrome, Java and networking expansions follow separately after review.
+The owner replaced the Linux direction with a Windows 11-inspired connected monitor and motherboard simulation. The Windows startup script and caption namespace are documented in `docs/windows-desktop-simulation.md`; the prior Linux proposal is preserved as historical context in `docs/reach-the-desktop-storyboard.md`. Existing Linux caption drafts and publications are not overwritten or silently migrated. Chrome, Java and networking expansions follow separately.
 
 ## Phase 4 — Expand skill areas incrementally
 

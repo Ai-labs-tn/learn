@@ -1,10 +1,18 @@
-<testsuites id="" name="" tests="2" failures="0" skipped="0" errors="0" time="8.396459">
-<testsuite name="lesson-integration.spec.ts" timestamp="2026-11-05T13:35:30.871Z" hostname="desktop-chromium" tests="1" failures="0" skipped="0" time="3.534" errors="0">
-<testcase name="guest reads a real persisted publication; drafts remain server-protected" classname="lesson-integration.spec.ts" time="3.534">
+<testsuites id="" name="" tests="6" failures="0" skipped="0" errors="0" time="19.780694">
+<testsuite name="ai-assist.spec.ts" timestamp="2026-11-05T13:42:49.100Z" hostname="desktop-chromium" tests="3" failures="0" skipped="0" time="8.466" errors="0">
+<testcase name="suggestion applies locally only and is never auto-saved or published" classname="ai-assist.spec.ts" time="3.284">
+</testcase>
+<testcase name="guests never see assist controls and direct assist calls are denied" classname="ai-assist.spec.ts" time="1.552">
+</testcase>
+<testcase name="disabled feature, budget exhaustion and provider failures are explicit without fail-open" classname="ai-assist.spec.ts" time="3.63">
 </testcase>
 </testsuite>
-<testsuite name="lesson-integration.spec.ts" timestamp="2026-11-05T13:35:30.871Z" hostname="mobile-chromium" tests="1" failures="0" skipped="0" time="3.531" errors="0">
-<testcase name="guest reads a real persisted publication; drafts remain server-protected" classname="lesson-integration.spec.ts" time="3.531">
+<testsuite name="ai-assist.spec.ts" timestamp="2026-11-05T13:42:49.100Z" hostname="mobile-chromium" tests="3" failures="0" skipped="0" time="9.95" errors="0">
+<testcase name="suggestion applies locally only and is never auto-saved or published" classname="ai-assist.spec.ts" time="3.225">
+</testcase>
+<testcase name="guests never see assist controls and direct assist calls are denied" classname="ai-assist.spec.ts" time="1.54">
+</testcase>
+<testcase name="disabled feature, budget exhaustion and provider failures are explicit without fail-open" classname="ai-assist.spec.ts" time="5.185">
 </testcase>
 </testsuite>
 </testsuites>

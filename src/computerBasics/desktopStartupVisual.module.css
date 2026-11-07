@@ -1,0 +1,39 @@
+.stage { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 0; padding: 1.5%; box-sizing: border-box; overflow: hidden; background: var(--color-background); }
+.hardware { width: 53%; min-width: 0; }
+.heading { display: flex; justify-content: space-between; gap: 0.5rem; color: var(--color-text-secondary); font-size: clamp(0.55rem, 1vw, 0.8rem); line-height: 1.2; }
+.heading span:first-child { font-weight: 700; letter-spacing: 0.08em; }
+.heading span:last-child { text-align: right; }
+.machine { width: 100%; aspect-ratio: 1080 / 650; }
+.note, .monitorCaption { margin: 0.25rem 0 0; text-align: center; color: var(--color-text-secondary); font-size: clamp(0.55rem, 0.85vw, 0.75rem); }
+.connection { width: 5%; height: 2px; background: var(--color-border-strong); position: relative; flex: none; }
+.connection span { position: absolute; inset: -2px 0; border-block: 2px dashed var(--color-info); animation: signal 1.6s linear infinite; }
+.monitorArea { width: 40%; min-width: 0; }
+.monitor { position: relative; padding: 3% 2% 2.5%; border-radius: 2.5%; background: var(--color-terminal-background); border: 2px solid var(--color-border-strong); box-shadow: var(--shadow-md); }
+.camera { position: absolute; top: 1.5%; left: 50%; width: 1%; aspect-ratio: 1; border-radius: 50%; background: var(--color-border-strong); }
+.screen { position: relative; overflow: hidden; aspect-ratio: 16 / 10; color: var(--color-windows-screen-text); }
+.bootScreen { background: var(--color-windows-boot); }
+.bootContent { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5%; text-align: center; padding: 5%; font-size: clamp(0.55rem, 1.1vw, 0.9rem); }
+.bootContent span { font-size: 0.8em; }
+.bootMark, .startIcon { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; width: 11%; aspect-ratio: 1; }
+.bootMark i, .startIcon i { background: var(--color-info); }
+.spinner { width: 7%; aspect-ratio: 1; border-radius: 50%; border: 2px dotted var(--color-windows-screen-text); animation: spin 2s linear infinite; }
+.desktop { background: var(--color-windows-blue); }
+.wallpaper { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, var(--color-windows-blue-deep), var(--color-windows-blue)); }
+.wallpaper div { position: absolute; width: 80%; height: 80%; left: 12%; top: 15%; border-radius: 50% 30% 55% 35%; transform: rotate(-32deg); background: linear-gradient(130deg, var(--color-windows-blue-light), var(--color-windows-blue), var(--color-windows-blue-deep)); opacity: 0.8; }
+.wallpaper div + div { left: 35%; top: 30%; transform: rotate(35deg); opacity: 0.65; }
+.desktopIcons { position: absolute; top: 5%; left: 4%; display: grid; gap: 0.65em; font-size: clamp(0.45rem, 0.8vw, 0.7rem); text-align: center; }
+.desktopIcons span { display: grid; gap: 0.15em; }
+.desktopIcons b { font-size: 1.6em; }
+.welcome { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); display: grid; gap: 0.25em; text-align: center; white-space: nowrap; font-size: clamp(0.65rem, 1.3vw, 1.1rem); text-shadow: 0 1px 4px var(--color-terminal-background); }
+.welcome span { font-size: 0.7em; }
+.taskbar { position: absolute; bottom: 0; inset-inline: 0; height: 12%; display: flex; align-items: center; justify-content: center; background: var(--color-windows-taskbar); color: var(--color-windows-taskbar-text); }
+.taskIcons { display: flex; height: 65%; align-items: center; gap: 0.8em; font-size: clamp(0.6rem, 1.3vw, 1rem); }
+.taskIcons .startIcon { height: 70%; width: auto; }
+.taskbar > span { position: absolute; right: 3%; font-size: clamp(0.4rem, 0.7vw, 0.65rem); }
+.stand { width: 9%; height: clamp(8px, 2vw, 24px); margin: auto; background: var(--color-border-strong); }
+.foot { width: 35%; height: 5px; margin: auto; border-radius: 50% 50% 2px 2px; background: var(--color-border-strong); }
+.stage[data-playing='false'] * { animation-play-state: paused !important; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes signal { to { background-position: 24px 0; opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .stage *, .stage *::before, .stage *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 620px) { .stage { flex-direction: column; padding: 1%; } .hardware { width: min(72%, 460px); } .connection { width: 2px; height: 3%; } .connection span { inset: 0 -2px; border-block: 0; border-inline: 2px dashed var(--color-info); } .monitorArea { width: min(62%, 400px); } .heading { font-size: 0.6rem; } .note, .monitorCaption { font-size: 0.58rem; } }

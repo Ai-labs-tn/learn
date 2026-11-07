@@ -98,6 +98,14 @@
   --color-terminal-text: #b2f5ba;
   --color-terminal-accent: #4ade80;
   --color-terminal-glow: rgb(74 222 128 / 0.4);
+  /* Fixed colors belong to the simulated monitor, not the surrounding app theme. */
+  --color-windows-screen-text: #ffffff;
+  --color-windows-boot: #0a0c10;
+  --color-windows-blue: #185ac5;
+  --color-windows-blue-deep: #06428f;
+  --color-windows-blue-light: #91c6f8;
+  --color-windows-taskbar: #e3ecfa;
+  --color-windows-taskbar-text: #15233a;
   --shadow-sm: 0 1px 2px var(--color-shadow);
   --shadow-md: 0 4px 12px -2px var(--color-shadow);
   --shadow-lg: 0 12px 28px -6px var(--color-shadow);

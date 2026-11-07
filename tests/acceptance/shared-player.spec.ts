@@ -46,7 +46,8 @@ test('three approved journeys show causal state and play without network activit
   for (const id of Object.keys(JOURNEYS) as JourneyId[]) {
     await page.goto(`/#/${id}`);
     await expect(page.getByRole('heading', { name: JOURNEYS[id].title, exact: true })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Software view', exact: true })).toBeVisible();
+    if (id === 'desktop-startup') await expect(page.getByRole('img', { name: /Connected computer interior/ })).toBeVisible();
+    else await expect(page.getByRole('region', { name: 'Software view', exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Next scene', exact: true }).click();
     await expect(page.locator('[data-player="shared"]')).toHaveAttribute('data-scene', '2');
     await page.getByRole('button', { name: 'Choose scene', exact: true }).click();

@@ -1,0 +1,10 @@
+{
+  "commit": "80ce88e",
+  "api": "200",
+  "publicLanding": true,
+  "adminControls": true,
+  "inlineEditor": true,
+  "noContentWrites": true,
+  "noAiGeneration": true,
+  "guestControlsHidden": true
+}

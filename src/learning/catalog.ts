@@ -17,7 +17,7 @@ export const SKILLS: readonly Skill[] = [
     introduction: 'Start with the machine beneath every application: how power becomes a running program.',
     chapters: [
       { id: 'inside-machine', title: 'Inside the machine', description: 'Press Power, inspect CPU/RAM/storage, explore a startup failure, and compare SSD/HDD read mechanisms in an eight-scene pilot.' },
-      { id: 'desktop-startup', title: 'Reach the desktop', description: 'Follow a UEFI/Linux example from bootloader to kernel, services and a graphical session.' },
+      { id: 'desktop-startup', title: 'Reach the desktop', description: 'Follow a UEFI/Windows example from boot manager to kernel, services and a simulated desktop.' },
       { id: 'chrome-launch', title: 'Launch Chrome', description: 'Follow process creation, memory mappings, demand paging and CPU scheduling to a local browser window.' },
     ],
     plannedTopics: ['Memory and storage', 'Processes, threads and scheduling', 'Networking fundamentals'],

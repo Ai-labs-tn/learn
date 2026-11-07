@@ -1,6 +1,8 @@
 # Storyboard proposal: Reach the desktop
 
-**Status: draft for owner approval. Do not replace or publish the existing chapter until approved.** This builds on the reviewed Inside the machine player and retains its motherboard. Example environment: a typical UEFI PC running Linux with an EFI bootloader, an initramfs, a service manager and a graphical session. These are examples, not universal rules; device initialization and driver loading can occur at different times depending on system configuration. No network request is required.
+> **Historical Linux proposal, superseded.** The owner subsequently requested a Windows 11-inspired experience with the existing motherboard and a connected monitor. The implemented story uses UEFI, Windows Boot Manager, the Windows loader, kernel and boot drivers, Windows services and an illustrative desktop. It is a teaching simulation, not a live trace or exact Windows UI. The previous Linux caption document is retained separately; the Windows chapter uses `journey-desktop-startup-windows` so old publications are not silently overwritten.
+
+**Historical status: draft for owner approval. Do not replace or publish the existing chapter until approved.** This builds on the reviewed Inside the machine player and retains its motherboard. Example environment: a typical UEFI PC running Linux with an EFI bootloader, an initramfs, a service manager and a graphical session. These are examples, not universal rules; device initialization and driver loading can occur at different times depending on system configuration. No network request is required.
 
 ## Audience goal
 Explain why a machine transitions from firmware to a running operating system, and how storage, RAM, CPU and software cooperate. The viewer should be able to distinguish firmware, bootloader, kernel, userspace and desktop applications without mistaking software for physical hardware.
