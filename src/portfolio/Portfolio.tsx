@@ -33,7 +33,7 @@ export function Portfolio({ onLogin, notice, onDismissNotice }: Props) {
     { id: SECTION_IDS.projects, label: 'Projects', show: profile.projects.length > 0 },
     { id: SECTION_IDS.recognition, label: 'Recognition', show: profile.awards.length + profile.certifications.length + profile.highlights.length > 0 },
     { id: SECTION_IDS.education, label: 'Education', show: profile.education.length > 0 },
-    { id: SECTION_IDS.contact, label: 'Contact', show: Boolean(profile.contact.email || profile.contact.linkedin) },
+    { id: SECTION_IDS.contact, label: 'Contact', show: Boolean(profile.contact.email || profile.contact.linkedin || profile.contact.phone) },
   ].filter((x) => x.show);
 
   return (

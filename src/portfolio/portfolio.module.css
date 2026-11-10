@@ -1,4 +1,4 @@
-﻿.root {
+.root {
   --k: 1;
   --pad: clamp(1rem, 4vw, 2rem);
   min-height: 100vh;
@@ -93,7 +93,7 @@
 .word { display: inline-block; animation: word 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(0.15s + var(--w) * 0.07s); transform-origin: 50% 100%; }
 @keyframes word { from { opacity: 0; transform: translateY(0.7em) rotateX(-70deg); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
 .pitch { margin-block-start: 1rem; max-inline-size: 60ch; color: var(--color-text-primary); }
-.heroActions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block-start: 1.5rem; }
+.heroActions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem; margin-block-start: 1.5rem; }
 .cta, .ctaAlt { display: inline-flex; align-items: center; justify-content: center; min-block-size: 48px; padding-inline: 1.4rem; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid var(--color-primary); overflow-wrap: anywhere; transition: transform 0.2s ease, background-color 0.2s ease; }
 .cta { background: var(--color-primary); color: var(--color-on-primary); }
 .cta:hover { background: var(--color-primary-hover); transform: translateY(-2px); }
@@ -224,7 +224,7 @@
 /* education / contact / footer */
 .eduList { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1rem; }
 .contactPanel { text-align: center; padding: clamp(1.5rem, 5vw, 3rem); }
-.contactLinks { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-block-start: 1.25rem; }
+.contactLinks { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 0.75rem; margin-block-start: 1.25rem; }
 .footer { padding: 2rem var(--pad); text-align: center; color: var(--color-text-secondary); border-block-start: 1px solid var(--color-border); background: var(--color-surface); }
 
 /* reduced motion: everything flat and visible */
@@ -238,3 +238,14 @@
   .stage { grid-auto-flow: row; }
   .specular { display: none; }
 }
+
+/* Resume download menu */
+.resumeMenu { display: inline-flex; flex-direction: column; align-items: stretch; align-self: flex-start; }
+.menuCaret { display: inline-block; inline-size: 0.5rem; block-size: 0.5rem; margin-inline-start: 0.6rem; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); }
+.resumeMenu button[aria-expanded='true'] .menuCaret { transform: translateY(2px) rotate(-135deg); }
+.resumeOptions { display: flex; flex-direction: column; gap: 0.25rem; margin-block-start: 0.4rem; min-inline-size: 100%; inline-size: max-content; max-inline-size: min(20rem, 90vw); padding: 0.4rem; background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.resumeOption { min-block-size: 44px; padding: 0.5rem 0.9rem; text-align: start; font: inherit; font-weight: 600; color: var(--color-text-primary); background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
+.resumeOption:hover:not(:disabled) { background: var(--color-surface-hover); }
+.resumeOption:disabled, .resumeMenu button:disabled { cursor: progress; opacity: 0.7; }
+.resumeError { margin: 0.4rem 0 0; color: var(--color-danger); font-size: 0.9rem; }
+@media (prefers-reduced-motion: reduce) { .menuCaret { transition: none; } }

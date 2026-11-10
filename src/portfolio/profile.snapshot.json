@@ -1,7 +1,7 @@
 {
   "profileId": "prf-fbfa0b052d9149da",
-  "version": 1,
-  "updatedAt": "2026-11-06T11:49:23.982Z",
+  "version": 2,
+  "updatedAt": "2026-11-10T12:53:44.570Z",
   "profile": {
     "schemaVersion": 1,
     "identity": {
@@ -583,7 +583,8 @@
     ],
     "contact": {
       "email": "Sarvanamani1992@gmail.com",
-      "linkedin": "https://www.linkedin.com/in/saravana-manikandan-s-23935670/"
+      "linkedin": "https://www.linkedin.com/in/saravana-manikandan-s-23935670/",
+      "phone": "9176754362"
     },
     "education": [
       {

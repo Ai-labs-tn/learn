@@ -16,7 +16,7 @@ export type Narration = {
 };
 export type Profile = {
   identity: { name: string; headline: string; titles: string[]; region: string };
-  contact: { email: string; linkedin: string };
+  contact: { email: string; linkedin: string; phone?: string };
   summary: string;
   highlights: string[];
   skills: Skill[];
@@ -61,7 +61,7 @@ export function normalizeEnvelope(value: unknown): ProfileEnvelope | null {
       titles: strs(p.identity.titles),
       region: str(p.identity.region),
     },
-    contact: { email: str(contact.email), linkedin: str(contact.linkedin) },
+    contact: { email: str(contact.email), linkedin: str(contact.linkedin), phone: /^\+?[0-9 ()-]{6,20}$/.test(str(contact.phone)) ? str(contact.phone) : undefined },
     summary: str(p.summary),
     highlights: strs(p.highlights),
     skills: list(p.skills)

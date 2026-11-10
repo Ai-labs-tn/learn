@@ -2,6 +2,7 @@
 import { useReducedMotion, useScenePointer } from './hooks/motion';
 import { initials, SECTION_IDS, yearsOfExperience, firstSentences } from './derive';
 import type { Profile } from './types';
+import { ResumeDownload } from './ResumeDownload';
 import s from './portfolio.module.css';
 
 export function Hero({ profile }: { profile: Profile }) {
@@ -43,6 +44,7 @@ export function Hero({ profile }: { profile: Profile }) {
             <div className={s.heroActions}>
               <a className={s.cta} href={`#${SECTION_IDS.projects}`}>View projects</a>
               <a className={s.ctaAlt} href={`#${SECTION_IDS.contact}`}>Get in touch</a>
+              <ResumeDownload profile={profile} />
             </div>
           </div>
           <div className={s.stage} aria-hidden="true">

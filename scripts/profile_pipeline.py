@@ -4,6 +4,7 @@
     python scripts/profile_pipeline.py narrate                        # AI narration (public-safe data only)
     python scripts/profile_pipeline.py push --base-url URL --password-env NAME [--public]
     python scripts/profile_pipeline.py snapshot --base-url URL        # public view -> src/portfolio
+    python scripts/profile_pipeline.py set-privacy --base-url URL --password-env NAME --show-phone|--hide-phone
 
 Outputs live in profile-build/ (git-ignored: it holds the private phone, address and references).
 Nothing here connects to a database; `push` and `snapshot` talk to the HTTP API only.
@@ -438,6 +439,11 @@ def command_narrate(args) -> int:
     return 1
 
 
+def strong_etag(value: str) -> str:
+    """Proxies may weaken an ETag to W/"1"; the API compares the plain quoted version."""
+    return value[2:] if value.startswith("W/") else value
+
+
 def api(client, method: str, path: str, **kwargs):
     return client.request(method, path, **kwargs)
 
@@ -466,10 +472,49 @@ def command_push(args) -> int:
         if existing.status_code == 404:
             result = client.post("/api/studio/profile", json=body, headers=headers)
         else:
-            result = client.put("/api/studio/profile", json=body, headers={**headers, "If-Match": existing.headers["etag"]})
+            # A refresh from a new resume must not silently hide what the owner chose to publish.
+            document["privacy"] = {**document.get("privacy", {}), **existing.json()["document"].get("privacy", {})}
+            ProfileDocument.model_validate(document)
+            result = client.put("/api/studio/profile", json=body, headers={**headers, "If-Match": strong_etag(existing.headers["etag"])})
         print(result.status_code, json.dumps({k: v for k, v in result.json().items() if k != "document"}) if result.status_code < 300 else result.text[:400])
         client.post("/api/auth/logout", headers=headers)
         return 0 if result.status_code < 300 else 1
+
+
+def command_privacy(args) -> int:
+    """Change only the public-visibility switches of the live profile; every other field is left as stored."""
+    import httpx
+    flags = {"showPhone": args.show_phone}
+    flags = {key: value for key, value in flags.items() if value is not None}
+    if not flags:
+        raise SystemExit("Nothing to change: pass --show-phone or --hide-phone")
+    password = os.environ.get(args.password_env, "")
+    if not password:
+        raise SystemExit(f"Set the {args.password_env} environment variable (never pass passwords on the command line)")
+    origin = args.base_url.rstrip("/")
+    with httpx.Client(base_url=origin, timeout=120) as client:
+        login = client.post("/api/auth/login", json={"username": "admin", "password": password}, headers={"Origin": origin})
+        login.raise_for_status()
+        headers = {"Origin": origin, "X-CSRF-Token": login.json()["csrfToken"]}
+        try:
+            current = client.get("/api/studio/profile")
+            current.raise_for_status()
+            stored = current.json()
+            document = stored["document"]
+            if flags.get("showPhone") and not document["contact"].get("phone"):
+                local = json.loads((BUILD / "entities.json").read_text(encoding="utf-8"))
+                document["contact"]["phone"] = local["contact"]["phone"]
+            document["privacy"] = {**document.get("privacy", {}), **flags}
+            ProfileDocument.model_validate(document)
+            body = {"document": document, "isPublic": stored["isPublic"]}
+            for key in ("sourceSha256", "aiModel"):
+                if stored.get(key):
+                    body[key] = stored[key]
+            result = client.put("/api/studio/profile", json=body, headers={**headers, "If-Match": strong_etag(current.headers["etag"])})
+            print(result.status_code, json.dumps({k: v for k, v in result.json().items() if k != "document"}) if result.status_code < 300 else result.text[:400])
+            return 0 if result.status_code < 300 else 1
+        finally:
+            client.post("/api/auth/logout", headers=headers)
 
 
 def command_snapshot(args) -> int:
@@ -501,7 +546,9 @@ def command_check_privacy(_args) -> int:
     if narration.exists():
         document["narration"] = json.loads(narration.read_text(encoding="utf-8"))["narration"]
     exposed = json.dumps(public_view(document), ensure_ascii=False)
-    private = [document["contact"]["phone"], document["contact"]["address"][:12]] + [r["phone"] for r in document["references"]] + [r["email"] for r in document["references"]]
+    # The owner may publish the phone number; the address and the references always stay private.
+    phone_public = bool(document.get("privacy", {}).get("showPhone"))
+    private = ([] if phone_public else [document["contact"]["phone"]]) + [document["contact"]["address"][:12]] + [r["phone"] for r in document["references"]] + [r["email"] for r in document["references"]]
     leaks = [value for value in private if value and value in exposed]
     print("privacy leaks:", leaks or "none")
     return 1 if leaks else 0
@@ -517,6 +564,12 @@ def main() -> int:
     snap = sub.add_parser("snapshot"); snap.add_argument("--base-url"); snap.add_argument("--from-build", action="store_true")
     snap.set_defaults(run=command_snapshot)
     sub.add_parser("check-privacy").set_defaults(run=command_check_privacy)
+    privacy = sub.add_parser("set-privacy", help="Show or hide the phone number on the live public profile")
+    privacy.add_argument("--base-url", required=True); privacy.add_argument("--password-env", required=True)
+    shown = privacy.add_mutually_exclusive_group(required=True)
+    shown.add_argument("--show-phone", dest="show_phone", action="store_const", const=True)
+    shown.add_argument("--hide-phone", dest="show_phone", action="store_const", const=False)
+    privacy.set_defaults(run=command_privacy)
     args = parser.parse_args()
     return args.run(args)
 

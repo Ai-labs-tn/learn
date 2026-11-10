@@ -54,6 +54,16 @@ The owner requested a more natural voice and approved a browser-first pilot. Sha
 
 The owner replaced the Linux direction with a Windows 11-inspired connected monitor and motherboard simulation. The Windows startup script and caption namespace are documented in `docs/windows-desktop-simulation.md`; the prior Linux proposal is preserved as historical context in `docs/reach-the-desktop-storyboard.md`. Existing Linux caption drafts and publications are not overwritten or silently migrated. Chrome, Java and networking expansions follow separately.
 
+## Downloadable resume and pending profile refresh
+
+The profile page offers **Download resume** (Word and PDF) in the hero and the contact section. Both files are generated in the visitor's browser from the same profile data as the page (`src/resume/`), on demand; nothing is stored in a bucket or sent to a server, so the files can never be older than the page. The phone number is published through the existing `privacy.showPhone` switch (`scripts/profile_pipeline.py set-privacy --show-phone`); the address and references are never published or put in the resume.
+
+**Pending owner action (do not forget):** the owner considers the current profile and resume outdated. Once the generated resume is available the owner will revise it and send the updated version. Then:
+1. Update `profile-build/entities.json` (private, git-ignored) from the revised resume. The `extract` command only understands the owner's original PDF layout, so read the new resume and edit the entities directly, or extend the extractor.
+2. `python scripts/profile_pipeline.py push --base-url https://learn-with-saravana.onrender.com --password-env <ADMIN_PASSWORD_ENV> --public` (privacy switches already published are preserved).
+3. `python scripts/profile_pipeline.py snapshot --base-url https://learn-with-saravana.onrender.com`, rebuild, run the resume tests, commit and deploy.
+4. Check that the downloaded PDF is still exactly two pages and the page and resume agree.
+
 ## Phase 4 — Expand skill areas incrementally
 
 One complete lesson at a time: plain explanation → interactive scene → appropriate exercise/editor → actual results → AI review. Include approved personal experience without confidential project information. Choose isolated execution per technology; no arbitrary user code on the application server, no cloud deployments with production credentials. Free-tier feasibility/quotas and any external runner need review before implementation. Clearly separate simulated results, real compiler/runtime results and AI advice. Never present AI output as compilation or proof of correctness.
