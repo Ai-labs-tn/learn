@@ -203,6 +203,8 @@ test('contact block, key skills and bold markers', async () => {
   const contactBlocks = blocks.filter((b) => b.style === 'Contact');
   expect(contactBlocks[0].runs[0]).toMatchObject({ text: 'Senior Staff Engineer', bold: true });
   expect(contactBlocks[0].runs.every((r) => r.bold)).toBe(true);                       // line 1: all bold
+  const docxHead = await docxParts((await generateResume(p, 'docx')).bytes);
+  expect(docxHead.xml).toMatch(/<w:rStyle w:val="Hyperlink"\/><w:b\/><\/w:rPr><w:t[^>]*>Sarvanamani1992@gmail\.com/);   // bold email link in Word too
   expect(contactBlocks[1].runs.filter((r) => r.bold).map((r) => r.text)).toEqual(['LinkedIn: ', 'Website: ']);
   expect(contactBlocks[2].runs.map((r) => [r.text === 'Address: ', !!r.bold])).toEqual([[true, true], [false, false]]);
   expect(contact[1]).toBe('LinkedIn: linkedin.com/in/saravana-manikandan-s-23935670 | Website: learn-with-saravana.onrender.com');

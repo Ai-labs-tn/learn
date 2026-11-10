@@ -27,7 +27,7 @@ export async function renderDocx(profile: Profile, plan: ResumePlan): Promise<Ui
     return l.id;
   };
   const run = (r: Run) => {
-    const rpr = r.href ? '<w:rPr><w:rStyle w:val="Hyperlink"/></w:rPr>' : r.bold ? '<w:rPr><w:b/></w:rPr>' : '';
+    const rpr = r.href ? `<w:rPr><w:rStyle w:val="Hyperlink"/>${r.bold ? '<w:b/>' : ''}</w:rPr>` : r.bold ? '<w:rPr><w:b/></w:rPr>' : '';
     const el = `<w:r>${rpr}<w:t xml:space="preserve">${esc(r.text)}</w:t></w:r>`;
     return r.href ? `<w:hyperlink r:id="${linkId(r.href)}" w:history="1">${el}</w:hyperlink>` : el;
   };
