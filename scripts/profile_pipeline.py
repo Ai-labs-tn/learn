@@ -5,6 +5,7 @@
     python scripts/profile_pipeline.py push --base-url URL --password-env NAME [--public]
     python scripts/profile_pipeline.py snapshot --base-url URL        # public view -> src/portfolio
     python scripts/profile_pipeline.py set-privacy --base-url URL --password-env NAME --show-phone|--hide-phone
+    python scripts/profile_pipeline.py set-summary --base-url URL --password-env NAME --from-file summary.json
 
 Outputs live in profile-build/ (git-ignored: it holds the private phone, address and references).
 Nothing here connects to a database; `push` and `snapshot` talk to the HTTP API only.
@@ -481,13 +482,9 @@ def command_push(args) -> int:
         return 0 if result.status_code < 300 else 1
 
 
-def command_privacy(args) -> int:
-    """Change only the public-visibility switches of the live profile; every other field is left as stored."""
+def update_live(args, mutate) -> int:
+    """Change selected fields of the live profile through the admin API; everything else is left as stored."""
     import httpx
-    flags = {"showPhone": args.show_phone}
-    flags = {key: value for key, value in flags.items() if value is not None}
-    if not flags:
-        raise SystemExit("Nothing to change: pass --show-phone or --hide-phone")
     password = os.environ.get(args.password_env, "")
     if not password:
         raise SystemExit(f"Set the {args.password_env} environment variable (never pass passwords on the command line)")
@@ -501,10 +498,7 @@ def command_privacy(args) -> int:
             current.raise_for_status()
             stored = current.json()
             document = stored["document"]
-            if flags.get("showPhone") and not document["contact"].get("phone"):
-                local = json.loads((BUILD / "entities.json").read_text(encoding="utf-8"))
-                document["contact"]["phone"] = local["contact"]["phone"]
-            document["privacy"] = {**document.get("privacy", {}), **flags}
+            mutate(document)
             ProfileDocument.model_validate(document)
             body = {"document": document, "isPublic": stored["isPublic"]}
             for key in ("sourceSha256", "aiModel"):
@@ -515,6 +509,37 @@ def command_privacy(args) -> int:
             return 0 if result.status_code < 300 else 1
         finally:
             client.post("/api/auth/logout", headers=headers)
+
+
+def command_privacy(args) -> int:
+    """Show or hide the phone number. The number is taken from the private build when the live profile lacks it."""
+    def mutate(document: dict) -> None:
+        if args.show_phone and not document["contact"].get("phone"):
+            local = json.loads((BUILD / "entities.json").read_text(encoding="utf-8"))
+            document["contact"]["phone"] = local["contact"]["phone"]
+        document["privacy"] = {**document.get("privacy", {}), "showPhone": args.show_phone}
+    return update_live(args, mutate)
+
+
+def command_summary(args) -> int:
+    """Replace the professional summary and highlights from a JSON file {"summary": str, "highlights": [str]}.
+
+    The private working copy (profile-build/entities.json) is updated too, so a later `push` cannot bring the old text back.
+    """
+    new = json.loads(Path(args.from_file).read_text(encoding="utf-8"))
+    summary, highlights = new["summary"].strip(), [h.strip() for h in new["highlights"]]
+
+    def mutate(document: dict) -> None:
+        document["summary"], document["highlights"] = summary, highlights
+
+    code = update_live(args, mutate)
+    entities = BUILD / "entities.json"
+    if code == 0 and entities.exists():
+        local = json.loads(entities.read_text(encoding="utf-8"))
+        local["summary"], local["highlights"] = summary, highlights
+        entities.write_text(json.dumps(local, indent=2, ensure_ascii=False), encoding="utf-8")
+        print("private working copy updated")
+    return code
 
 
 def command_snapshot(args) -> int:
@@ -570,6 +595,9 @@ def main() -> int:
     shown.add_argument("--show-phone", dest="show_phone", action="store_const", const=True)
     shown.add_argument("--hide-phone", dest="show_phone", action="store_const", const=False)
     privacy.set_defaults(run=command_privacy)
+    text = sub.add_parser("set-summary", help="Replace the summary and highlights on the live profile from a JSON file")
+    text.add_argument("--base-url", required=True); text.add_argument("--password-env", required=True); text.add_argument("--from-file", required=True)
+    text.set_defaults(run=command_summary)
     args = parser.parse_args()
     return args.run(args)
 

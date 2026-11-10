@@ -1,7 +1,7 @@
 {
   "profileId": "prf-fbfa0b052d9149da",
-  "version": 2,
-  "updatedAt": "2026-11-10T12:53:44.570Z",
+  "version": 3,
+  "updatedAt": "2026-11-10T13:42:56.788Z",
   "profile": {
     "schemaVersion": 1,
     "identity": {
@@ -14,10 +14,10 @@
       ],
       "region": "Tamil Nadu, India"
     },
-    "summary": "Full-stack developer with 11+ years of experience in Java and Angular. Expert in architecting scalable, secure microservices on GCP and leading CI/CD automation using GitHub Workflows and Jenkins. Proven track record in designing high- and low level systems in cloud and AI-driven solutions across Insurance and Automotive domains, driving AGILE-based product solutions with a strong emphasis on platform thinking —applying SOLID, DRY, KISS, and YAGNI principles to design modular, maintainable systems.",
+    "summary": "Full-stack engineer with 12+ years of experience building scalable, secure microservices in Java and Python on Google Cloud. Hands-on DevOps lead who deploys and runs applications on GCP through GitHub Workflows. Skilled in high- and low-level system design, including cloud-native and AI-driven solutions such as RAG, LangChain and multi-agent systems using Google's A2A protocol.",
     "highlights": [
-      "Technical lead for 8 member’s AGILE team.",
-      "As a Scrum & Kanban trained professional, represented my portfolio during organization (Cognizant) level AGILE audit and obtained score of 3.56 out of 5."
+      "Technical lead for an 8-member Agile team.",
+      "Scrum and Kanban trained; represented my portfolio in Cognizant's organisation-level Agile audit and scored 3.56 out of 5."
     ],
     "skills": [
       {
