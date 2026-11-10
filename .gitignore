@@ -18,3 +18,9 @@ acceptance-tests/**/browser-artifacts/
 
 # Resume-derived working files hold a private phone number, address and references
 profile-build/
+
+# Generated test evidence and private documents must never be committed by a blanket git add
+acceptance-tests/**/frontend/built/
+acceptance-tests/**/hosted-*.json
+acceptance-tests/**/hosted-*.png
+docs/*.pdf
