@@ -249,3 +249,5 @@
 .resumeOption:disabled, .resumeMenu button:disabled { cursor: progress; opacity: 0.7; }
 .resumeError { margin: 0.4rem 0 0; color: var(--color-danger); font-size: 0.9rem; }
 @media (prefers-reduced-motion: reduce) { .menuCaret { transition: none; } }
+
+.achievements { margin: 0.5rem 0 0; padding-inline-start: 1.1rem; display: grid; gap: 0.3rem; color: var(--color-text-secondary); font-size: 0.95rem; }

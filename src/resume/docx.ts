@@ -1,74 +1,80 @@
-﻿import type { Profile } from '../portfolio/types';
-import type { ResumePlan } from './layout';
-import { sanitize, type ResumeBlock, type Run } from './model';
-import { contentWidth, THEME } from './theme';
-import { docTitle, topSkills } from './util';
+import type { Profile } from '../portfolio/types';
+import { titleRuleSpace, type ResumePlan } from './layout';
+import { footerSz, looks, STYLE_IDS, type Look } from './look';
+import type { Para, Run } from './model';
+import { sanitize } from './model';
+import { SPEC } from './template/spec';
+import { TEMPLATE_B64 } from './template/template-data';
+import { b64ToBytes, docTitle, topSkills } from './util';
 
-const tw = (pt: number) => Math.round(pt * 20);
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const styleBlock = (xml: string, id: string) => new RegExp(`<w:style\\b[^>]*w:styleId="${id}"[\\s\\S]*?</w:style>`).exec(xml)?.[0];
+
+/** Scales the COPY's styles (sizes and spacing) to the tier; the stored template is never modified. */
+export function patchStyles(xml: string, plan: ResumePlan): string {
+  const L = looks(plan.tier);
+  const setSpacing = (s: string, before?: number, after?: number) => s.replace(/<w:spacing\b[^>]*\/>/, (sp) => {
+    let out = sp;
+    if (before !== undefined) out = out.replace(/(\bw:before=")\d+/, `$1${before}`);
+    if (after !== undefined) out = out.replace(/(\bw:after=")\d+/, `$1${after}`);
+    return out;
+  });
+  const setSize = (s: string, sz: number) => s.replace(/(<w:sz\b[^>]*\bw:val=")\d+/, `$1${sz}`).replace(/(<w:szCs\b[^>]*\bw:val=")\d+/, `$1${sz}`);
+  let out = xml.replace(/<w:docDefaults>[\s\S]*?<\/w:docDefaults>/, (d) => setSpacing(setSize(d, footerSz(plan.tier)), undefined, L.Normal.afterTw));
+  for (const id of STYLE_IDS) {
+    const block = styleBlock(out, id);
+    if (!block || id === 'Normal') continue;
+    const l: Look = L[id];
+    let next = setSpacing(block, SPEC.styles[id].before ? l.beforeTw : undefined, /w:after="/.test(block) ? l.afterTw : undefined);
+    if (/<w:sz\b/.test(next)) next = setSize(next, l.sz);
+    out = out.replace(block, () => next);
+  }
+  return out;
+}
 
 export async function renderDocx(profile: Profile, plan: ResumePlan): Promise<Uint8Array> {
-  const d = await import('docx');
-  const t = plan.tier;
-  const font = THEME.fontFamilyDocx;
-  const sizeOf = (kind: ResumeBlock['kind']) => plan.lines.find((l) => l.kind === kind)?.size ?? t.fontSize;
-  const run = (r: Run, kind: ResumeBlock['kind'], size: number) => {
-    const accent = kind === 'heading' || kind === 'name';
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, font, size: Math.round(size * 2), color: accent ? THEME.color.accent : THEME.color.text });
-    return r.href ? new d.ExternalHyperlink({ link: r.href, children: [tr] }) : tr;
+  const JSZip = (await import('jszip')).default;
+  const zip = await JSZip.loadAsync(b64ToBytes(TEMPLATE_B64));
+  const read = async (p: string) => {
+    const f = zip.file(p);
+    if (!f) throw new Error(`Template part missing: ${p}`);
+    return f.async('string');
   };
-  const paragraphs = plan.blocks.map((b, bi) => {
-    const first = plan.lines.find((l) => l.block === bi)!;
-    const last = [...plan.lines].reverse().find((l) => l.block === bi)!;
-    const size = first.size;
-    const children: (InstanceType<typeof d.TextRun> | InstanceType<typeof d.ExternalHyperlink>)[] = b.runs.map((r) => run(r, b.kind, size));
-    if (b.kind === 'title' && b.date) {
-      children.push(new d.TextRun({ children: [new d.Tab(), b.date], font, size: Math.round(size * 2), color: THEME.color.muted }));
+  const L = looks(plan.tier);
+  zip.file('word/styles.xml', patchStyles(await read('word/styles.xml'), plan));
+
+  const links: { id: string; href: string }[] = [];
+  const linkId = (href: string) => {
+    let l = links.find((x) => x.href === href);
+    if (!l) { l = { id: `rIdResumeLink${links.length + 1}`, href }; links.push(l); }
+    return l.id;
+  };
+  const run = (r: Run) => {
+    const rpr = r.href ? '<w:rPr><w:rStyle w:val="Hyperlink"/></w:rPr>' : r.bold ? '<w:rPr><w:b/></w:rPr>' : '';
+    const el = `<w:r>${rpr}<w:t xml:space="preserve">${esc(r.text)}</w:t></w:r>`;
+    return r.href ? `<w:hyperlink r:id="${linkId(r.href)}" w:history="1">${el}</w:hyperlink>` : el;
+  };
+  const para = (p: Para) => {
+    let ppr = `<w:pStyle w:val="${p.style}"/>`;
+    if (p.style === 'Title') {
+      const space = titleRuleSpace(L.Title);
+      ppr += `<w:pBdr><w:bottom w:val="single" w:sz="${SPEC.rule.size}" w:space="${space}" w:color="${SPEC.rule.color}"/></w:pBdr><w:spacing w:after="0"/>`;
+    } else if (p.after !== undefined) {
+      ppr += `<w:spacing w:after="${Math.round(p.after * plan.tier.spacing)}"/>`;
     }
-    return new d.Paragraph({
-      children,
-      alignment: first.center ? d.AlignmentType.CENTER : d.AlignmentType.LEFT,
-      keepNext: first.keepNext || b.kind === 'heading',
-      keepLines: true,
-      spacing: { before: tw(first.before), after: tw(last.after), line: tw(first.lh), lineRule: d.LineRuleType.EXACT },
-      tabStops: b.kind === 'title' ? [{ type: d.TabStopType.RIGHT, position: tw(contentWidth()) }] : undefined,
-      border: b.kind === 'heading' ? { bottom: { style: d.BorderStyle.SINGLE, size: 6, space: 1, color: THEME.color.accent } } : undefined,
-      numbering: b.kind === 'bullet' ? { reference: 'resume-bullets', level: 0 } : undefined,
-    });
-  });
-  void sizeOf;
+    return `<w:p><w:pPr>${ppr}</w:pPr>${p.runs.map(run).join('')}</w:p>`;
+  };
+  const body = plan.blocks.map(para).join('');
+  const doc = await read('word/document.xml');
+  zip.file('word/document.xml', doc.replace('<w:body>', () => `<w:body>${body}`));
+
+  const rels = await read('word/_rels/document.xml.rels');
+  const extra = links.map((l) => `<Relationship Id="${l.id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${esc(l.href)}" TargetMode="External"/>`).join('');
+  zip.file('word/_rels/document.xml.rels', rels.replace('</Relationships>', () => `${extra}</Relationships>`));
+
   const name = sanitize(profile.identity.name);
-  const doc = new d.Document({
-    creator: name,
-    title: docTitle(profile),
-    subject: `Resume of ${name}`,
-    keywords: topSkills(profile).join(', '),
-    description: 'Resume',
-    styles: {
-      default: {
-        document: {
-          run: { font, size: Math.round(t.fontSize * 2), color: THEME.color.text, language: { value: 'en-US' } },
-          paragraph: { spacing: { before: 0, after: 0 } },
-        },
-      },
-    },
-    numbering: {
-      config: [{
-        reference: 'resume-bullets',
-        levels: [{
-          level: 0, format: d.LevelFormat.BULLET, text: '\u2022', alignment: d.AlignmentType.LEFT,
-          style: { run: { font }, paragraph: { indent: { left: tw(THEME.textIndent), hanging: tw(THEME.textIndent - THEME.bulletIndent) } } },
-        }],
-      }],
-    },
-    sections: [{
-      properties: {
-        page: {
-          size: { width: tw(THEME.page.width), height: tw(THEME.page.height) },
-          margin: { top: tw(THEME.margin), bottom: tw(THEME.margin), left: tw(THEME.margin), right: tw(THEME.margin), header: 0, footer: 0 },
-        },
-      },
-      children: paragraphs,
-    }],
-  });
-  return new Uint8Array(await d.Packer.toArrayBuffer(doc));
+  const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+  zip.file('docProps/core.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${esc(docTitle(profile))}</dc:title><dc:subject>${esc(`Resume of ${name}`)}</dc:subject><dc:creator>${esc(name)}</dc:creator><cp:keywords>${esc(topSkills(profile).join(', '))}</cp:keywords><cp:lastModifiedBy>${esc(name)}</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`);
+
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', compressionOptions: { level: 9 } });
 }

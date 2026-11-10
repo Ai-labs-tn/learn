@@ -24,13 +24,15 @@ def document():
         "schemaVersion": 1,
         "identity": {"name": "Example Person", "headline": "Engineer", "titles": ["Developer"], "region": "Example region"},
         "contact": {"email": "public@example.invalid", "linkedin": "https://www.linkedin.com/in/example-person",
-                    "phone": "+1 555 123 4567", "address": "Private Address Marker"},
+                    "phone": "+1 555 123 4567", "address": "Private Address Marker",
+                    "website": "https://example.invalid/portfolio"},
         "summary": "Example summary", "highlights": ["Example highlight"],
         "skills": [{"name": "Python", "level": 4, "group": "Programming"}],
         "certifications": [{"name": "Certificate", "issuer": "Example", "validUntil": "2028-01-31"}],
         "awards": [{"title": "Award", "date": "2025-02-01", "description": "Recognition"}],
         "experience": [{"id": "example-role", "role": "Engineer", "company": "Example Co",
-                        "location": "Example region", "start": "2020-01", "end": "2024-12"}],
+                        "location": "Example region", "start": "2020-01", "end": "2024-12",
+                        "achievements": ["Built the public example"]}],
         "education": [{"level": "University", "institution": "Public University", "location": "Example region",
                        "start": "2012-01", "end": "2016-01", "isSchool": False},
                       {"level": "School", "institution": "Private School Marker", "location": "Example region",
@@ -38,7 +40,7 @@ def document():
         "projects": [{"id": "example-project", "name": "Example project", "domain": "Education",
                       "summary": "Example project summary", "techStack": ["Python"],
                       "roles": [{"title": "Developer", "description": "Built the project"}]}],
-        "domains": ["Education"],
+        "domains": ["Education"], "interests": ["Public interest example"],
         "references": [{"name": "Private Reference Marker", "title": "Manager", "company": "Example Co",
                         "email": "private-reference@example.invalid", "phone": "+1 555 000 0000"}],
         "narration": {"tagline": "Example tagline", "elevatorPitch": "Example pitch", "about": "About example",
@@ -97,8 +99,10 @@ def test_private_to_public_lifecycle_and_projection(client):
     assert data["profileId"] == result["profileId"] and data["version"] == 2
     view = data["profile"]
     assert set(view) == {"schemaVersion", "identity", "summary", "highlights", "skills", "certifications", "awards",
-                         "experience", "education", "projects", "domains", "narration", "contact"}
-    assert view["contact"] == {"email": "public@example.invalid", "linkedin": "https://www.linkedin.com/in/example-person"}
+                         "experience", "education", "projects", "domains", "interests", "narration", "contact"}
+    assert view["contact"] == {"email": "public@example.invalid", "linkedin": "https://www.linkedin.com/in/example-person",
+                               "website": "https://example.invalid/portfolio"}
+    assert view["experience"][0]["achievements"] == ["Built the public example"] and view["interests"] == ["Public interest example"]
     assert [item["institution"] for item in view["education"]] == ["Public University"]
     for secret in ("Private Address Marker", "+1 555 123 4567", "Private School Marker", "Private Reference Marker",
                    "private-reference@example.invalid", "example/model", "a" * 64, "showPhone"):
@@ -217,6 +221,9 @@ def test_invalid_profile_documents_are_rejected_without_writes(client, method):
         (("document", "summary"), "bad\x00text"), (("document", "identity", "name"), " "),
         (("document", "identity", "name"), "x" * 121), (("document", "contact", "email"), "bad email"),
         (("document", "contact", "linkedin"), "https://evil.invalid/in/example"),
+        (("document", "contact", "website"), "http://example.invalid"), (("document", "contact", "website"), "https://example.invalid/<x>"),
+        (("document", "experience", 0, "achievements"), ["x" * 301]), (("document", "experience", 0, "achievements"), ["a"] * 9),
+        (("document", "interests"), "not a list"), (("document", "interests"), ["javascript:alert(1)"]),
         (("document", "skills", 0, "level"), True), (("document", "skills", 0, "level"), 6),
         (("document", "experience", 0, "start"), "2020-13"),
         (("document", "projects", 0, "id"), "Invalid Slug"),

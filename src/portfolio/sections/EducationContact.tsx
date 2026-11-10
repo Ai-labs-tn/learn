@@ -1,4 +1,4 @@
-﻿import { monthYear, SECTION_IDS } from '../derive';
+import { monthYear, SECTION_IDS } from '../derive';
 import type { Profile } from '../types';
 import { ResumeDownload } from '../ResumeDownload';
 import { Reveal, SectionShell } from './shared';
@@ -22,9 +22,9 @@ export function Education({ profile }: { profile: Profile }) {
 }
 
 export function Contact({ profile }: { profile: Profile }) {
-  const { email, linkedin, phone } = profile.contact;
+  const { email, linkedin, phone, website } = profile.contact;
   const safeLinkedin = /^https:\/\//.test(linkedin) ? linkedin : '';
-  if (!email && !safeLinkedin && !phone) return null;
+  if (!email && !safeLinkedin && !phone && !website) return null;
   return (
     <SectionShell id={SECTION_IDS.contact} eyebrow="Contact" title="Let’s build something">
       <Reveal className={s.contactPanel}>
@@ -33,6 +33,7 @@ export function Contact({ profile }: { profile: Profile }) {
           {email && <a className={s.cta} href={`mailto:${email}`}>{email}</a>}
           {phone && <a className={s.ctaAlt} href={`tel:${phone.replace(/[^+\d]/g, '')}`}><span className={s.srOnly}>Phone: </span>{phone}</a>}
           {safeLinkedin && <a className={s.ctaAlt} href={safeLinkedin} target="_blank" rel="noopener noreferrer">LinkedIn<span className={s.srOnly}> (opens in a new tab)</span></a>}
+          {website && <a className={s.ctaAlt} href={website} target="_blank" rel="noopener noreferrer">Website<span className={s.srOnly}> (opens in a new tab)</span></a>}
           <ResumeDownload profile={profile} />
         </div>
       </Reveal>

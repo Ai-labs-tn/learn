@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button, ThemeToggle } from '@agiler/ui';
 import authStyles from '../auth/auth.module.css';
 import { useProfile } from './hooks/useProfile';
@@ -33,7 +33,7 @@ export function Portfolio({ onLogin, notice, onDismissNotice }: Props) {
     { id: SECTION_IDS.projects, label: 'Projects', show: profile.projects.length > 0 },
     { id: SECTION_IDS.recognition, label: 'Recognition', show: profile.awards.length + profile.certifications.length + profile.highlights.length > 0 },
     { id: SECTION_IDS.education, label: 'Education', show: profile.education.length > 0 },
-    { id: SECTION_IDS.contact, label: 'Contact', show: Boolean(profile.contact.email || profile.contact.linkedin || profile.contact.phone) },
+    { id: SECTION_IDS.contact, label: 'Contact', show: Boolean(profile.contact.email || profile.contact.linkedin || profile.contact.phone || profile.contact.website) },
   ].filter((x) => x.show);
 
   return (

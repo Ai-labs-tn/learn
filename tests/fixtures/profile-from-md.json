@@ -1,0 +1,672 @@
+{
+  "profileId": "from-resume-md",
+  "version": 0,
+  "updatedAt": "2026-11-10T20:27:01Z",
+  "profile": {
+    "schemaVersion": 1,
+    "identity": {
+      "name": "Saravanamanikandan S",
+      "headline": "Senior Staff Engineer · Forward Deployed Engineer · Full Stack Developer · Google Cloud Certified Professional Architect",
+      "titles": [
+        "Google Cloud Certified Professional Architect",
+        "Forward Deployed Engineer",
+        "Full Stack Developer",
+        "Senior Staff Engineer"
+      ],
+      "region": "Tamil Nadu, India"
+    },
+    "summary": "Full-stack engineer with 12+ years of experience building scalable, secure microservices in Java and Python on Google Cloud. Hands-on DevOps lead who deploys and runs applications on GCP through GitHub Workflows. Skilled in high- and low-level system design, including cloud-native and AI-driven solutions such as RAG, LangChain and multi-agent systems using Google's A2A protocol.",
+    "highlights": [
+      "Technical lead for an 8-member Agile team.",
+      "Scrum and Kanban trained professional."
+    ],
+    "skills": [
+      {
+        "name": "GCP/Terraform",
+        "level": 4,
+        "group": "Cloud & DevOps"
+      },
+      {
+        "name": "GitHub Actions/Jenkins",
+        "level": 5,
+        "group": "Cloud & DevOps"
+      },
+      {
+        "name": "Maven/Gradle/Sonar",
+        "level": 5,
+        "group": "Cloud & DevOps"
+      },
+      {
+        "name": "HLD/LLD",
+        "level": 4,
+        "group": "Architecture"
+      },
+      {
+        "name": "Java v21/Kotlin v3",
+        "level": 5,
+        "group": "Backend"
+      },
+      {
+        "name": "Python/FastAPI",
+        "level": 4,
+        "group": "Backend"
+      },
+      {
+        "name": "Spring Boot v3.x",
+        "level": 5,
+        "group": "Backend"
+      },
+      {
+        "name": "JPA/Hibernate",
+        "level": 5,
+        "group": "Backend"
+      },
+      {
+        "name": "Angular v16/Leaflet",
+        "level": 4,
+        "group": "Frontend"
+      },
+      {
+        "name": "SQL/BigQuery",
+        "level": 4,
+        "group": "Data & AI"
+      },
+      {
+        "name": "AI/LLM/RAG/Elastic",
+        "level": 5,
+        "group": "Data & AI"
+      },
+      {
+        "name": "GeoSpatials/PostGIS",
+        "level": 5,
+        "group": "Data & AI"
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Google Cloud Certified Professional Cloud Architect",
+        "issuer": "Google Cloud",
+        "validUntil": "2027-04-22"
+      },
+      {
+        "name": "Oracle Certified SQL & PL-SQL Developer",
+        "issuer": "Oracle"
+      }
+    ],
+    "awards": [
+      {
+        "title": "Rise and Shine",
+        "description": "Implementing ATLAS project that capture, persist & transform Geo fences using leaflet & hibernate spatial in GCP with zero defect & within timeline & budget.",
+        "date": "2025-04-08"
+      },
+      {
+        "title": "Rise and Shine",
+        "description": "Implementing the first AI search and summarisation feature incorporating RAG, Elastic search & LLM.",
+        "date": "2024-09-26"
+      },
+      {
+        "title": "Customer Champion",
+        "description": "Pilot project on Geospatial data visualisation using GeoServer (WMS) as part of Kinetica to BigQuery migration.",
+        "date": "2024-06-14"
+      },
+      {
+        "title": "Customer Champion",
+        "description": "Successful launch on Technician Speciality feature supporting around 48 locales in GCP.",
+        "date": "2023-12-18"
+      },
+      {
+        "title": "Customer Champion",
+        "description": "Successful migration of 3 micro-services from Azure-PCF to GCP Cloud Run & Migrated DB with around lakhs of records from MS SQL to Postgres without any issues.",
+        "date": "2023-07-18"
+      },
+      {
+        "title": "GEM",
+        "description": "Successful implementation of Retail & Fleet service booking in Azure-PCF.",
+        "date": "2022-12-18"
+      },
+      {
+        "title": "GEM",
+        "description": "Successful implementation Fleet service booking features for US & EU market in Azure-PCF.",
+        "date": "2021-12-18"
+      },
+      {
+        "title": "Star of the Month",
+        "description": "Successful implementation of CICD automation for the Spring Batch and SOAP based applications with zero defects."
+      },
+      {
+        "title": "Star of the Month",
+        "description": "Successful migration of monolithic Spring MVC to spring boot micro-services."
+      },
+      {
+        "title": "ACE",
+        "description": "Successful implementation of ELK log monitoring in Spring Boot microservices."
+      },
+      {
+        "title": "B’Con",
+        "description": "Successful implementation of SOAP based web-services and validator framework."
+      }
+    ],
+    "experience": [
+      {
+        "id": "altimetrik-corp",
+        "role": "Senior Staff Engineer",
+        "company": "Altimetrik Corp",
+        "location": "Chennai, Tamil Nadu",
+        "start": "2021-05",
+        "achievements": [
+          "Led delivery of the ATLAS geo-fencing platform on GCP (Leaflet, Hibernate Spatial, PostGIS) with zero defects, on time and within budget, reducing annual warranty claims by about $50 million (Rise and Shine award, Apr 2025).",
+          "Built the first AI-powered search and summarisation capability (RAG, Elasticsearch, Vertex AI, LLM) to replace keyword search in the Insights Catalogue (Rise and Shine award, Sep 2024).",
+          "Piloted geospatial visualisation with GeoServer (WMS) as part of the Kinetica to BigQuery migration (Customer Champion award, Jun 2024).",
+          "Launched the Technician Speciality feature supporting around 48 locales on GCP (Customer Champion award, Dec 2023).",
+          "Migrated 3 microservices from Azure-PCF to GCP Cloud Run and moved a database of lakhs of records across 30+ tables from MS SQL Server to PostgreSQL with zero defects (Customer Champion award, Jul 2023)."
+        ]
+      },
+      {
+        "id": "cognizant",
+        "role": "Product Specialist Technical",
+        "company": "Cognizant",
+        "location": "Chennai, Tamil Nadu",
+        "start": "2018-03",
+        "end": "2021-05",
+        "achievements": [
+          "Technical lead and API developer on ECOS, an end-to-end insurance claims platform on Guidewire covering First Notice of Loss, exposure assessment, reserves and payments.",
+          "Built Spring Batch jobs and SOAP web services, with every batch job also triggerable on demand as a SOAP service, and automated build and deployment with Jenkins.",
+          "Represented the ECOS portfolio at Cognizant's organisation-level Agile audit and scored 3.56 out of 5."
+        ]
+      },
+      {
+        "id": "accenture",
+        "role": "Application Development Analyst",
+        "company": "Accenture",
+        "location": "Chennai, Tamil Nadu",
+        "start": "2015-05",
+        "end": "2018-03",
+        "achievements": []
+      },
+      {
+        "id": "e2-info-systems",
+        "role": "Jr Programmer Analyst",
+        "company": "E2 Info Systems",
+        "location": "Chennai, Tamil Nadu",
+        "start": "2014-06",
+        "end": "2015-05",
+        "achievements": []
+      }
+    ],
+    "projects": [
+      {
+        "id": "vehicle-data-services",
+        "name": "Vehicle Data Services",
+        "domain": "Automotive",
+        "summary": "Vehicle Data Services (VDS) collects vehicle information such as vehicle dimensions, service part details, service history and fuel tank capacity from various BOM sources and maps it to each vehicle's unique identification number (VIN). It holds historical data at a scale of billions to trillions of records in BigQuery, which makes the system complex but powerful. Internal vehicle engineers and dealers use it to deploy the carmon function to targeted vehicles through sampling, and to look up part details for any vehicle model.",
+        "techStack": [
+          "Java 21",
+          "Spring Boot 3.x",
+          "PostgreSQL",
+          "Azure",
+          "BigQuery",
+          "GitHub Workflows",
+          "GCP",
+          "Cloud Run",
+          "Podman",
+          "Docker",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Apigee",
+          "Gradle",
+          "Jib",
+          "Nexus",
+          "JFrog"
+        ],
+        "roles": [
+          {
+            "title": "GCP Cloud Architect",
+            "description": "Secure and manage GCP resources, ensuring scalable and compliant cloud infrastructure."
+          },
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale, secure and publish APIs using Apigee. Implement scheduled Cloud Run Jobs."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate microservices integration and deployment workflows using GitHub Actions."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables and budget constraints."
+          }
+        ],
+        "short": "Collects vehicle data from BOM sources, mapped to each VIN, and serves billions of records from BigQuery to internal engineers and dealers."
+      },
+      {
+        "id": "data-transform-final",
+        "name": "Data Transform & Final",
+        "domain": "Automotive",
+        "summary": "The Data Transform and Final stages consolidate vehicle usage and fault data from BigQuery, apply transformations, and feed it into quality.ai. Engineers and data scientists use AI to generate insights that help optimize vehicle features for future models.",
+        "techStack": [
+          "Java 21",
+          "Spring Boot 3.x",
+          "PostgreSQL",
+          "Azure",
+          "BigQuery",
+          "GitHub Workflows",
+          "GCP",
+          "Cloud Run",
+          "Podman",
+          "Docker",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Apigee",
+          "Gradle",
+          "Jib",
+          "Nexus",
+          "JFrog"
+        ],
+        "roles": [
+          {
+            "title": "GCP Cloud Architect",
+            "description": "Secure and manage GCP resources, ensuring scalable and compliant cloud infrastructure."
+          },
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale, secure and publish APIs using Apigee. Implement scheduled Cloud Run Jobs."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate microservices integration and deployment workflows using GitHub Actions."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables and budget constraints."
+          }
+        ],
+        "short": "Consolidates vehicle usage and fault data from BigQuery into quality.ai so engineers can generate AI insights for future vehicle models."
+      },
+      {
+        "id": "atlas",
+        "name": "ATLAS",
+        "domain": "Automotive",
+        "summary": "The ATLAS project enables Ford dealers to visually define and manage vehicle parking lots by drawing shapes —such as polygons —directly on maps. This geospatial functionality supports remote vehicle operations, like auto-starting cars when battery levels are low. This reduces annual warranty claims by about $50 million.",
+        "techStack": [
+          "Java 21",
+          "Spring Boot 3.x",
+          "Angular v16",
+          "Leaflet v1.9.4",
+          "JTS",
+          "Hibernate Spatial",
+          "PostgreSQL",
+          "PostGIS",
+          "Tekton",
+          "GCP",
+          "Cloud Run",
+          "Podman",
+          "Docker",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Apigee",
+          "Gradle",
+          "Jib",
+          "Terraform"
+        ],
+        "roles": [
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale, secure and publish APIs using Apigee. Implement scheduled Cloud Run Jobs."
+          },
+          {
+            "title": "Front-End Developer",
+            "description": "Develop Angular applications integrated with Leaflet to render and visualize geospatial data."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate microservices integration and deployment workflows using GitHub Actions."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables and budget constraints."
+          }
+        ],
+        "short": "Lets Ford dealers draw parking-lot geo-fences on maps to enable remote vehicle operations, reducing warranty claims by about $50 million a year."
+      },
+      {
+        "id": "insights-catalogue",
+        "name": "Insights Catalogue",
+        "domain": "Automotive",
+        "summary": "Insights Catalogue is a centralized knowledge hub that aggregates data from sources like SharePoint, Confluence, and Looker Studio. It offers controlled access to vehicle features, innovations, and trip metrics, with AI-powered search, summarization (RAG, LLM, Elastic Search), and chat bot interaction via Vertex AI for seamless document parsing.",
+        "techStack": [
+          "Java 21",
+          "Spring Boot 3.x",
+          "Angular 16",
+          "PostgreSQL",
+          "PostGIS",
+          "Tekton",
+          "GCP",
+          "Cloud Run",
+          "Podman",
+          "Docker",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Apigee",
+          "Gradle",
+          "Jib",
+          "Google Artifact Registry",
+          "Terraform",
+          "Dynatrace",
+          "Splunk"
+        ],
+        "roles": [
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale, secure and publish APIs using Apigee. Implement scheduled Cloud Run Jobs."
+          },
+          {
+            "title": "Front-End Developer",
+            "description": "Develop Angular applications integrated with Leaflet to render and visualize geospatial data."
+          },
+          {
+            "title": "AI/ML Expert",
+            "description": "Implemented a RAG based AI search & summarisation replacing traditional keyword search using Elastic search, Vertex AI in Python & FastAPI framework. Implemented “Talk to Insights” – an AI based chat bot, developed using Vertex AI document parsing."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate microservices integration and deployment workflows using Tekton."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables and budget constraints."
+          }
+        ],
+        "short": "Central knowledge hub over SharePoint, Confluence and Looker Studio with RAG-based AI search, summarisation and a Vertex AI chat bot."
+      },
+      {
+        "id": "mast",
+        "name": "MAST",
+        "domain": "Automotive",
+        "summary": "The Map Analysis and System Tool (MAST) serves as a bridge between data scientists and the Kinetica database, enabling efficient querying and visualization of both geographic and structural data. MAST allows users to save, schedule, and execute queries directly on Kinetica. It supports rendering geospatial data as WMS map layers, seamlessly integrated with Here.js for interactive visualization.",
+        "techStack": [
+          "Java 11",
+          "Spring Boot 3.x",
+          "Angular 12",
+          "PostgreSQL",
+          "PostGIS",
+          "Tekton",
+          "GCP",
+          "Cloud Run",
+          "Podman",
+          "Docker",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Apigee",
+          "Gradle",
+          "Jib",
+          "Google Artifact Registry",
+          "Terraform"
+        ],
+        "roles": [
+          {
+            "title": "Pilot lead",
+            "description": "Led a pilot implementation to render and visualize geospatial data as WMS map layers using Geo Server, supporting the migration from Kinetica to BigQuery."
+          }
+        ],
+        "short": "Bridge between data scientists and the Kinetica database: save, schedule and run queries and render geospatial results as WMS map layers."
+      },
+      {
+        "id": "dts",
+        "name": "DTS",
+        "domain": "Automotive",
+        "summary": "Diagnostic Translation System is a middleware system to translate vehicle health diagnostics into end-user messages for Email & App notifications. Supported bulk Excel uploads and UI-based CRUD operations for DTCs, warnings, and notifications, with locale-specific approval workflows.",
+        "techStack": [
+          "Java 11",
+          "Spring Boot 2.x",
+          "Angular 12",
+          "PostgreSQL",
+          "Jenkins",
+          "GCP",
+          "Cloud Run",
+          "Podman",
+          "Docker",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Apigee",
+          "Gradle",
+          "Jib",
+          "Google Artifact Registry",
+          "Terraform",
+          "Dynatrace",
+          "Splunk"
+        ],
+        "roles": [
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale, secure and publish APIs using Apigee."
+          },
+          {
+            "title": "Migration Expert",
+            "description": "Migrated 3 microservices in Azure-PCF to GCP Cloud Run with zero defect. Migrated around lakhs of records with more than 30 tables from MS SQL SERVER to PGSQL without any defect."
+          },
+          {
+            "title": "Front-End Developer",
+            "description": "Develop Angular applications integrated with xlsx.js parsers to parse excel to JSON."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate microservices integration and deployment workflows using Jenkins."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables and budget constraints."
+          }
+        ],
+        "short": "Middleware that turns vehicle health diagnostics into email and app notifications, with bulk Excel upload and locale-specific approvals."
+      },
+      {
+        "id": "osb-retail-fleet",
+        "name": "OSB (Retail & Fleet)",
+        "domain": "Automotive",
+        "summary": "Online service booking platform for vehicles, catering to both retail and fleet customers across different regions including CANADA, US, EU etc. Integrated vehicle alerts from diagnostic and prognostic data (ECU, DTCs, warning) to trigger service needs. Offered features like pickup and courtesy car offerings, discount vouchers, and streamlined warranty claims.",
+        "techStack": [
+          "Java 11",
+          "Spring Boot 2.x",
+          "Vue.js",
+          "MS SQL Server",
+          "Jenkins",
+          "Azure",
+          "PCF",
+          "Sonar",
+          "FOSSA",
+          "42Crunch",
+          "Gradle"
+        ],
+        "roles": [
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale, secure and publish APIs using Apigee."
+          },
+          {
+            "title": "Front-End Developer",
+            "description": "Develop Vue.js application."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate microservices integration and deployment workflows using Jenkins."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables and budget constraints."
+          }
+        ],
+        "short": "Online vehicle service-booking platform for retail and fleet customers in Canada, the US and the EU, triggered by vehicle diagnostic alerts."
+      },
+      {
+        "id": "ecos",
+        "name": "ECOS",
+        "domain": "Insurance",
+        "summary": "Enterprise Claim Operating System (ECOS) manages end-to-end insurance claim workflows, starting from First Notice of Loss (FNOL) through exposure assessment, reserve allocation, and payment processing. It incorporates fraud detection and eligibility analysis to ensure accurate claim handling. The system leverages Guidewire for core claims operations and integrates with supporting applications via Spring Batch and SOAP services.",
+        "techStack": [
+          "Java 8",
+          "Spring Batch 4.x",
+          "SOAP",
+          "REST",
+          "Sonar",
+          "Maven",
+          "Guidewire",
+          "Jenkins",
+          "JBoss",
+          "Oracle",
+          "Scrum",
+          "Rally",
+          "GitHub"
+        ],
+        "roles": [
+          {
+            "title": "API Developer",
+            "description": "Design, implement, scale and secure SOAP web services."
+          },
+          {
+            "title": "Spring Batch Developer",
+            "description": "Develop Spring Batch Job and schedule them using Spring Batch manager. Each spring batch Job can also be triggered on-demand as a SOAP WS."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate web services integration and deployment workflows using Jenkins."
+          },
+          {
+            "title": "Technical Lead",
+            "description": "Refine requirements, mentor team members, and take ownership of deliverables."
+          },
+          {
+            "title": "Scrum/Kanban Trained Professional",
+            "description": "Represented ECOS portfolio for Cognizant level AGILE Audit and obtained score of 3.56 out of 5."
+          }
+        ],
+        "short": "Guidewire-based claims platform covering First Notice of Loss, exposure, reserves and payments, with fraud detection and eligibility analysis."
+      },
+      {
+        "id": "hap-digital",
+        "name": "HAP Digital",
+        "domain": "Insurance",
+        "summary": "The DIGITAL team leads development and enhancement of HAP’s online platforms, including quoting, Enrolment, and renewals. It integrates with third-party services using SSO and delivers solutions through agile methodologies and microservices architecture.",
+        "techStack": [
+          "Java 8",
+          "JAX-WS",
+          "JAX-RS",
+          "Hibernate",
+          "Spring",
+          "Jersey",
+          "Struts 1.x",
+          "CSS3",
+          "jQuery",
+          "Drools",
+          "JUnit",
+          "TestNG",
+          "Selenium",
+          "Oracle",
+          "Jenkins",
+          "JBoss EAP 7",
+          "OpenShift",
+          "Docker",
+          "Kanban"
+        ],
+        "roles": [
+          {
+            "title": "Backend Developer",
+            "description": "Design, implement, scale and secure Spring + Jersey REST web services."
+          },
+          {
+            "title": "Front-end Developer",
+            "description": "Design and develop UI pages with Spring MVC & Struts 1.x, HTML, CSS3, jQuery"
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate web application integration and deployment workflows using Jenkins."
+          }
+        ],
+        "short": "Online quoting, enrolment and renewal platforms for HAP, integrated with third-party services through SSO on a microservices architecture."
+      },
+      {
+        "id": "hcsc-ndc",
+        "name": "HCSC-NDC",
+        "domain": "Insurance",
+        "summary": "HCSC provides group life, disability, dental, and various individual solutions. The NDC team focuses on developing and enhancing online platforms for quoting, enrolment, and renewals, and exposes these applications as web services to third-party organizations per contractual agreements.",
+        "techStack": [
+          "Java 6",
+          "JAX-WS",
+          "Maven",
+          "Ant",
+          "Selenium",
+          "MS SQL Server",
+          "Serena Dimensions",
+          "Jenkins",
+          "WebSphere 7",
+          "Scrum"
+        ],
+        "roles": [
+          {
+            "title": "Backend Developer",
+            "description": "Design, implement, scale and secure Spring + Jersey REST web services."
+          },
+          {
+            "title": "CI/CD Automation Engineer",
+            "description": "Automate web services integration and deployment workflows using Serena Dimensions."
+          }
+        ],
+        "short": "Quoting, enrolment and renewal platforms for group life, disability and dental products, exposed as web services to third parties."
+      },
+      {
+        "id": "catie",
+        "name": "CATIE",
+        "domain": "Senior living",
+        "summary": "CATIE is a web-based application designed for senior residents in U.S. community centers. Installed on dedicated devices, it provides access to weather updates, local restaurant availability, email, and SIP-based calling. Administrators can manage communications by sending event invitations, broadcast messages, and surveys to residents.",
+        "techStack": [
+          "Java 6",
+          "JAX-WS",
+          "Spring MVC",
+          "Hibernate",
+          "Ant",
+          "Asterisk SIP",
+          "MySQL 5.x",
+          "SVN",
+          "JBoss 6.0 AS"
+        ],
+        "roles": [
+          {
+            "title": "Backend Developer",
+            "description": "Design, implement, scale and secure Spring + Jersey REST web services."
+          },
+          {
+            "title": "Front-end Developer",
+            "description": "Design and develop UI pages with Spring MVC, HTML, CSS3, JS and jQuery."
+          }
+        ],
+        "short": "Web application for senior residents in U.S. community centres: weather, restaurants, email, SIP calling, event invitations and surveys."
+      }
+    ],
+    "domains": [
+      "Insurance",
+      "Automotive"
+    ],
+    "interests": [],
+    "contact": {
+      "email": "Sarvanamani1992@gmail.com",
+      "linkedin": "https://www.linkedin.com/in/saravana-manikandan-s-23935670/",
+      "website": "https://learn-with-saravana.onrender.com/",
+      "phone": "+91 91767 54362"
+    },
+    "education": [
+      {
+        "level": "B.E. Computer Science & Engineering",
+        "institution": "DMI College of Engineering",
+        "location": "Chennai, Tamil Nadu",
+        "start": "2010-08",
+        "end": "2014-04",
+        "isSchool": false
+      }
+    ]
+  }
+}

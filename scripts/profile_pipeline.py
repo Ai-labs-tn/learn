@@ -5,6 +5,7 @@
     python scripts/profile_pipeline.py push --base-url URL --password-env NAME [--public]
     python scripts/profile_pipeline.py snapshot --base-url URL        # public view -> src/portfolio
     python scripts/profile_pipeline.py set-privacy --base-url URL --password-env NAME --show-phone|--hide-phone
+    python scripts/profile_pipeline.py import-md [--from-file resume.md] [--apply --base-url URL --password-env NAME]   # dry run unless --apply
     python scripts/profile_pipeline.py set-summary --base-url URL --password-env NAME --from-file summary.json
 
 Outputs live in profile-build/ (git-ignored: it holds the private phone, address and references).
@@ -542,6 +543,238 @@ def command_summary(args) -> int:
     return code
 
 
+MONTH_NUMBER = {name: index for index, name in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], 1)}
+
+
+def month_year(value: str) -> tuple[int, int] | None:
+    """'Aug 2010' -> (2010, 8); '2010' -> (2010, 1). Empty or 'Present' -> None."""
+    match = re.fullmatch(r"(?:([A-Za-z]{3})[a-z]*\s+)?(\d{4})", value.strip())
+    if not match:
+        return None
+    return int(match.group(2)), MONTH_NUMBER.get((match.group(1) or "Jan").title(), 1)
+
+
+def year_month(value: str) -> str | None:
+    parsed = month_year(value)
+    return f"{parsed[0]:04d}-{parsed[1]:02d}" if parsed else None
+
+
+def slugify(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return ("x-" + slug if not slug[:1].isalpha() else slug)[:63].rstrip("-")
+
+
+def parse_resume_markdown(source: str) -> dict:
+    """Parse resume.md (see the comment at its top) into plain structures; raises SystemExit with a clear message."""
+    source = re.sub(r"<!--.*?-->", "", source, flags=re.S)
+    head, *rest = re.split(r"(?m)^## ", source)
+    sections: dict[str, list[str]] = {}
+    for block in rest:
+        title, _, body = block.partition("\n")
+        sections[title.strip()] = body.splitlines()
+    name = re.search(r"(?m)^# (.+)$", head)
+    if not name:
+        raise SystemExit("resume.md: the first line must be '# Your Name'")
+
+    def field(label: str) -> str:
+        found = re.search(rf"(?m)^{label}:\s*(.*)$", head)
+        return found.group(1).strip() if found else ""
+
+    def entries(lines: list[str]) -> list[tuple[str, list[str]]]:
+        out: list[tuple[str, list[str]]] = []
+        for line in lines:
+            if line.startswith("### "):
+                out.append((line[4:].strip(), []))
+            elif out:
+                out[-1][1].append(line)
+        return out
+
+    def bullets(lines: list[str]) -> list[str]:
+        return [line[2:].strip() for line in lines if line.startswith("- ") and line[2:].strip()]
+
+    def parts(text: str, count: int, where: str) -> list[str]:
+        pieces = [piece.strip() for piece in text.split(" | ")]
+        if len(pieces) != count:
+            raise SystemExit(f"resume.md ({where}): expected {count} parts separated by ' | ' but found {len(pieces)}: {text[:80]}")
+        return pieces
+
+    def dates(text: str, where: str) -> tuple[str, str | None]:
+        left, _, right = text.partition(" - ")
+        start = year_month(left)
+        if not start:
+            raise SystemExit(f"resume.md ({where}): cannot read the start date '{left}' (use e.g. 'May 2021')")
+        end = None if right.strip().lower() in ("present", "current", "") else year_month(right)
+        if right.strip().lower() not in ("present", "current", "") and not end:
+            raise SystemExit(f"resume.md ({where}): cannot read the end date '{right}'")
+        return start, end
+
+    contact = {key.lower(): value.strip() for key, value in (line[2:].split(":", 1) for line in sections.get("Contact", []) if line.startswith("- ") and ":" in line)}
+    profile_lines = sections.get("Profile", [])
+    summary = " ".join(line.strip() for line in profile_lines if line.strip() and not line.startswith("- "))
+    experience = []
+    for heading, body in entries(sections.get("Experience", [])):
+        role, company, location, span = parts(heading, 4, "Experience")
+        start, end = dates(span, f"Experience: {role}")
+        experience.append({"role": role, "company": company, "location": location, "start": start, "end": end, "achievements": bullets(body)})
+    projects = []
+    for heading, body in entries(sections.get("Projects", [])):
+        project_name, domain = parts(heading, 2, "Projects")
+        tech_line = next((line for line in body if line.startswith("Tech:")), "")
+        tech = list(dict.fromkeys(item.strip() for item in tech_line[5:].split(",") if item.strip()))
+        short_line = next((line for line in body if line.startswith("Short:")), "")
+        text = " ".join(line.strip() for line in body if line.strip() and not line.startswith(("- ", "Tech:", "Short:")))
+        roles = []
+        for item in bullets(body):
+            title, sep, description = item.partition(": ")
+            if not sep:
+                raise SystemExit(f"resume.md (Projects: {project_name}): a role bullet must look like 'Role: what you did' -> {item[:60]}")
+            roles.append({"title": title.strip(), "description": description.strip()})
+        projects.append({"name": project_name, "domain": domain, "summary": text, "techStack": tech, "roles": roles, **({"short": short_line[6:].strip()} if short_line[6:].strip() else {})})
+    skills = []
+    for group, body in entries(sections.get("Skills & Abilities", [])):
+        for item in bullets(body):
+            skill, sep, level = item.rpartition(" | ")
+            if not sep or not level.strip().isdigit():
+                raise SystemExit(f"resume.md (Skills: {group}): end each skill with ' | 1-5' -> {item[:60]}")
+            skills.append({"name": skill.strip(), "level": int(level), "group": group})
+    certifications = []
+    for item in bullets(sections.get("Certifications", [])):
+        pieces = [piece.strip() for piece in item.split(" | ")]
+        valid = re.sub(r"(?i)^valid until\s*", "", pieces[2]) if len(pieces) > 2 else ""
+        certifications.append({"name": pieces[0], "issuer": pieces[1] if len(pieces) > 1 else "", "valid": valid})
+    awards = []
+    for item in bullets(sections.get("Awards", [])):
+        pieces = item.split(" | ", 2)
+        if len(pieces) < 3:
+            raise SystemExit(f"resume.md (Awards): use 'Title | Mon YYYY (or empty) | description' -> {item[:60]}")
+        awards.append({"title": pieces[0].strip(), "date": pieces[1].strip(), "description": pieces[2].strip()})
+    education = []
+    for heading, _ in entries(sections.get("Education", [])):
+        level, institution, location, span = parts(heading, 4, "Education")
+        start, end = dates(span, f"Education: {level}")
+        education.append({"level": level, "institution": institution, "location": location, "start": start, "end": end or start})
+    return {
+        "name": name.group(1).strip(), "headline": field("Headline"), "titles": [t.strip() for t in field("Titles").split("|") if t.strip()],
+        "region": field("Region"), "domains": [d.strip() for d in field("Domains").split(",") if d.strip()], "contact": contact,
+        "summary": summary, "highlights": bullets(profile_lines), "experience": experience, "projects": projects, "skills": skills,
+        "certifications": certifications, "awards": awards, "education": education, "interests": bullets(sections.get("Activities and Interests", [])),
+    }
+
+
+def merge_resume(parsed: dict, base: dict) -> dict:
+    """Overlay the Markdown content on the stored document, keeping ids, privacy switches, address, references and narration."""
+    import calendar
+    merged = json.loads(json.dumps(base))
+    merged["identity"] = {"name": parsed["name"], "headline": parsed["headline"], "titles": parsed["titles"], "region": parsed["region"]}
+    contact = parsed["contact"]
+    merged["contact"] = {**{k: v for k, v in base["contact"].items() if k in ("address",)},
+                         "email": contact.get("email", ""), "linkedin": contact.get("linkedin", ""),
+                         **({"phone": contact["phone"]} if contact.get("phone") else {}), **({"website": contact["website"]} if contact.get("website") else {})}
+    merged["summary"], merged["highlights"], merged["domains"], merged["interests"] = parsed["summary"], parsed["highlights"], parsed["domains"], parsed["interests"]
+    old_jobs = {(e["company"].lower(), e["start"]): e["id"] for e in base["experience"]}
+    used = set(); jobs = []
+    for entry in parsed["experience"]:
+        ident = old_jobs.get((entry["company"].lower(), entry["start"])) or slugify(f"{entry['company']}-{entry['start']}")
+        while ident in used:
+            ident += "-2"
+        used.add(ident)
+        jobs.append({"id": ident, **{k: v for k, v in entry.items() if not (k == "end" and v is None)}})
+    merged["experience"] = jobs
+    old_projects = {p["name"].lower(): p["id"] for p in base["projects"]}
+    used = set(); projects = []
+    for entry in parsed["projects"]:
+        ident = old_projects.get(entry["name"].lower()) or slugify(entry["name"])
+        while ident in used:
+            ident += "-2"
+        used.add(ident)
+        projects.append({"id": ident, **entry})
+    merged["projects"] = projects
+    merged["skills"] = parsed["skills"]
+    old_certs = {(c["name"].lower(), (c.get("validUntil") or "")[:7]): c.get("validUntil") for c in base["certifications"]}
+    certs = []
+    for entry in parsed["certifications"]:
+        item = {"name": entry["name"], "issuer": entry["issuer"]}
+        ym = year_month(entry["valid"]) if entry["valid"] else None
+        if ym:
+            year, month = int(ym[:4]), int(ym[5:])
+            item["validUntil"] = old_certs.get((entry["name"].lower(), ym)) or f"{ym}-{calendar.monthrange(year, month)[1]:02d}"
+        certs.append(item)
+    merged["certifications"] = certs
+    old_awards = {(a["title"].lower(), (a.get("date") or "")[:7]): a.get("date") for a in base["awards"]}
+    awards = []
+    for entry in parsed["awards"]:
+        item = {"title": entry["title"], "description": entry["description"]}
+        ym = year_month(entry["date"]) if entry["date"] else None
+        if ym:
+            item["date"] = old_awards.get((entry["title"].lower(), ym)) or f"{ym}-01"
+        awards.append(item)
+    merged["awards"] = awards
+    schools = {e["institution"].lower(): e.get("isSchool", False) for e in base["education"]}
+    merged["education"] = [{**entry, "isSchool": schools.get(entry["institution"].lower(), False)} for entry in parsed["education"]]
+    # Hidden (school-level) entries are private and never in resume.md; importing must not delete them.
+    listed = {e["institution"].lower() + "|" + e["level"].lower() for e in merged["education"]}
+    merged["education"] += [e for e in base["education"] if e.get("isSchool") and e["institution"].lower() + "|" + e["level"].lower() not in listed]
+    return merged
+
+
+def without_nulls(value):
+    if isinstance(value, dict):
+        return {k: without_nulls(v) for k, v in value.items() if v is not None}
+    if isinstance(value, list):
+        return [without_nulls(v) for v in value]
+    return value
+
+
+def describe_changes(before: dict, after: dict) -> list[str]:
+    before, after = without_nulls(before), without_nulls(after)
+    lines = []
+    for key in ("identity", "contact", "summary", "highlights", "domains", "interests", "certifications", "education", "skills"):
+        if before.get(key) != after.get(key):
+            lines.append(f"  changed: {key}")
+    for key, label in (("experience", "role"), ("projects", "name"), ("awards", "title")):
+        old, new = before.get(key, []), after.get(key, [])
+        old_names, new_names = [x[label] for x in old], [x[label] for x in new]
+        added, removed = [n for n in new_names if n not in old_names], [n for n in old_names if n not in new_names]
+        edited = [n for n in new_names if n in old_names and next(x for x in old if x[label] == n) != next(x for x in new if x[label] == n)]
+        if added or removed or edited or old_names != new_names:
+            lines.append(f"  {key}: +{added or '[]'} -{removed or '[]'} edited={edited or '[]'}{' (order changed)' if old_names != new_names and sorted(old_names) == sorted(new_names) else ''}")
+    return lines or ["  no differences from the stored profile"]
+
+
+def command_import_md(args) -> int:
+    """Turn resume.md into the profile. Without --apply nothing is sent: it validates and shows what would change."""
+    parsed = parse_resume_markdown(Path(args.from_file).read_text(encoding="utf-8"))
+    merged_holder: dict = {}
+
+    def build(base: dict) -> dict:
+        merged = merge_resume(parsed, base)
+        ProfileDocument.model_validate(merged)
+        return merged
+
+    if not args.apply:
+        base = json.loads((BUILD / "entities.json").read_text(encoding="utf-8"))
+        merged = build(base)
+        print("resume.md is valid. Changes compared with the private working copy:")
+        print("\n".join(describe_changes(base, merged)))
+        merged_holder["doc"] = merged
+        code = 0
+    else:
+        def mutate(document: dict) -> None:
+            merged = build(document)
+            print("applying:"); print("\n".join(describe_changes(document, merged)))
+            document.clear(); document.update(merged); merged_holder["doc"] = merged
+        code = update_live(args, mutate)
+        if code == 0:
+            (BUILD / "entities.json").write_text(json.dumps(merged_holder["doc"], indent=2, ensure_ascii=False), encoding="utf-8")
+            print("private working copy updated")
+    if args.emit_public and "doc" in merged_holder:
+        target = Path(args.emit_public)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payload = {"profileId": "from-resume-md", "version": 0, "updatedAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"), "profile": public_view(merged_holder["doc"])}
+        target.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        print("public-view fixture written:", target)
+    return code
+
 def command_snapshot(args) -> int:
     target = ROOT / "src" / "portfolio" / "profile.snapshot.json"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -598,6 +831,10 @@ def main() -> int:
     text = sub.add_parser("set-summary", help="Replace the summary and highlights on the live profile from a JSON file")
     text.add_argument("--base-url", required=True); text.add_argument("--password-env", required=True); text.add_argument("--from-file", required=True)
     text.set_defaults(run=command_summary)
+    imp = sub.add_parser("import-md", help="Validate resume.md and (with --apply) publish it as the profile")
+    imp.add_argument("--from-file", default=str(ROOT.parent / "resume.md")); imp.add_argument("--apply", action="store_true")
+    imp.add_argument("--base-url"); imp.add_argument("--password-env"); imp.add_argument("--emit-public")
+    imp.set_defaults(run=command_import_md)
     args = parser.parse_args()
     return args.run(args)
 

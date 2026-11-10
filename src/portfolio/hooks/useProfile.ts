@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { request } from '../../auth/api';
 import snapshot from '../profile.snapshot.json';
 import { normalizeEnvelope, type ProfileEnvelope } from '../types';
@@ -8,7 +8,7 @@ const FALLBACK: ProfileEnvelope = normalizeEnvelope(snapshot) ?? {
   profile: {
     identity: { name: 'Portfolio', headline: '', titles: [], region: '' },
     contact: { email: '', linkedin: '' }, summary: '', highlights: [], skills: [], certifications: [],
-    awards: [], experience: [], education: [], projects: [], domains: [],
+    awards: [], experience: [], education: [], projects: [], domains: [], interests: [],
   },
 };
 

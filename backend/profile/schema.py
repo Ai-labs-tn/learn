@@ -38,6 +38,8 @@ class Contact(Strict):
     linkedin: Annotated[str, StringConstraints(max_length=300, pattern=r"^https://www\.linkedin\.com/in/[A-Za-z0-9\-_%]+/?$")]
     phone: Annotated[str, StringConstraints(pattern=r"^\+?[0-9 ()-]{6,20}$")] | None = None
     address: text(300) | None = None
+    # The owner's own site; always public, like the email and LinkedIn links.
+    website: Annotated[str, StringConstraints(max_length=200, pattern=r"^https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}(/[A-Za-z0-9._~%/-]*)?$")] | None = None
 
 
 class Skill(Strict):
@@ -66,6 +68,7 @@ class Experience(Strict):
     location: text(120)
     start: Annotated[str, StringConstraints(pattern=YEAR_MONTH.pattern)]
     end: Annotated[str, StringConstraints(pattern=YEAR_MONTH.pattern)] | None = None
+    achievements: Annotated[list[text(300)], Field(max_length=8)] = Field(default_factory=list)
 
 
 class Education(Strict):
@@ -88,6 +91,7 @@ class Project(Strict):
     name: text(80)
     domain: text(60)
     summary: text(900)
+    short: text(200) | None = None   # owner-written one-liner used where space is tight
     tech_stack: Annotated[list[text(60)], Field(min_length=1, max_length=40)] = Field(alias="techStack")
     roles: Annotated[list[Role], Field(min_length=1, max_length=10)]
     model_config = ConfigDict(extra="forbid", strict=True, populate_by_name=True)
@@ -140,6 +144,7 @@ class ProfileDocument(Strict):
     education: Annotated[list[Education], Field(max_length=12)]
     projects: Annotated[list[Project], Field(max_length=30)]
     domains: Annotated[list[text(60)], Field(max_length=12)]
+    interests: Annotated[list[text(120)], Field(max_length=12)] = Field(default_factory=list)
     references: Annotated[list[Reference], Field(max_length=6)]
     narration: Narration | None = None
     privacy: Privacy = Field(default_factory=Privacy)
@@ -161,8 +166,10 @@ def public_view(document: dict) -> dict:
     privacy = document.get("privacy", {})
     view = {key: document[key] for key in (
         "schemaVersion", "identity", "summary", "highlights", "skills", "certifications", "awards",
-        "experience", "projects", "domains", "narration") if key in document}
+        "experience", "projects", "domains", "interests", "narration") if key in document}
     contact = {"email": document["contact"]["email"], "linkedin": document["contact"]["linkedin"]}
+    if document["contact"].get("website"):
+        contact["website"] = document["contact"]["website"]
     if privacy.get("showPhone") and document["contact"].get("phone"):
         contact["phone"] = document["contact"]["phone"]
     if privacy.get("showAddress") and document["contact"].get("address"):

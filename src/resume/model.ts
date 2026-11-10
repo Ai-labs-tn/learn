@@ -1,80 +1,83 @@
-﻿import type { Profile } from '../portfolio/types';
+import type { Profile } from '../portfolio/types';
+import type { StyleId } from './look';
+import { REG } from './widths';
 
 export type Run = { text: string; bold?: boolean; href?: string };
-export type ResumeBlock =
-  | { kind: 'name'; runs: Run[] }
-  | { kind: 'headline'; runs: Run[] }
-  | { kind: 'contact'; runs: Run[] }
-  | { kind: 'heading'; runs: Run[] }
-  | { kind: 'para'; runs: Run[] }
-  | { kind: 'bullet'; runs: Run[] }
-  | { kind: 'title'; runs: Run[]; date?: string };
+/** One paragraph of the resume, in terms of the template's paragraph styles. */
+export type Para = {
+  style: StyleId;
+  runs: Run[];
+  /** Direct "space after" in twips at spacing 1.0 (project detail paragraphs); scaled by the tier's spacing. */
+  after?: number;
+};
 
 export type Tier = {
   index: number;
   name: string;
-  fontSize: number;
+  /** Body font size in pt; every template size scales by body / template body size. */
+  body: number;
   spacing: number;
   bullets: number;
   bulletChars: number;
   summaryChars: number;
   tech: number;
-  awardDesc: boolean;
   highlights: boolean;
-  summarySentences: number;
+  dedupeRoles: boolean;
   maxProjects: number;
   maxAwards: number;
 };
 
-const BASE = { spacing: 1, awardDesc: true, highlights: true, summarySentences: 9, maxProjects: 99, maxAwards: 99 };
+export const MIN_BODY = 9.5;
+const BASE = { dedupeRoles: false, maxProjects: 99, maxAwards: 99, highlights: true };
 const LADDER: Omit<Tier, 'index' | 'name'>[] = [
-  { ...BASE, fontSize: 10, bullets: 3, bulletChars: 200, summaryChars: 150, tech: 10 },
-  { ...BASE, fontSize: 10, bullets: 2, bulletChars: 170, summaryChars: 150, tech: 10 },
-  { ...BASE, fontSize: 10, bullets: 2, bulletChars: 150, summaryChars: 150, tech: 8 },
-  { ...BASE, fontSize: 10, bullets: 2, bulletChars: 120, summaryChars: 130, tech: 6 },
-  { ...BASE, fontSize: 9.5, bullets: 2, bulletChars: 150, summaryChars: 150, tech: 8 },
-  { ...BASE, fontSize: 9.5, bullets: 2, bulletChars: 120, summaryChars: 130, tech: 6 },
-  { ...BASE, fontSize: 9.5, bullets: 1, bulletChars: 150, summaryChars: 150, tech: 8 },
-  { ...BASE, fontSize: 9.5, bullets: 1, bulletChars: 120, summaryChars: 120, tech: 6 },
-  { ...BASE, fontSize: 9, bullets: 1, bulletChars: 120, summaryChars: 120, tech: 6, spacing: 0.85 },
-  { ...BASE, fontSize: 9, bullets: 0, bulletChars: 120, summaryChars: 120, tech: 6, spacing: 0.85, awardDesc: false },
-  { ...BASE, fontSize: 9, bullets: 0, bulletChars: 100, summaryChars: 100, tech: 6, spacing: 0.8, awardDesc: false, highlights: false, summarySentences: 2 },
+  { ...BASE, body: 11, spacing: 1, bullets: 3, bulletChars: 220, summaryChars: 220, tech: 12 },
+  { ...BASE, body: 11, spacing: 0.9, bullets: 2, bulletChars: 200, summaryChars: 200, tech: 10 },
+  { ...BASE, body: 10.5, spacing: 0.9, bullets: 2, bulletChars: 180, summaryChars: 200, tech: 10 },
+  { ...BASE, body: 10.5, spacing: 0.8, bullets: 2, bulletChars: 160, summaryChars: 180, tech: 8 },
+  { ...BASE, body: 10, spacing: 0.8, bullets: 1, bulletChars: 160, summaryChars: 180, tech: 8, dedupeRoles: true },
+  { ...BASE, body: 10, spacing: 0.7, bullets: 1, bulletChars: 140, summaryChars: 160, tech: 8, dedupeRoles: true },
+  { ...BASE, body: 9.5, spacing: 0.7, bullets: 1, bulletChars: 140, summaryChars: 160, tech: 8, dedupeRoles: true },
+  { ...BASE, body: 9.5, spacing: 0.6, bullets: 1, bulletChars: 120, summaryChars: 160, tech: 8, dedupeRoles: true },
+  { ...BASE, body: 9.5, spacing: 0.5, bullets: 1, bulletChars: 120, summaryChars: 160, tech: 8, dedupeRoles: true },
+  { ...BASE, body: 9.5, spacing: 0.5, bullets: 0, bulletChars: 120, summaryChars: 160, tech: 8, dedupeRoles: true },
+  { ...BASE, body: 9.5, spacing: 0.5, bullets: 0, bulletChars: 120, summaryChars: 160, tech: 6, dedupeRoles: true },
 ];
 export const TIER_COUNT = LADDER.length;
 
-/** Ladder tiers, then truncation tiers that drop lowest-priority content (awards, oldest projects). */
+/** Ladder tiers (richest first), then truncation tiers that drop lowest-priority content (awards, oldest projects). */
 export function tierAt(i: number): Tier {
   if (i < LADDER.length) return { ...LADDER[i], index: i, name: `T${i + 1}` };
   const k = i - LADDER.length + 1;
-  const last = LADDER[LADDER.length - 1];
-  return {
-    ...last, index: i, name: `T${LADDER.length}-trim${k}`,
-    maxProjects: Math.max(0, 10 - k), maxAwards: Math.max(0, 11 - k),
-  };
+  return { ...LADDER[LADDER.length - 1], index: i, name: `T${LADDER.length}-trim${k}`, maxProjects: Math.max(0, 10 - k), maxAwards: Math.max(0, 11 - k) };
 }
 export const MAX_TIER_INDEX = LADDER.length + 11;
 
 const FIX: Record<string, string> = {
   '\u2018': "'", '\u2019': "'", '\u201A': "'", '\u201C': '"', '\u201D': '"', '\u201E': '"',
-  '\u2010': '-', '\u2011': '-', '\u2012': '-', '\u2212': '-', '\u2026': '...', '\u00A0': ' ', '\u2009': ' ', '\u200B': '',
-  '\u2192': '->', '\u00D7': 'x', '\u2022': '', '\t': ' ', '\n': ' ', '\r': ' ',
+  '\u2010': '-', '\u2011': '-', '\u2012': '-', '\u2212': '-', '\u2026': '...', '\u2009': ' ', '\u200B': '', '\u00AD': '',
+  '\u2192': '->', '\u2022': '', '\t': ' ', '\n': ' ', '\r': ' ',
 };
-const KEEP = new Set(['\u2013', '\u2014', '\u00B7']);
-/** Make text safe for the WinAnsi Helvetica subset used by both formats. */
+/** Characters Caladea/Cambria render (and the width tables cover); everything else is mapped or dropped. */
+export const supported = (ch: string): boolean => REG[ch.codePointAt(0)!] !== undefined;
 export function sanitize(input: string): string {
+  const s = String(input ?? '');
+  if (s.includes('\u00A0')) return s.split(/(\u00A0)/).map((x) => (x === '\u00A0' ? x : sanitizeInner(x))).join('');
+  return sanitizeInner(s);
+}
+function sanitizeInner(input: string): string {
   let out = '';
   for (const ch of String(input ?? '').normalize('NFC')) {
     if (FIX[ch] !== undefined) out += FIX[ch];
-    else if (KEEP.has(ch) || (ch >= ' ' && ch <= '~')) out += ch;
+    else if (supported(ch)) out += ch;
     else {
       const base = ch.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      for (const c of base) if (c >= ' ' && c <= '~') out += c;
+      for (const c of base) if (supported(c)) out += c;
     }
   }
   return out.replace(/\s+/g, ' ').trim();
 }
 
-const norm = (s: string) => sanitize(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const norm = (s: string) => sanitize(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 const tokens = (s: string) => new Set(norm(s).split(' ').filter((t) => t.length > 2));
 function overlap(a: string, b: string): number {
   const ta = tokens(a), tb = tokens(b);
@@ -101,26 +104,27 @@ export function dedupeHighlights(highlights: string[], summary: string): string[
 
 export function firstSentence(text: string): string {
   const t = sanitize(text);
-  const m = /^.*?[.!?](?=\s|$)/.exec(t);
-  return m ? m[0] : t;
+  const re = /[.!?](?=\s|$)/g;
+  for (let m = re.exec(t); m; m = re.exec(t)) {
+    // skip abbreviations such as "U.S." or "e.g."
+    if (m[0] === '.' && /(?:^|[\s.(])[A-Za-z]$/.test(t.slice(0, m.index))) continue;
+    return t.slice(0, m.index + 1);
+  }
+  return t;
 }
-/** Shorten at a word boundary; never mid-word. */
-export function shorten(text: string, max: number): string {
-  const t = sanitize(text);
-  // A few characters over the budget read better whole than cut off.
-  if (t.length <= Math.ceil(max * 1.1)) return t;
-  const cut = t.slice(0, max + 1);
-  const sp = cut.lastIndexOf(' ');
-  // Prefer ending at a clause boundary when that keeps most of the text.
-  const clause = Math.max(cut.lastIndexOf(', '), cut.lastIndexOf('; '));
-  let s = (clause >= max * 0.6 ? cut.slice(0, clause) : sp > 0 ? cut.slice(0, sp) : t.slice(0, max)).replace(/[\s,;:\-–—(]+$/, '');
-  for (let prev = ''; prev !== s;) { prev = s; s = s.replace(/\s+(?:and|or|to|the|of|in|for|with|within|a|an|from|on|by|as|at|into|via|using|that|which|while)$/i, '').replace(/[\s,;:\-–—(&+]+$/, ''); }
-  if (!/[.!?]$/.test(s)) s += '.';
-  return s;
-}
-function sentences(text: string, n: number): string {
-  const parts = sanitize(text).match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) ?? [];
-  return parts.slice(0, n).join(' ').trim();
+/** The first full sentence if it fits, else the leading ';'-separated clauses that fit; '' when nothing complete fits. Never cuts mid-thought. */
+export function whole(text: string, max: number): string {
+  const s = firstSentence(text);
+  if (!s) return '';
+  if (s.length <= max) return s;
+  const parts = s.replace(/[.!?]$/, '').split(/;\s+/);
+  let out = '';
+  for (const p of parts) {
+    const next = out ? `${out}; ${p}` : p;
+    if (next.length + 1 > max) break;
+    out = next;
+  }
+  return out && out !== parts.join('; ') ? `${out}.` : '';
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -130,39 +134,87 @@ export function fmtDate(v: string | null | undefined): string {
   const mo = m[2] ? MONTHS[Number(m[2]) - 1] : '';
   return mo ? `${mo} ${m[1]}` : m[1];
 }
-const range = (a: string, b: string | null) => `${fmtDate(a)} \u2013 ${b ? fmtDate(b) : 'Present'}`;
-const join = (...p: (string | undefined)[]) => p.map((x) => sanitize(x ?? '')).filter(Boolean).join(', ');
+const range = (a: string | null | undefined, b: string | null | undefined, open: boolean) => {
+  const from = fmtDate(a), to = b ? fmtDate(b) : open ? 'Present' : '';
+  // Each month-year (and the space before the dash) is non-breaking; Word may still wrap after the en dash itself.
+  const nb = (s: string) => s.replace(/ /g, '\u00A0');
+  return from && to ? `${nb(from)}\u00A0\u2013 ${nb(to)}` : nb(from || to);
+};
+const pipe = (...p: (string | undefined)[]) => p.map((x) => sanitize(x ?? '')).filter(Boolean).join(' | ');
+const comma = (...p: (string | undefined)[]) => p.map((x) => sanitize(x ?? '')).filter(Boolean).join(', ');
 const R = (text: string, bold = false): Run => ({ text: (/^ /.test(text) ? ' ' : '') + sanitize(text) + (/ $/.test(text) ? ' ' : ''), bold });
 const dedupeStrings = (xs: string[]) => {
   const seen = new Set<string>();
   return xs.map(sanitize).filter((x) => x && !seen.has(x.toLowerCase()) && !!seen.add(x.toLowerCase()));
 };
+const stripProtocol = (s: string) => s.replace(/^https?:\/\//i, '').replace(/\/$/, '');
 const url = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
 
-export const SECTION_HEADINGS = ['Summary', 'Core Skills', 'Professional Experience', 'Selected Projects', 'Certifications', 'Awards', 'Education'] as const;
+export const SECTION_HEADINGS = ['Profile', 'Experience', 'Projects', 'Skills & Abilities', 'Certifications', 'Awards', 'Education', 'Activities and Interests'] as const;
+const PROJECT_AFTER_TW = 40;
+const TECH_AFTER_TW = 140;
 
-export function buildBlocks(profile: Profile, tier: Tier): ResumeBlock[] {
-  const b: ResumeBlock[] = [];
-  const h = (t: string) => b.push({ kind: 'heading', runs: [R(t, true)] });
+export function buildBlocks(profile: Profile, tier: Tier): Para[] {
+  const b: Para[] = [];
+  const add = (style: StyleId, runs: Run[], after?: number) => b.push({ style, runs, after });
+  const h1 = (t: string) => add('Heading1', [R(t)]);
+  const bullet = (...runs: Run[]) => add('ListBullet', runs);
   const { identity, contact } = profile;
-  b.push({ kind: 'name', runs: [R(identity.name, true)] });
-  const head = dedupeStrings(identity.titles.length ? identity.titles : [identity.headline]).join(' | ');
-  if (head) b.push({ kind: 'headline', runs: [R(head, true)] });
-  const cr: Run[] = [];
-  const sep = () => cr.push(R(' \u00B7 '));
-  const add = (r: Run) => { if (cr.length) sep(); cr.push(r); };
-  if (identity.region) add(R(identity.region));
-  if (contact.phone) add(R(contact.phone));
-  if (contact.email) add({ ...R(contact.email), href: `mailto:${sanitize(contact.email)}` });
-  if (contact.linkedin) add({ ...R(contact.linkedin), href: url(sanitize(contact.linkedin)) });
-  if (cr.length) b.push({ kind: 'contact', runs: cr });
 
-  const summary = sentences(profile.summary, tier.summarySentences);
+  add('Title', [R(identity.name)]);
+  const headline = (identity.headline ? identity.headline.split(/\s*[\u00B7|]\s*/) : identity.titles).map(sanitize).filter(Boolean);
+  if (headline.length) add('Contact', [R(headline.map((h) => h.replace(/ /g, '\u00A0')).join(' | '), true)], 0);
+  const cr: Run[] = [];
+  const part = (r: Run) => { if (cr.length) cr.push(R(' | ')); cr.push(r); };
+  if (identity.region) part(R(identity.region));
+  if (contact.phone) part(R(contact.phone));
+  if (contact.email) part({ ...R(contact.email), href: `mailto:${sanitize(contact.email)}` });
+  if (contact.linkedin) part({ ...R(stripProtocol(sanitize(contact.linkedin))), href: url(sanitize(contact.linkedin)) });
+  if (contact.website) part({ ...R(stripProtocol(sanitize(contact.website))), href: url(sanitize(contact.website)) });
+  if (cr.length) add('Contact', cr);
+
+  const summary = sanitize(profile.summary);
   const hl = tier.highlights ? dedupeHighlights(profile.highlights, summary) : [];
   if (summary || hl.length) {
-    h('Summary');
-    if (summary) b.push({ kind: 'para', runs: [R(summary)] });
-    for (const x of hl) b.push({ kind: 'bullet', runs: [R(x)] });
+    h1('Profile');
+    if (summary) add('Normal', [R(summary)]);
+    for (const x of hl) bullet(R(x));
+  }
+
+  if (profile.experience.length) {
+    h1('Experience');
+    const exp = [...profile.experience].sort((a, c) => (c.start > a.start ? 1 : c.start < a.start ? -1 : 0));
+    for (const e of exp) {
+      add('Heading2', [R(pipe(e.role, e.company, range(e.start, e.end, true)))]);
+      for (const a of dedupeStrings(e.achievements ?? [])) bullet(R(a));
+    }
+  }
+
+  const projects = profile.projects.slice(0, tier.maxProjects);
+  if (projects.length) {
+    h1('Projects');
+    const seenRole = new Set<string>();
+    for (const p of projects) {
+      add('Heading2', [R(pipe(p.name, p.domain))]);
+      const sum = sanitize(p.short ?? '') || (p.summary ? whole(p.summary, tier.summaryChars) : '');
+      if (sum) add('Normal', [R(sum)], PROJECT_AFTER_TW);
+      const tech = dedupeStrings(p.techStack).slice(0, tier.tech);
+      if (tech.length) add('Normal', [R('Tech: ', true), R(tech.join(', '))], TECH_AFTER_TW);
+      let n = 0;
+      for (const r of p.roles) {
+        if (n >= tier.bullets) break;
+        const d = whole(r.description, tier.bulletChars);
+        if (!d) continue;
+        if (d && sum && nearDup(d, sum)) continue;
+        if (tier.dedupeRoles && d) {
+          const key = norm(d);
+          if (seenRole.has(key)) continue;
+          seenRole.add(key);
+        }
+        bullet(R(`${r.title}: `, true), R(d));
+        n++;
+      }
+    }
   }
 
   const groups = new Map<string, { name: string; level: number }[]>();
@@ -176,76 +228,58 @@ export function buildBlocks(profile: Profile, tier: Tier): ResumeBlock[] {
   }
   const domains = dedupeStrings(profile.domains);
   if (groups.size || domains.length) {
-    h('Core Skills');
+    h1('Skills & Abilities');
     const ordered = [...groups.entries()].map(([g, xs]) => [g, [...xs].sort((a, c) => c.level - a.level)] as const);
     ordered.sort((a, c) => c[1][0].level - a[1][0].level);
-    for (const [g, xs] of ordered) b.push({ kind: 'para', runs: [R(`${g}: `, true), R(xs.map((x) => x.name).join(', '))] });
-    if (domains.length) b.push({ kind: 'para', runs: [R('Domain expertise: ', true), R(domains.join(', '))] });
-  }
-
-  if (profile.experience.length) {
-    h('Professional Experience');
-    const exp = [...profile.experience].sort((a, c) => (c.start > a.start ? 1 : c.start < a.start ? -1 : 0));
-    for (const e of exp) {
-      b.push({ kind: 'title', runs: [R(e.role, true), R(` \u2014 ${join(e.company, e.location)}`)], date: range(e.start, e.end) });
-    }
-  }
-
-  const projects = profile.projects.slice(0, tier.maxProjects);
-  if (projects.length) {
-    h('Selected Projects');
-    for (const p of projects) {
-      b.push({ kind: 'title', runs: [R(p.domain ? `${p.name} \u2014 ${p.domain}` : p.name, true)] });
-      const sum = p.summary ? shorten(firstSentence(p.summary), tier.summaryChars) : '';
-      if (sum) b.push({ kind: 'para', runs: [R(sum)] });
-      const tech = dedupeStrings(p.techStack).slice(0, tier.tech);
-      if (tech.length) b.push({ kind: 'para', runs: [R('Tech: ', true), R(tech.join(', '))] });
-      let n = 0;
-      for (const r of p.roles) {
-        if (n >= tier.bullets) break;
-        const d = shorten(firstSentence(r.description) || r.description, tier.bulletChars);
-        if (d && sum && nearDup(d, sum)) continue;
-        b.push({ kind: 'bullet', runs: [R(`${r.title}: `, true), R(d)] });
-        n++;
-      }
-    }
+    for (const [g, xs] of ordered) bullet(R(`${g}: `, true), R(xs.map((x) => x.name).join(', ')));
+    if (domains.length) bullet(R('Domain expertise: ', true), R(domains.join(', ')));
   }
 
   if (profile.certifications.length) {
-    h('Certifications');
+    h1('Certifications');
     for (const c of profile.certifications) {
-      const tail = join(c.issuer, c.validUntil ? `valid until ${fmtDate(c.validUntil)}` : '');
-      b.push({ kind: 'bullet', runs: [R(c.name, true), ...(tail ? [R(` \u2014 ${tail}`)] : [])] });
+      const tail = comma(c.issuer, c.validUntil ? `valid until ${fmtDate(c.validUntil)}` : '');
+      bullet(R(c.name, true), ...(tail ? [R(` \u2013 ${tail}`)] : []));
     }
   }
 
+  const bullets = profile.experience.flatMap((e) => e.achievements ?? []).map((x) => sanitize(x).toLowerCase());
+  const inBullets = (a: { title: string; date: string | null }) => {
+    const t = sanitize(a.title).toLowerCase(), d = fmtDate(a.date).toLowerCase();
+    return !!d && bullets.some((x) => x.includes(t) && x.includes(d));
+  };
   const awardSeen = new Set<string>();
   const awards = profile.awards.filter((a) => {
-    if (profile.certifications.some((c) => nearDup(c.name, a.title))) return false;
+    if (profile.certifications.some((c) => nearDup(c.name, a.title)) || inBullets(a)) return false;
     const key = norm(`${a.title} ${a.date ?? ''} ${a.description}`);
     if (awardSeen.has(key)) return false;
     awardSeen.add(key);
     return true;
-  }).slice(0, tier.maxAwards);
+  }).map((a, i) => ({ a, i })).sort((x, y) => (y.a.date ? 1 : 0) - (x.a.date ? 1 : 0) || (x.a.date && y.a.date ? (y.a.date > x.a.date ? 1 : y.a.date < x.a.date ? -1 : 0) : 0) || x.i - y.i)
+    .map((x) => x.a).slice(0, tier.maxAwards);
   if (awards.length) {
-    h('Awards');
+    h1('Awards');
     for (const a of awards) {
       const d = fmtDate(a.date);
-      const desc = tier.awardDesc && a.description ? shorten(firstSentence(a.description), 140) : '';
-      b.push({ kind: 'bullet', runs: [R(d ? `${a.title} (${d})` : a.title, true), ...(desc ? [R(` \u2014 ${desc}`)] : [])] });
+      const desc = a.description ? whole(a.description, 240) : '';
+      bullet(R(d ? `${a.title} (${d})` : a.title, true), ...(desc ? [R(` \u2013 ${desc}`)] : []));
     }
   }
 
   if (profile.education.length) {
-    h('Education');
+    h1('Education');
     for (const e of profile.education) {
-      const yrs = [e.start, e.end].map((x) => /^\d{4}/.exec(x ?? '')?.[0]).filter(Boolean).join(' \u2013 ');
-      b.push({ kind: 'title', runs: [R(e.level, true), R(` \u2014 ${join(e.institution, e.location)}`)], date: yrs || undefined });
+      // The city is dropped when it would push the date onto a second line (heading is upper-cased, bold, 12pt).
+      const dates = range(e.start, e.end, false);
+      const full = pipe(e.level, comma(e.institution, (e.location ?? '').split(',')[0]), dates);
+      add('Heading2', [R(full.length > 78 ? pipe(e.level, e.institution, dates) : full)]);
     }
+  }
+
+  const interests = dedupeStrings(profile.interests ?? []);
+  if (interests.length) {
+    h1('Activities and Interests');
+    for (const i of interests) bullet(R(i));
   }
   return b;
 }
-
-
-
-

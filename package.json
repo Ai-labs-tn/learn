@@ -11,12 +11,15 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:acceptance": "playwright test",
-    "audit:security": "npm audit --audit-level=low"
+    "audit:security": "npm audit --audit-level=low",
+    "resume:template": "node scripts/build-resume-template.mjs",
+    "resume:fonts": "node scripts/build-resume-fonts.mjs"
   },
   "dependencies": {
     "@agiler/ui": "github:Ai-labs-tn/agiler-ui#v0.6.2",
     "@monaco-editor/react": "^4.7.0",
-    "docx": "^9.15.3",
+    "@pdf-lib/fontkit": "^1.1.1",
+    "jszip": "^3.10.2",
     "monaco-editor": "^0.57.0",
     "pdf-lib": "^1.17.1",
     "react": "^18.3.1",
@@ -31,7 +34,6 @@
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "jszip": "^3.10.2",
     "pdfjs-dist": "^6.5.438",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"

@@ -1,10 +1,10 @@
-﻿export type Skill = { name: string; level: number; group: string };
+export type Skill = { name: string; level: number; group: string };
 export type Certification = { name: string; issuer: string; validUntil?: string };
 export type Award = { title: string; date: string | null; description: string };
-export type Experience = { id: string; role: string; company: string; location: string; start: string; end: string | null };
+export type Experience = { id: string; role: string; company: string; location: string; start: string; end: string | null; achievements: string[] };
 export type Education = { level: string; institution: string; location: string; start: string; end: string };
 export type ProjectRole = { title: string; description: string };
-export type Project = { id: string; name: string; domain: string; summary: string; techStack: string[]; roles: ProjectRole[] };
+export type Project = { id: string; name: string; domain: string; summary: string; short?: string; techStack: string[]; roles: ProjectRole[] };
 export type Strength = { title: string; text: string };
 export type Narration = {
   tagline?: string;
@@ -16,7 +16,7 @@ export type Narration = {
 };
 export type Profile = {
   identity: { name: string; headline: string; titles: string[]; region: string };
-  contact: { email: string; linkedin: string; phone?: string };
+  contact: { email: string; linkedin: string; phone?: string; website?: string };
   summary: string;
   highlights: string[];
   skills: Skill[];
@@ -26,6 +26,7 @@ export type Profile = {
   education: Education[];
   projects: Project[];
   domains: string[];
+  interests: string[];
   narration?: Narration;
 };
 export type ProfileEnvelope = { profileId: string; version: number; updatedAt: string; profile: Profile };
@@ -61,7 +62,8 @@ export function normalizeEnvelope(value: unknown): ProfileEnvelope | null {
       titles: strs(p.identity.titles),
       region: str(p.identity.region),
     },
-    contact: { email: str(contact.email), linkedin: str(contact.linkedin), phone: /^\+?[0-9 ()-]{6,20}$/.test(str(contact.phone)) ? str(contact.phone) : undefined },
+    contact: { email: str(contact.email), linkedin: str(contact.linkedin), phone: /^\+?[0-9 ()-]{6,20}$/.test(str(contact.phone)) ? str(contact.phone) : undefined,
+      website: /^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(\/[A-Za-z0-9._~%\/-]*)?$/.test(str(contact.website)) ? str(contact.website) : undefined },
     summary: str(p.summary),
     highlights: strs(p.highlights),
     skills: list(p.skills)
@@ -77,7 +79,7 @@ export function normalizeEnvelope(value: unknown): ProfileEnvelope | null {
       .filter((e) => str(e.role) && /^\d{4}-\d{2}/.test(str(e.start)))
       .map((e, i) => ({
         id: str(e.id, `exp-${i}`), role: str(e.role), company: str(e.company), location: str(e.location),
-        start: str(e.start), end: str(e.end) || null,
+        start: str(e.start), end: str(e.end) || null, achievements: strs(e.achievements),
       })),
     education: list(p.education)
       .filter((e) => str(e.institution))
@@ -85,11 +87,12 @@ export function normalizeEnvelope(value: unknown): ProfileEnvelope | null {
     projects: list(p.projects)
       .filter((x) => str(x.name))
       .map((x, i) => ({
-        id: str(x.id, `project-${i}`), name: str(x.name), domain: str(x.domain), summary: str(x.summary),
+        id: str(x.id, `project-${i}`), name: str(x.name), domain: str(x.domain), summary: str(x.summary), short: str(x.short) || undefined,
         techStack: strs(x.techStack),
         roles: list(x.roles).map((r) => ({ title: str(r.title), description: str(r.description) })).filter((r) => r.title),
       })),
     domains: strs(p.domains),
+    interests: strs(p.interests),
     narration,
   };
   return {

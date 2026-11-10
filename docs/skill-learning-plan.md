@@ -64,6 +64,10 @@ The profile page offers **Download resume** (Word and PDF) in the hero and the c
 3. `python scripts/profile_pipeline.py snapshot --base-url https://learn-with-saravana.onrender.com`, rebuild, run the resume tests, commit and deploy.
 4. Check that the downloaded PDF is still exactly two pages and the page and resume agree.
 
+### Planned: resume built from the owner's Word template (awaiting approval)
+
+The owner wants downloads to use `D:\AILabsTN\Workspace_2_0\ResumeTemplate.docx` (Cambria, teal `2A7B88`, 28pt name with rule, 14pt teal headings, uppercase 12pt entry headings with `|` separators, bullet lists). Content will live in `D:\AILabsTN\Workspace_2_0\resume.md` (outside the repo; holds only public contact data, never the address or references). The owner edits that file and the template; the assistant then converts the Markdown into the profile (pipeline), refreshes the snapshot and regenerates the downloads. Open decisions are listed in the plan message: page limit (2 vs template-native sizing), A4 vs Letter, name rule as a paragraph border instead of a layout table, Caladea as the PDF stand-in for Cambria.
+
 ## Phase 4 — Expand skill areas incrementally
 
 One complete lesson at a time: plain explanation → interactive scene → appropriate exercise/editor → actual results → AI review. Include approved personal experience without confidential project information. Choose isolated execution per technology; no arbitrary user code on the application server, no cloud deployments with production credentials. Free-tier feasibility/quotas and any external runner need review before implementation. Clearly separate simulated results, real compiler/runtime results and AI advice. Never present AI output as compilation or proof of correctness.
