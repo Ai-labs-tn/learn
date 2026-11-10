@@ -200,9 +200,13 @@ test('contact block, key skills and bold markers', async () => {
   const contact = blocks.filter((b) => b.style === 'Contact').map(textOf);
   expect(contact).toHaveLength(3);
   expect(contact[0]).toBe(`Senior Staff Engineer | ${p.contact.phone} | ${p.contact.email}`);
-  expect(blocks.find((b) => b.style === 'Contact')!.runs[0]).toMatchObject({ text: 'Senior Staff Engineer', bold: true });
+  const contactBlocks = blocks.filter((b) => b.style === 'Contact');
+  expect(contactBlocks[0].runs[0]).toMatchObject({ text: 'Senior Staff Engineer', bold: true });
+  expect(contactBlocks[0].runs.every((r) => r.bold)).toBe(true);                       // line 1: all bold
+  expect(contactBlocks[1].runs.filter((r) => r.bold).map((r) => r.text)).toEqual(['LinkedIn: ', 'Website: ']);
+  expect(contactBlocks[2].runs.map((r) => [r.text === 'Address: ', !!r.bold])).toEqual([[true, true], [false, false]]);
   expect(contact[1]).toBe('LinkedIn: linkedin.com/in/saravana-manikandan-s-23935670 | Website: learn-with-saravana.onrender.com');
-  expect(contact[2]).toBe(p.contact.address);
+  expect(contact[2]).toBe(`Address: ${p.contact.address}`);
   expect(contact.join(' ')).not.toContain(p.identity.region);
   const links = blocks.filter((b) => b.style === 'Contact').flatMap((b) => b.runs.filter((r) => r.href).map((r) => r.href));
   expect(links).toEqual([`mailto:${p.contact.email}`, 'https://www.linkedin.com/in/saravana-manikandan-s-23935670/', 'https://learn-with-saravana.onrender.com/']);
@@ -237,7 +241,12 @@ test('experience, project and education entries use Heading2 with the template p
   expect(h2[0]).toBe('Senior Staff Engineer | Altimetrik Corp | May\u00A02021\u00A0\u2013 Present');
   expect(h2).toContain('Vehicle Data Services | Altimetrik Corp | Automotive');
   expect(h2).toContain('HAP Digital | Accenture | Insurance');
-  expect(h2.at(-1)).toMatch(/^B\.E\. \(CSE\) \| DMI College of Engineering \| Aug\u00A02010\u00A0\u2013 Apr\u00A02014$/);
+  // Education is a plain bullet under its section heading (owner's choice), not an entry heading.
+  expect(h2.some((t) => t.startsWith('B.E.'))).toBe(false);
+  const edu = blocks.findIndex((b) => textOf(b) === 'Education');
+  expect(blocks[edu + 1].style).toBe('ListBullet');
+  expect(textOf(blocks[edu + 1])).toMatch(/^B\.E\. \(CSE\) \| DMI College of Engineering \| Aug\u00A02010\u00A0\u2013 Apr\u00A02014$/);
+  expect(blocks[edu + 1].runs.every((r) => !r.bold)).toBe(true);
   expect(h2.some((t) => t === t.toUpperCase())).toBe(false);
   const noCompany = buildBlocks({ ...p, projects: [{ ...p.projects[0], company: undefined }] }, tierAt(0)).filter((b) => b.style === 'Heading2').map(textOf);
   expect(noCompany).toContain(`${p.projects[0].name} | ${p.projects[0].domain}`);

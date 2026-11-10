@@ -171,18 +171,19 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
   const { identity, contact } = profile;
 
   add('Title', [R(identity.name)]);
-  const sep = () => R(' | ');
+  // Header pattern chosen by the owner: line 1 (identity) is all bold; lines 2 and 3 have bold labels and regular values.
+  const sep = (bold = false) => R(' | ', bold);
   const line1: Run[] = [];
-  const part = (rs: Run[], line: Run[]) => { if (line.length) line.push(sep()); line.push(...rs); };
+  const part = (rs: Run[], line: Run[], bold = false) => { if (line.length) line.push(sep(bold)); line.push(...rs); };
   const lead = leadTitle(profile);
   if (lead) line1.push(R(lead, true));
-  if (!contact.address && identity.region) part([R(identity.region)], line1);
-  if (contact.phone) part([R(contact.phone)], line1);
-  if (contact.email) part([{ ...R(contact.email), href: `mailto:${sanitize(contact.email)}` }], line1);
+  if (!contact.address && identity.region) part([R(identity.region, true)], line1, true);
+  if (contact.phone) part([R(contact.phone, true)], line1, true);
+  if (contact.email) part([{ ...R(contact.email, true), href: `mailto:${sanitize(contact.email)}` }], line1, true);
   const line2: Run[] = [];
-  if (contact.linkedin) part([R('LinkedIn: '), { ...R(stripProtocol(sanitize(contact.linkedin))), href: url(sanitize(contact.linkedin)) }], line2);
-  if (contact.website) part([R('Website: '), { ...R(stripProtocol(sanitize(contact.website))), href: url(sanitize(contact.website)) }], line2);
-  const line3: Run[] = contact.address ? [R(contact.address)] : [];
+  if (contact.linkedin) part([R('LinkedIn: ', true), { ...R(stripProtocol(sanitize(contact.linkedin))), href: url(sanitize(contact.linkedin)) }], line2);
+  if (contact.website) part([R('Website: ', true), { ...R(stripProtocol(sanitize(contact.website))), href: url(sanitize(contact.website)) }], line2);
+  const line3: Run[] = contact.address ? [R('Address: ', true), R(contact.address)] : [];
   for (const l of [line1, line2, line3]) if (l.length) add('Contact', l);
 
   const summary = unmark(sanitize(profile.summary));
@@ -283,7 +284,7 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
 
   if (profile.education.length) {
     h1('Education');
-    for (const e of profile.education) add('Heading2', [R(pipe(e.level, e.institution, range(e.start, e.end, false)))]);
+    for (const e of profile.education) bullet(R(pipe(e.level, e.institution, range(e.start, e.end, false))));
   }
 
   const interests = dedupeStrings(profile.interests ?? []);
