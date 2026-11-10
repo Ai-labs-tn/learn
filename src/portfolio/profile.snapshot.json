@@ -1,7 +1,7 @@
 {
   "profileId": "prf-fbfa0b052d9149da",
-  "version": 4,
-  "updatedAt": "2026-11-10T15:30:55.137Z",
+  "version": 5,
+  "updatedAt": "2026-11-10T18:05:44.486Z",
   "profile": {
     "schemaVersion": 1,
     "identity": {
@@ -15,10 +15,10 @@
       ],
       "region": "Tamil Nadu, India"
     },
-    "summary": "Full-stack engineer with 12+ years of experience building scalable, secure microservices in Java and Python on Google Cloud. Hands-on DevOps lead who deploys and runs applications on GCP through GitHub Workflows. Skilled in high- and low-level system design, including cloud-native and AI-driven solutions such as RAG, LangChain and multi-agent systems using Google's A2A protocol.",
+    "summary": "Full-stack engineer with **12+ years** of experience building scalable, secure **microservices** in **Java** and **Python** on **Google Cloud**. Hands-on **DevOps** lead who deploys and runs applications on **GCP** through **GitHub Workflows**. Skilled in high- and low-level system design, including cloud-native and AI-driven solutions such as **RAG**, **LangChain** and **multi-agent systems** using **Google's A2A** protocol.",
     "highlights": [
       "Technical lead for an 8-member Agile team.",
-      "Scrum and Kanban trained professional."
+      "**Scrum** and **Kanban** trained professional."
     ],
     "skills": [
       {
@@ -97,27 +97,27 @@
       {
         "title": "Rise and Shine",
         "date": "2025-04-08",
-        "description": "Implementing ATLAS project that capture, persist & transform Geo fences using leaflet & hibernate spatial in GCP with zero defect & within timeline & budget."
+        "description": "Implementing the ATLAS project that captures, persists and transforms geo-fences using Leaflet and Hibernate Spatial on GCP, with zero defects and within timeline and budget."
       },
       {
         "title": "Rise and Shine",
         "date": "2024-09-26",
-        "description": "Implementing the first AI search and summarisation feature incorporating RAG, Elastic search & LLM."
+        "description": "Implementing the first AI search and summarisation feature incorporating RAG, Elasticsearch and LLM."
       },
       {
         "title": "Customer Champion",
         "date": "2024-06-14",
-        "description": "Pilot project on Geospatial data visualisation using GeoServer (WMS) as part of Kinetica to BigQuery migration."
+        "description": "Pilot project on geospatial data visualisation using GeoServer (WMS) as part of the Kinetica to BigQuery migration."
       },
       {
         "title": "Customer Champion",
         "date": "2023-12-18",
-        "description": "Successful launch on Technician Speciality feature supporting around 48 locales in GCP."
+        "description": "Successful launch of the Technician Speciality feature supporting around 48 locales on GCP."
       },
       {
         "title": "Customer Champion",
         "date": "2023-07-18",
-        "description": "Successful migration of 3 micro-services from Azure-PCF to GCP Cloud Run & Migrated DB with around lakhs of records from MS SQL to Postgres without any issues."
+        "description": "Successful migration of 3 microservices from Azure-PCF to GCP Cloud Run, and of a database with lakhs of records from MS SQL to PostgreSQL, without any issues."
       },
       {
         "title": "GEM",
@@ -127,23 +127,23 @@
       {
         "title": "GEM",
         "date": "2021-12-18",
-        "description": "Successful implementation Fleet service booking features for US & EU market in Azure-PCF."
+        "description": "Successful implementation of Fleet service booking features for the US & EU market in Azure-PCF."
       },
       {
         "title": "Star of the Month",
-        "description": "Successful implementation of CICD automation for the Spring Batch and SOAP based applications with zero defects."
+        "description": "Successful implementation of CI/CD automation for the Spring Batch and SOAP based applications with zero defects."
       },
       {
         "title": "Star of the Month",
-        "description": "Successful migration of monolithic Spring MVC to spring boot micro-services."
+        "description": "Successful migration of monolithic Spring MVC to Spring Boot microservices."
       },
       {
         "title": "ACE",
         "description": "Successful implementation of ELK log monitoring in Spring Boot microservices."
       },
       {
-        "title": "B’Con",
-        "description": "Successful implementation of SOAP based web-services and validator framework."
+        "title": "B'Con",
+        "description": "Successful implementation of SOAP based web services and validator framework."
       }
     ],
     "experience": [
@@ -154,11 +154,12 @@
         "location": "Chennai, Tamil Nadu",
         "start": "2021-05",
         "achievements": [
+          "Designed and developed a highly scalable API to validate vehicle criteria for a million records against a billion-record BigQuery dataset, with low latency and high throughput.",
+          "Designed and developed a high-performing API that delivers VIN sampling of up to a million vehicles for the derived vehicle criteria, using synchronous and asynchronous flows with Pub/Sub.",
           "Led delivery of the ATLAS geo-fencing platform on GCP (Leaflet, Hibernate Spatial, PostGIS) with zero defects, on time and within budget, reducing annual warranty claims by about $50 million (Rise and Shine award, Apr 2025).",
           "Built the first AI-powered search and summarisation capability (RAG, Elasticsearch, Vertex AI, LLM) to replace keyword search in the Insights Catalogue (Rise and Shine award, Sep 2024).",
           "Piloted geospatial visualisation with GeoServer (WMS) as part of the Kinetica to BigQuery migration (Customer Champion award, Jun 2024).",
-          "Launched the Technician Speciality feature supporting around 48 locales on GCP (Customer Champion award, Dec 2023).",
-          "Migrated 3 microservices from Azure-PCF to GCP Cloud Run and moved a database of lakhs of records across 30+ tables from MS SQL Server to PostgreSQL with zero defects (Customer Champion award, Jul 2023)."
+          "Launched the Technician Speciality feature supporting around 48 locales on GCP (Customer Champion award, Dec 2023)."
         ]
       },
       {
@@ -170,8 +171,7 @@
         "end": "2021-05",
         "achievements": [
           "Technical lead and API developer on ECOS, an end-to-end insurance claims platform on Guidewire covering First Notice of Loss, exposure assessment, reserves and payments.",
-          "Built Spring Batch jobs and SOAP web services, with every batch job also triggerable on demand as a SOAP service, and automated build and deployment with Jenkins.",
-          "Represented the ECOS portfolio at Cognizant's organisation-level Agile audit and scored 3.56 out of 5."
+          "Built Spring Batch jobs and SOAP web services, with every batch job also triggerable on demand as a SOAP service, and automated build and deployment with Jenkins."
         ]
       },
       {
@@ -181,7 +181,10 @@
         "location": "Chennai, Tamil Nadu",
         "start": "2015-05",
         "end": "2018-03",
-        "achievements": []
+        "achievements": [
+          "Designed and delivered web applications using Struts and Spring + Jersey REST services as a senior software engineer.",
+          "Worked as a DevOps engineer using GitHub, Jenkins and Serena Dimensions to deploy application EAR packages to WebSphere application servers."
+        ]
       },
       {
         "id": "e2-info-systems",
@@ -190,7 +193,9 @@
         "location": "Chennai, Tamil Nadu",
         "start": "2014-06",
         "end": "2015-05",
-        "achievements": []
+        "achievements": [
+          "Designed and developed UI pages with Spring MVC, HTML, CSS3, JavaScript and jQuery."
+        ]
       }
     ],
     "projects": [
@@ -200,6 +205,7 @@
         "domain": "Automotive",
         "summary": "Vehicle Data Services (VDS) collects vehicle information such as vehicle dimensions, service part details, service history and fuel tank capacity from various BOM sources and maps it to each vehicle's unique identification number (VIN). It holds historical data at a scale of billions to trillions of records in BigQuery, which makes the system complex but powerful. Internal vehicle engineers and dealers use it to deploy the carmon function to targeted vehicles through sampling, and to look up part details for any vehicle model.",
         "short": "Collects vehicle data from BOM sources, mapped to each VIN, and serves billions of records from BigQuery to internal engineers and dealers.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 21",
           "Spring Boot 3.x",
@@ -245,6 +251,7 @@
         "domain": "Automotive",
         "summary": "The Data Transform and Final stages consolidate vehicle usage and fault data from BigQuery, apply transformations, and feed it into quality.ai. Engineers and data scientists use AI to generate insights that help optimize vehicle features for future models.",
         "short": "Consolidates vehicle usage and fault data from BigQuery into quality.ai so engineers can generate AI insights for future vehicle models.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 21",
           "Spring Boot 3.x",
@@ -290,6 +297,7 @@
         "domain": "Automotive",
         "summary": "The ATLAS project enables Ford dealers to visually define and manage vehicle parking lots by drawing shapes —such as polygons —directly on maps. This geospatial functionality supports remote vehicle operations, like auto-starting cars when battery levels are low. This reduces annual warranty claims by about $50 million.",
         "short": "Lets Ford dealers draw parking-lot geo-fences on maps to enable remote vehicle operations, reducing warranty claims by about $50 million a year.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 21",
           "Spring Boot 3.x",
@@ -337,6 +345,7 @@
         "domain": "Automotive",
         "summary": "Insights Catalogue is a centralized knowledge hub that aggregates data from sources like SharePoint, Confluence, and Looker Studio. It offers controlled access to vehicle features, innovations, and trip metrics, with AI-powered search, summarization (RAG, LLM, Elastic Search), and chat bot interaction via Vertex AI for seamless document parsing.",
         "short": "Central knowledge hub over SharePoint, Confluence and Looker Studio with RAG-based AI search, summarisation and a Vertex AI chat bot.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 21",
           "Spring Boot 3.x",
@@ -388,6 +397,7 @@
         "domain": "Automotive",
         "summary": "The Map Analysis and System Tool (MAST) serves as a bridge between data scientists and the Kinetica database, enabling efficient querying and visualization of both geographic and structural data. MAST allows users to save, schedule, and execute queries directly on Kinetica. It supports rendering geospatial data as WMS map layers, seamlessly integrated with Here.js for interactive visualization.",
         "short": "Bridge between data scientists and the Kinetica database: save, schedule and run queries and render geospatial results as WMS map layers.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 11",
           "Spring Boot 3.x",
@@ -421,6 +431,7 @@
         "domain": "Automotive",
         "summary": "Diagnostic Translation System is a middleware system to translate vehicle health diagnostics into end-user messages for Email & App notifications. Supported bulk Excel uploads and UI-based CRUD operations for DTCs, warnings, and notifications, with locale-specific approval workflows.",
         "short": "Middleware that turns vehicle health diagnostics into email and app notifications, with bulk Excel upload and locale-specific approvals.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 11",
           "Spring Boot 2.x",
@@ -471,6 +482,7 @@
         "domain": "Automotive",
         "summary": "Online service booking platform for vehicles, catering to both retail and fleet customers across different regions including CANADA, US, EU etc. Integrated vehicle alerts from diagnostic and prognostic data (ECU, DTCs, warning) to trigger service needs. Offered features like pickup and courtesy car offerings, discount vouchers, and streamlined warranty claims.",
         "short": "Online vehicle service-booking platform for retail and fleet customers in Canada, the US and the EU, triggered by vehicle diagnostic alerts.",
+        "company": "Altimetrik Corp",
         "techStack": [
           "Java 11",
           "Spring Boot 2.x",
@@ -509,6 +521,7 @@
         "domain": "Insurance",
         "summary": "Enterprise Claim Operating System (ECOS) manages end-to-end insurance claim workflows, starting from First Notice of Loss (FNOL) through exposure assessment, reserve allocation, and payment processing. It incorporates fraud detection and eligibility analysis to ensure accurate claim handling. The system leverages Guidewire for core claims operations and integrates with supporting applications via Spring Batch and SOAP services.",
         "short": "Guidewire-based claims platform covering First Notice of Loss, exposure, reserves and payments, with fraud detection and eligibility analysis.",
+        "company": "Cognizant",
         "techStack": [
           "Java 8",
           "Spring Batch 4.x",
@@ -553,6 +566,7 @@
         "domain": "Insurance",
         "summary": "The DIGITAL team leads development and enhancement of HAP’s online platforms, including quoting, Enrolment, and renewals. It integrates with third-party services using SSO and delivers solutions through agile methodologies and microservices architecture.",
         "short": "Online quoting, enrolment and renewal platforms for HAP, integrated with third-party services through SSO on a microservices architecture.",
+        "company": "Accenture",
         "techStack": [
           "Java 8",
           "JAX-WS",
@@ -595,6 +609,7 @@
         "domain": "Insurance",
         "summary": "HCSC provides group life, disability, dental, and various individual solutions. The NDC team focuses on developing and enhancing online platforms for quoting, enrolment, and renewals, and exposes these applications as web services to third-party organizations per contractual agreements.",
         "short": "Quoting, enrolment and renewal platforms for group life, disability and dental products, exposed as web services to third parties.",
+        "company": "Accenture",
         "techStack": [
           "Java 6",
           "JAX-WS",
@@ -624,6 +639,7 @@
         "domain": "Senior living",
         "summary": "CATIE is a web-based application designed for senior residents in U.S. community centers. Installed on dedicated devices, it provides access to weather updates, local restaurant availability, email, and SIP-based calling. Administrators can manage communications by sending event invitations, broadcast messages, and surveys to residents.",
         "short": "Web application for senior residents in U.S. community centres: weather, restaurants, email, SIP calling, event invitations and surveys.",
+        "company": "E2 Info Systems",
         "techStack": [
           "Java 6",
           "JAX-WS",
@@ -652,15 +668,31 @@
       "Automotive"
     ],
     "interests": [],
+    "skillFocus": {
+      "primary": [
+        "Java 21",
+        "Spring Boot",
+        "GCP",
+        "DevOps",
+        "SQL"
+      ],
+      "secondary": [
+        "Angular",
+        "Python",
+        "Kotlin",
+        "AI & ML"
+      ]
+    },
     "contact": {
       "email": "Sarvanamani1992@gmail.com",
       "linkedin": "https://www.linkedin.com/in/saravana-manikandan-s-23935670/",
       "website": "https://learn-with-saravana.onrender.com/",
-      "phone": "+91 91767 54362"
+      "phone": "+91 91767 54362",
+      "address": "25 A, Gandhi Nagar, Srivilliputhur, Virudhunagar, Tamil Nadu – 626125"
     },
     "education": [
       {
-        "level": "B.E. Computer Science & Engineering",
+        "level": "B.E. (CSE)",
         "institution": "DMI College of Engineering",
         "location": "Chennai, Tamil Nadu",
         "start": "2010-08",
