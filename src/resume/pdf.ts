@@ -26,10 +26,10 @@ export async function renderPdf(profile: Profile, plan: ResumePlan): Promise<Uin
   pdf.catalog.set(PDFName.of('Lang'), PDFString.of('en-US'));
 
   const P = page();
-  const L = looks(plan.tier);
+  const L = looks();
   const pages = Array.from({ length: Math.max(1, plan.pages) }, () => pdf.addPage([P.width, P.height]));
   const col = (hex: string) => { const [r, g, b] = hexRgb(hex); return rgb(r, g, b); };
-  const colorOf = (id: string) => (id === 'Title' || id === 'Heading1' ? SPEC.colors.heading : id === 'Heading2' ? SPEC.colors.heading2 : SPEC.colors.body);
+  const colorOf = (id: keyof typeof L) => L[id].color;
   // Caladea's lowercase is ~5% narrower than Cambria's; stretch each run to the Cambria width Word (and the plan) uses.
   const put = (pg: (typeof pages)[number], text: string, x: number, y: number, size: number, f: typeof reg, color: ReturnType<typeof col>, width: number) => {
     const t = drawable(text);
@@ -66,7 +66,7 @@ export async function renderPdf(profile: Profile, plan: ResumePlan): Promise<Uin
       pg.drawLine({ start: { x: P.left, y }, end: { x: P.width - P.right, y }, thickness: th, color: col(SPEC.rule.color) });
     }
   }
-  const fsz = footerSz(plan.tier) / 2;
+  const fsz = footerSz() / 2;
   pages.forEach((pg, i) => {
     if (i === 0 && SPEC.footer.firstPageBlank) return;
     const t = `${SPEC.footer.text} ${i + 1}`;

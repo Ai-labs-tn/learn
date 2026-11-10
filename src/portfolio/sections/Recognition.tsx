@@ -1,4 +1,5 @@
-﻿import { monthYear, SECTION_IDS } from '../derive';
+import { monthYear, SECTION_IDS } from '../derive';
+import { RichText } from '../richText';
 import type { Profile } from '../types';
 import { Reveal, SectionShell } from './shared';
 import s from '../portfolio.module.css';
@@ -42,7 +43,7 @@ export function Recognition({ profile }: { profile: Profile }) {
         <>
           <h3 className={s.h3}>Highlights</h3>
           <ul className={s.callouts}>
-            {highlights.map((h, i) => <Reveal as="li" key={h} i={i} className={s.callout}>{h}</Reveal>)}
+            {highlights.map((h, i) => <Reveal as="li" key={h} i={i} className={s.callout}><RichText text={h} /></Reveal>)}
           </ul>
         </>
       )}

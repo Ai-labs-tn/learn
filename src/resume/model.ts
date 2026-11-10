@@ -11,12 +11,10 @@ export type Para = {
   after?: number;
 };
 
+/** A content level: sizes and spacing always come from the template; levels only vary how much content is shown. */
 export type Tier = {
   index: number;
   name: string;
-  /** Body font size in pt; every template size scales by body / template body size. */
-  body: number;
-  spacing: number;
   bullets: number;
   bulletChars: number;
   summaryChars: number;
@@ -25,30 +23,27 @@ export type Tier = {
   dedupeRoles: boolean;
   maxProjects: number;
   maxAwards: number;
+  /** How many projects (in profile order) keep their one-line description; the rest show heading and Tech only. */
+  projectLines: number;
 };
 
-export const MIN_BODY = 9.5;
-const BASE = { dedupeRoles: false, maxProjects: 99, maxAwards: 99, highlights: true };
+const BASE = { dedupeRoles: false, maxProjects: 99, maxAwards: 99, highlights: true, projectLines: 99, bullets: 0, bulletChars: 220, summaryChars: 220 };
 const LADDER: Omit<Tier, 'index' | 'name'>[] = [
-  { ...BASE, body: 11, spacing: 1, bullets: 3, bulletChars: 220, summaryChars: 220, tech: 12 },
-  { ...BASE, body: 11, spacing: 0.9, bullets: 2, bulletChars: 200, summaryChars: 200, tech: 10 },
-  { ...BASE, body: 10.5, spacing: 0.9, bullets: 2, bulletChars: 180, summaryChars: 200, tech: 10 },
-  { ...BASE, body: 10.5, spacing: 0.8, bullets: 2, bulletChars: 160, summaryChars: 180, tech: 8 },
-  { ...BASE, body: 10, spacing: 0.8, bullets: 1, bulletChars: 160, summaryChars: 180, tech: 8, dedupeRoles: true },
-  { ...BASE, body: 10, spacing: 0.7, bullets: 1, bulletChars: 140, summaryChars: 160, tech: 8, dedupeRoles: true },
-  { ...BASE, body: 9.5, spacing: 0.7, bullets: 1, bulletChars: 140, summaryChars: 160, tech: 8, dedupeRoles: true },
-  { ...BASE, body: 9.5, spacing: 0.6, bullets: 1, bulletChars: 120, summaryChars: 160, tech: 8, dedupeRoles: true },
-  { ...BASE, body: 9.5, spacing: 0.5, bullets: 1, bulletChars: 120, summaryChars: 160, tech: 8, dedupeRoles: true },
-  { ...BASE, body: 9.5, spacing: 0.5, bullets: 0, bulletChars: 120, summaryChars: 160, tech: 8, dedupeRoles: true },
-  { ...BASE, body: 9.5, spacing: 0.5, bullets: 0, bulletChars: 120, summaryChars: 160, tech: 6, dedupeRoles: true },
+  { ...BASE, tech: 8 },
+  { ...BASE, tech: 6 },
+  { ...BASE, tech: 6, projectLines: 8 },
+  { ...BASE, tech: 6, projectLines: 6 },
+  { ...BASE, tech: 5, projectLines: 4 },
+  { ...BASE, tech: 4, projectLines: 2 },
+  { ...BASE, tech: 4, projectLines: 0 },
 ];
 export const TIER_COUNT = LADDER.length;
 
-/** Ladder tiers (richest first), then truncation tiers that drop lowest-priority content (awards, oldest projects). */
+/** Ladder levels (richest first), then truncation levels that drop lowest-priority content (awards first, then oldest projects). */
 export function tierAt(i: number): Tier {
-  if (i < LADDER.length) return { ...LADDER[i], index: i, name: `T${i + 1}` };
+  if (i < LADDER.length) return { ...LADDER[i], index: i, name: `L${i}` };
   const k = i - LADDER.length + 1;
-  return { ...LADDER[LADDER.length - 1], index: i, name: `T${LADDER.length}-trim${k}`, maxProjects: Math.max(0, 10 - k), maxAwards: Math.max(0, 11 - k) };
+  return { ...LADDER[LADDER.length - 1], index: i, name: `L${LADDER.length - 1}-trim${k}`, maxAwards: Math.max(0, 11 - 2 * k), maxProjects: Math.max(0, 11 - Math.max(0, k - 5) * 2) };
 }
 export const MAX_TIER_INDEX = LADDER.length + 11;
 
@@ -77,7 +72,7 @@ function sanitizeInner(input: string): string {
   return out.replace(/\s+/g, ' ').trim();
 }
 
-const norm = (s: string) => sanitize(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+const norm = (s: string) => sanitize(unmark(s)).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 const tokens = (s: string) => new Set(norm(s).split(' ').filter((t) => t.length > 2));
 function overlap(a: string, b: string): number {
   const ta = tokens(a), tb = tokens(b);
@@ -142,17 +137,31 @@ const range = (a: string | null | undefined, b: string | null | undefined, open:
 };
 const pipe = (...p: (string | undefined)[]) => p.map((x) => sanitize(x ?? '')).filter(Boolean).join(' | ');
 const comma = (...p: (string | undefined)[]) => p.map((x) => sanitize(x ?? '')).filter(Boolean).join(', ');
-const R = (text: string, bold = false): Run => ({ text: (/^ /.test(text) ? ' ' : '') + sanitize(text) + (/ $/.test(text) ? ' ' : ''), bold });
+const unmark = (s: string) => s.replace(/\*\*/g, '');
+const R = (text: string, bold = false): Run => { const t = unmark(text); return { text: (/^ /.test(t) ? ' ' : '') + sanitize(t) + (/ $/.test(t) ? ' ' : ''), bold }; };
+/** Runs for body text: `**x**` becomes a bold run; unmatched markers are dropped, markers never reach the output. */
+const Rs = (text: string, bold = false): Run[] => {
+  const parts = text.split('**');
+  if (parts.length % 2 === 0) parts.push(''); // unmatched trailing marker: treat the rest as plain
+  const out: Run[] = [];
+  parts.forEach((p, k) => { if (p) out.push(R(p, bold || k % 2 === 1)); });
+  return out.length ? out : [R('', bold)];
+};
 const dedupeStrings = (xs: string[]) => {
   const seen = new Set<string>();
   return xs.map(sanitize).filter((x) => x && !seen.has(x.toLowerCase()) && !!seen.add(x.toLowerCase()));
 };
-const stripProtocol = (s: string) => s.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+const stripProtocol = (s: string) => s.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
 const url = (s: string) => (/^https?:\/\//i.test(s) ? s : `https://${s}`);
 
-export const SECTION_HEADINGS = ['Profile', 'Experience', 'Projects', 'Skills & Abilities', 'Certifications', 'Awards', 'Education', 'Activities and Interests'] as const;
-const PROJECT_AFTER_TW = 40;
-const TECH_AFTER_TW = 140;
+export const SECTION_HEADINGS = ['Profile', 'Key Skills', 'Experience', 'Projects', 'Skills & Abilities', 'Certifications', 'Awards', 'Education', 'Activities and Interests'] as const;
+const SHORT_AFTER_TW = 40;
+const TECH_AFTER_TW = 70;
+
+export const leadTitle = (profile: Profile): string => {
+  const first = (profile.identity.headline || '').split(/\s*[|\u00B7]\s*/)[0];
+  return sanitize(first || profile.identity.titles[0] || '');
+};
 
 export function buildBlocks(profile: Profile, tier: Tier): Para[] {
   const b: Para[] = [];
@@ -162,23 +171,34 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
   const { identity, contact } = profile;
 
   add('Title', [R(identity.name)]);
-  const headline = (identity.headline ? identity.headline.split(/\s*[\u00B7|]\s*/) : identity.titles).map(sanitize).filter(Boolean);
-  if (headline.length) add('Contact', [R(headline.map((h) => h.replace(/ /g, '\u00A0')).join(' | '), true)], 0);
-  const cr: Run[] = [];
-  const part = (r: Run) => { if (cr.length) cr.push(R(' | ')); cr.push(r); };
-  if (identity.region) part(R(identity.region));
-  if (contact.phone) part(R(contact.phone));
-  if (contact.email) part({ ...R(contact.email), href: `mailto:${sanitize(contact.email)}` });
-  if (contact.linkedin) part({ ...R(stripProtocol(sanitize(contact.linkedin))), href: url(sanitize(contact.linkedin)) });
-  if (contact.website) part({ ...R(stripProtocol(sanitize(contact.website))), href: url(sanitize(contact.website)) });
-  if (cr.length) add('Contact', cr);
+  const sep = () => R(' | ');
+  const line1: Run[] = [];
+  const part = (rs: Run[], line: Run[]) => { if (line.length) line.push(sep()); line.push(...rs); };
+  const lead = leadTitle(profile);
+  if (lead) line1.push(R(lead, true));
+  if (!contact.address && identity.region) part([R(identity.region)], line1);
+  if (contact.phone) part([R(contact.phone)], line1);
+  if (contact.email) part([{ ...R(contact.email), href: `mailto:${sanitize(contact.email)}` }], line1);
+  const line2: Run[] = [];
+  if (contact.linkedin) part([R('LinkedIn: '), { ...R(stripProtocol(sanitize(contact.linkedin))), href: url(sanitize(contact.linkedin)) }], line2);
+  if (contact.website) part([R('Website: '), { ...R(stripProtocol(sanitize(contact.website))), href: url(sanitize(contact.website)) }], line2);
+  const line3: Run[] = contact.address ? [R(contact.address)] : [];
+  for (const l of [line1, line2, line3]) if (l.length) add('Contact', l);
 
-  const summary = sanitize(profile.summary);
+  const summary = unmark(sanitize(profile.summary));
   const hl = tier.highlights ? dedupeHighlights(profile.highlights, summary) : [];
   if (summary || hl.length) {
     h1('Profile');
-    if (summary) add('Normal', [R(summary)]);
-    for (const x of hl) bullet(R(x));
+    if (profile.summary) add('Normal', Rs(sanitize(profile.summary)));
+    for (const x of hl) bullet(...Rs(x));
+  }
+
+  const focus = profile.skillFocus;
+  const primary = dedupeStrings(focus?.primary ?? []), secondary = dedupeStrings(focus?.secondary ?? []);
+  if (primary.length || secondary.length) {
+    h1('Key Skills');
+    if (primary.length) add('Normal', [R('Primary: ', true), R(primary.join(', '))], secondary.length ? SHORT_AFTER_TW : undefined);
+    if (secondary.length) add('Normal', [R('Secondary: ', true), R(secondary.join(', '))]);
   }
 
   if (profile.experience.length) {
@@ -186,7 +206,7 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
     const exp = [...profile.experience].sort((a, c) => (c.start > a.start ? 1 : c.start < a.start ? -1 : 0));
     for (const e of exp) {
       add('Heading2', [R(pipe(e.role, e.company, range(e.start, e.end, true)))]);
-      for (const a of dedupeStrings(e.achievements ?? [])) bullet(R(a));
+      for (const a of dedupeStrings(e.achievements ?? [])) bullet(...Rs(a));
     }
   }
 
@@ -194,10 +214,10 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
   if (projects.length) {
     h1('Projects');
     const seenRole = new Set<string>();
-    for (const p of projects) {
-      add('Heading2', [R(pipe(p.name, p.domain))]);
-      const sum = sanitize(p.short ?? '') || (p.summary ? whole(p.summary, tier.summaryChars) : '');
-      if (sum) add('Normal', [R(sum)], PROJECT_AFTER_TW);
+    for (const [pi, p] of projects.entries()) {
+      add('Heading2', [R(pipe(p.name, p.company, p.domain))]);
+      const sum = pi < tier.projectLines ? sanitize(p.short ?? '') || (p.summary ? whole(p.summary, tier.summaryChars) : '') : '';
+      if (sum) add('Normal', Rs(sum), SHORT_AFTER_TW);
       const tech = dedupeStrings(p.techStack).slice(0, tier.tech);
       if (tech.length) add('Normal', [R('Tech: ', true), R(tech.join(', '))], TECH_AFTER_TW);
       let n = 0;
@@ -205,13 +225,13 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
         if (n >= tier.bullets) break;
         const d = whole(r.description, tier.bulletChars);
         if (!d) continue;
-        if (d && sum && nearDup(d, sum)) continue;
-        if (tier.dedupeRoles && d) {
+        if (sum && nearDup(d, sum)) continue;
+        if (tier.dedupeRoles) {
           const key = norm(d);
           if (seenRole.has(key)) continue;
           seenRole.add(key);
         }
-        bullet(R(`${r.title}: `, true), R(d));
+        bullet(R(`${r.title}: `, true), ...Rs(d));
         n++;
       }
     }
@@ -243,14 +263,9 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
     }
   }
 
-  const bullets = profile.experience.flatMap((e) => e.achievements ?? []).map((x) => sanitize(x).toLowerCase());
-  const inBullets = (a: { title: string; date: string | null }) => {
-    const t = sanitize(a.title).toLowerCase(), d = fmtDate(a.date).toLowerCase();
-    return !!d && bullets.some((x) => x.includes(t) && x.includes(d));
-  };
   const awardSeen = new Set<string>();
   const awards = profile.awards.filter((a) => {
-    if (profile.certifications.some((c) => nearDup(c.name, a.title)) || inBullets(a)) return false;
+    if (profile.certifications.some((c) => nearDup(c.name, a.title))) return false;
     const key = norm(`${a.title} ${a.date ?? ''} ${a.description}`);
     if (awardSeen.has(key)) return false;
     awardSeen.add(key);
@@ -262,18 +277,13 @@ export function buildBlocks(profile: Profile, tier: Tier): Para[] {
     for (const a of awards) {
       const d = fmtDate(a.date);
       const desc = a.description ? whole(a.description, 240) : '';
-      bullet(R(d ? `${a.title} (${d})` : a.title, true), ...(desc ? [R(` \u2013 ${desc}`)] : []));
+      bullet(R(d ? `${a.title} (${d})` : a.title, true), ...(desc ? [R(' \u2013 '), ...Rs(desc)] : []));
     }
   }
 
   if (profile.education.length) {
     h1('Education');
-    for (const e of profile.education) {
-      // The city is dropped when it would push the date onto a second line (heading is upper-cased, bold, 12pt).
-      const dates = range(e.start, e.end, false);
-      const full = pipe(e.level, comma(e.institution, (e.location ?? '').split(',')[0]), dates);
-      add('Heading2', [R(full.length > 78 ? pipe(e.level, e.institution, dates) : full)]);
-    }
+    for (const e of profile.education) add('Heading2', [R(pipe(e.level, e.institution, range(e.start, e.end, false)))]);
   }
 
   const interests = dedupeStrings(profile.interests ?? []);

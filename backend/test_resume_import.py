@@ -25,10 +25,11 @@ Domains: Education, Retail
 - Email: person@example.invalid
 - LinkedIn: https://www.linkedin.com/in/example-person
 - Website: https://example.invalid/
+- Address: 1 Example Street, Example city - 600001
 
 ## Profile
 
-Example summary sentence one. Sentence two.
+Example **summary** sentence one. Sentence two.
 
 - First highlight.
 - Second highlight.
@@ -46,7 +47,7 @@ Example summary sentence one. Sentence two.
 
 ## Projects
 
-### Example Project | Education
+### Example Project | Example Co | Education
 
 Project summary line.
 
@@ -55,6 +56,9 @@ Tech: Python, Python, Postgres
 - Developer: Built it end to end.
 
 ## Skills & Abilities
+
+Primary: Python, SQL
+Secondary: Go
 
 ### Backend
 
@@ -69,6 +73,7 @@ Tech: Python, Python, Postgres
 ## Awards
 
 - Star | Apr 2025 | Did a thing
+- Star | Mar 09, 2022 | Did a dated thing
 - Star |  | Did an older thing
 
 ## Education
@@ -108,7 +113,7 @@ def test_markdown_becomes_a_valid_profile_document():
     ProfileDocument.model_validate(document)
     assert document["identity"]["titles"] == ["Builder", "Engineer"] and document["domains"] == ["Education", "Retail"]
     assert document["contact"]["phone"] == "555 0100 00" and document["contact"]["website"] == "https://example.invalid/"
-    assert document["summary"] == "Example summary sentence one. Sentence two."
+    assert document["summary"] == "Example **summary** sentence one. Sentence two."
     assert document["highlights"] == ["First highlight.", "Second highlight."]
     assert [e["role"] for e in document["experience"]] == ["Lead Engineer", "Junior"]
     assert document["experience"][0]["achievements"] == ["Shipped the thing."] and document["experience"][1]["achievements"] == []
@@ -117,6 +122,7 @@ def test_markdown_becomes_a_valid_profile_document():
     assert document["projects"][0]["roles"] == [{"title": "Developer", "description": "Built it end to end."}]
     assert document["skills"] == [{"name": "Python", "level": 5, "group": "Backend"}, {"name": "SQL/Postgres", "level": 4, "group": "Backend"}]
     assert document["interests"] == ["Chess"]
+    assert document["projects"][0]["company"] == "Example Co" and document["skillFocus"] == {"primary": ["Python", "SQL"], "secondary": ["Go"]}
 
 
 def test_ids_dates_and_private_data_survive_an_import():
@@ -126,10 +132,11 @@ def test_ids_dates_and_private_data_survive_an_import():
     assert document["projects"][0]["id"] == "kept-project-id"
     assert document["certifications"][0]["validUntil"] == "2027-04-22"  # same month: the stored exact day is kept
     assert document["certifications"][1] == {"name": "Cert Two", "issuer": "Issuer"}
-    assert document["awards"][0]["date"] == "2025-04-15" and "date" not in document["awards"][1]
-    assert document["contact"]["address"] == "Private Address Marker"
+    assert document["awards"][0]["date"] == "2025-04-15" and document["awards"][1]["date"] == "2022-03-09" and "date" not in document["awards"][2]
+    # The address is written in the file, so the owner chose to publish it; the stored private text is replaced.
+    assert document["contact"]["address"] == "1 Example Street, Example city - 600001" and document["privacy"]["showAddress"] is True
     assert document["references"] == base_document()["references"]
-    assert document["privacy"] == {"showPhone": True}
+    assert document["privacy"]["showPhone"] is True
     assert [(e["institution"], e["isSchool"]) for e in document["education"]] == [("Public University", False), ("Private School Marker", True)]
 
 
@@ -152,3 +159,9 @@ def test_schema_limits_are_enforced_before_anything_is_sent():
     with pytest.raises(Exception):
         ProfileDocument.model_validate(document)
     assert json.dumps(pipeline.without_nulls({"a": None, "b": [{"c": None, "d": 1}]})) == '{"b": [{"d": 1}]}'
+
+
+def test_without_an_address_line_the_stored_address_stays_private():
+    parsed = pipeline.parse_resume_markdown(MARKDOWN.replace("- Address: 1 Example Street, Example city - 600001\n", ""))
+    document = pipeline.merge_resume(parsed, {**base_document(), "privacy": {"showPhone": True, "showAddress": True}})
+    assert document["contact"]["address"] == "Private Address Marker" and document["privacy"]["showAddress"] is False

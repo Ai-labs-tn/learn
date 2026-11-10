@@ -1,5 +1,6 @@
 import { monthYear, SECTION_IDS } from '../derive';
 import type { Profile } from '../types';
+import { RichText } from '../richText';
 import { Reveal, SectionShell } from './shared';
 import s from '../portfolio.module.css';
 
@@ -16,7 +17,7 @@ export function ExperienceSection({ profile }: { profile: Profile }) {
               <p className={s.dates}>{monthYear(e.start)} – {e.end ? monthYear(e.end) : 'Present'}</p>
               <h3 className={s.h3}>{e.role}</h3>
               <p className={s.body}>{[e.company, e.location].filter(Boolean).join(' · ')}</p>
-              {e.achievements.length > 0 && <ul className={s.achievements}>{e.achievements.map((a) => <li key={a}>{a}</li>)}</ul>}
+              {e.achievements.length > 0 && <ul className={s.achievements}>{e.achievements.map((a) => <li key={a}><RichText text={a} /></li>)}</ul>}
               {!e.end && <span className={s.chipStrong}>Current role</span>}
             </div>
           </Reveal>

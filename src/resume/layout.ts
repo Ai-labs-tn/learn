@@ -19,10 +19,10 @@ export type ResumePlan = {
   blocks: Para[]; lines: Line[]; fits: boolean;
 };
 
-/** Fraction of each page kept free in the DOCX estimate because Word reflows slightly differently. */
+/** Fraction of each page kept free in the DOCX estimate because Word may reflow slightly differently (line counts and page breaks matched Word exactly in every check, so 3% instead of 7%). */
 /** Word wraps a hair earlier than exact advance widths predict (measured: lines filled to within ~2pt of the measure wrapped). */
 const WRAP_SLACK = -2;
-export const SAFETY_MARGIN = 0.07;
+export const SAFETY_MARGIN = 0.03;
 /** Distance from the bottom of the name line to the bottom of the rule: border space (whole pt) plus line width. */
 export const titleRuleSpace = (look: Look): number => Math.min(31, Math.round(tw2pt(look.afterTw)));
 export const ruleWidthPt = (): number => SPEC.rule.size / 8;
@@ -101,14 +101,14 @@ function wrap(runs: Run[], size: number, width: number, bold: boolean, caps: boo
 
 type Item = { para: Para; look: Look; size: number; lh: number; lines: Seg[][]; before: number; after: number; indent: number };
 
-function measure(blocks: Para[], tier: Tier): Item[] {
-  const L = looks(tier);
+function measure(blocks: Para[]): Item[] {
+  const L = looks();
   return blocks.map((para) => {
     const look = L[para.style];
     const size = look.sz / 2;
     const indent = para.style === 'ListBullet' ? bulletIndentPt() : 0;
     const lines = wrap(para.runs, size, contentWidth() - indent - WRAP_SLACK, look.bold, look.caps);
-    const afterTw = para.after !== undefined ? Math.round(para.after * tier.spacing) : look.afterTw;
+    const afterTw = para.after !== undefined ? para.after : look.afterTw;
     // The name paragraph carries the rule as a bottom border: space + line width replace its own space-after.
     const after = para.style === 'Title' ? titleRuleDrop(look) : tw2pt(afterTw);
     return { para, look, size, lh: size * LINE_EM * look.lineMul, lines, before: tw2pt(look.beforeTw), after, indent };
@@ -123,8 +123,8 @@ function gap(prev: Item | undefined, cur: Item): number {
   return Math.max(prev.after, cur.before);
 }
 
-export function layoutBlocks(blocks: Para[], tier: Tier, capacity = contentHeight()): { lines: Line[]; pages: number; lastPageFill: number } {
-  const items = measure(blocks, tier);
+export function layoutBlocks(blocks: Para[], capacity = contentHeight()): { lines: Line[]; pages: number; lastPageFill: number } {
+  const items = measure(blocks);
   const lines: Line[] = [];
   let page = 0, y = 0;
   const EPS = 0.01;
@@ -190,7 +190,7 @@ export function planResume(profile: Profile): ResumePlan {
     if (!e) {
       const tier = tierAt(i);
       const blocks = buildBlocks(profile, tier);
-      e = { tier, blocks, exact: layoutBlocks(blocks, tier), safe: layoutBlocks(blocks, tier, contentHeight() * (1 - SAFETY_MARGIN)) };
+      e = { tier, blocks, exact: layoutBlocks(blocks), safe: layoutBlocks(blocks, contentHeight() * (1 - SAFETY_MARGIN)) };
       cache.set(i, e);
     }
     return e;
@@ -199,7 +199,7 @@ export function planResume(profile: Profile): ResumePlan {
     const e = evalTier(i);
     return { tier: e.tier, maxPages, pages: e.exact.pages, docxPages: e.safe.pages, lastPageFill: e.exact.lastPageFill, blocks: e.blocks, lines: e.exact.lines, fits: e.exact.pages <= maxPages && e.safe.pages <= maxPages };
   };
-  for (const maxPages of [2, 3, 4]) {
+  for (const maxPages of [3, 4]) {
     for (let i = 0; i < TIER_COUNT; i++) { const p = make(i, maxPages); if (p.fits) return p; }
   }
   let last = make(TIER_COUNT, 4);

@@ -559,6 +559,14 @@ def year_month(value: str) -> str | None:
     return f"{parsed[0]:04d}-{parsed[1]:02d}" if parsed else None
 
 
+def full_date(value: str) -> str | None:
+    """'Apr 08, 2025' -> '2025-04-08'; anything else -> None."""
+    match = re.fullmatch(r"([A-Za-z]{3})[a-z]*\s+(\d{1,2}),\s*(\d{4})", value.strip())
+    if not match or match.group(1).title() not in MONTH_NUMBER:
+        return None
+    return f"{int(match.group(3)):04d}-{MONTH_NUMBER[match.group(1).title()]:02d}-{int(match.group(2)):02d}"
+
+
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return ("x-" + slug if not slug[:1].isalpha() else slug)[:63].rstrip("-")
@@ -618,7 +626,10 @@ def parse_resume_markdown(source: str) -> dict:
         experience.append({"role": role, "company": company, "location": location, "start": start, "end": end, "achievements": bullets(body)})
     projects = []
     for heading, body in entries(sections.get("Projects", [])):
-        project_name, domain = parts(heading, 2, "Projects")
+        pieces = [piece.strip() for piece in heading.split(" | ")]
+        if len(pieces) not in (2, 3):
+            raise SystemExit(f"resume.md (Projects): use 'Name | Domain' or 'Name | Employer | Domain' -> {heading[:70]}")
+        project_name, company, domain = (pieces[0], "", pieces[1]) if len(pieces) == 2 else pieces
         tech_line = next((line for line in body if line.startswith("Tech:")), "")
         tech = list(dict.fromkeys(item.strip() for item in tech_line[5:].split(",") if item.strip()))
         short_line = next((line for line in body if line.startswith("Short:")), "")
@@ -629,7 +640,7 @@ def parse_resume_markdown(source: str) -> dict:
             if not sep:
                 raise SystemExit(f"resume.md (Projects: {project_name}): a role bullet must look like 'Role: what you did' -> {item[:60]}")
             roles.append({"title": title.strip(), "description": description.strip()})
-        projects.append({"name": project_name, "domain": domain, "summary": text, "techStack": tech, "roles": roles, **({"short": short_line[6:].strip()} if short_line[6:].strip() else {})})
+        projects.append({"name": project_name, "domain": domain, "summary": text, "techStack": tech, "roles": roles, **({"short": short_line[6:].strip()} if short_line[6:].strip() else {}), **({"company": company} if company else {})})
     skills = []
     for group, body in entries(sections.get("Skills & Abilities", [])):
         for item in bullets(body):
@@ -637,6 +648,8 @@ def parse_resume_markdown(source: str) -> dict:
             if not sep or not level.strip().isdigit():
                 raise SystemExit(f"resume.md (Skills: {group}): end each skill with ' | 1-5' -> {item[:60]}")
             skills.append({"name": skill.strip(), "level": int(level), "group": group})
+    focus = {key: [item.strip() for item in re.sub(rf"(?i)^{key}:\s*", "", line).split(",") if item.strip()]
+             for key in ("primary", "secondary") for line in sections.get("Skills & Abilities", []) if re.match(rf"(?i)^{key}:", line)}
     certifications = []
     for item in bullets(sections.get("Certifications", [])):
         pieces = [piece.strip() for piece in item.split(" | ")]
@@ -657,7 +670,7 @@ def parse_resume_markdown(source: str) -> dict:
         "name": name.group(1).strip(), "headline": field("Headline"), "titles": [t.strip() for t in field("Titles").split("|") if t.strip()],
         "region": field("Region"), "domains": [d.strip() for d in field("Domains").split(",") if d.strip()], "contact": contact,
         "summary": summary, "highlights": bullets(profile_lines), "experience": experience, "projects": projects, "skills": skills,
-        "certifications": certifications, "awards": awards, "education": education, "interests": bullets(sections.get("Activities and Interests", [])),
+        "skill_focus": focus, "certifications": certifications, "awards": awards, "education": education, "interests": bullets(sections.get("Activities and Interests", [])),
     }
 
 
@@ -670,6 +683,14 @@ def merge_resume(parsed: dict, base: dict) -> dict:
     merged["contact"] = {**{k: v for k, v in base["contact"].items() if k in ("address",)},
                          "email": contact.get("email", ""), "linkedin": contact.get("linkedin", ""),
                          **({"phone": contact["phone"]} if contact.get("phone") else {}), **({"website": contact["website"]} if contact.get("website") else {})}
+    # An address in resume.md means the owner chose to publish it; without one the stored address stays private.
+    if contact.get("address"):
+        merged["contact"]["address"] = contact["address"]
+    merged["privacy"] = {**base.get("privacy", {}), "showAddress": bool(contact.get("address"))}
+    if parsed["skill_focus"].get("primary") or parsed["skill_focus"].get("secondary"):
+        merged["skillFocus"] = {"primary": parsed["skill_focus"].get("primary", []), "secondary": parsed["skill_focus"].get("secondary", [])}
+    else:
+        merged.pop("skillFocus", None)
     merged["summary"], merged["highlights"], merged["domains"], merged["interests"] = parsed["summary"], parsed["highlights"], parsed["domains"], parsed["interests"]
     old_jobs = {(e["company"].lower(), e["start"]): e["id"] for e in base["experience"]}
     used = set(); jobs = []
@@ -704,8 +725,11 @@ def merge_resume(parsed: dict, base: dict) -> dict:
     awards = []
     for entry in parsed["awards"]:
         item = {"title": entry["title"], "description": entry["description"]}
-        ym = year_month(entry["date"]) if entry["date"] else None
-        if ym:
+        exact = full_date(entry["date"]) if entry["date"] else None
+        ym = year_month(entry["date"]) if entry["date"] and not exact else None
+        if exact:
+            item["date"] = exact
+        elif ym:
             item["date"] = old_awards.get((entry["title"].lower(), ym)) or f"{ym}-01"
         awards.append(item)
     merged["awards"] = awards

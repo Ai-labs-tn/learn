@@ -1,8 +1,9 @@
-﻿import { Fragment, useRef, useState, type CSSProperties } from 'react';
+import { Fragment, useRef, useState, type CSSProperties } from 'react';
 import { useReducedMotion, useScenePointer } from './hooks/motion';
 import { initials, SECTION_IDS, yearsOfExperience, firstSentences } from './derive';
 import type { Profile } from './types';
 import { ResumeDownload } from './ResumeDownload';
+import { stripMarks } from './richText';
 import s from './portfolio.module.css';
 
 export function Hero({ profile }: { profile: Profile }) {
@@ -40,7 +41,7 @@ export function Hero({ profile }: { profile: Profile }) {
                 ))}
               </p>
             )}
-            {pitch && <p className={s.pitch}>{pitch}</p>}
+            {pitch && <p className={s.pitch}>{stripMarks(pitch)}</p>}
             <div className={s.heroActions}>
               <a className={s.cta} href={`#${SECTION_IDS.projects}`}>View projects</a>
               <a className={s.ctaAlt} href={`#${SECTION_IDS.contact}`}>Get in touch</a>

@@ -33,3 +33,13 @@ test('absent or unsafe optional fields render nothing', async ({ page }) => {
   await expect(page.getByRole('link', { name: /Phone:/ })).toHaveCount(0);
   expect(await page.locator('ul[class*="achievements"]').count()).toBe(0);
 });
+
+test('bold markers render as bold keywords and the public address is shown', async ({ page }) => {
+  const body = envelope({ address: '1 Example Street, Example city - 600001' }, ['Cut build time with **Gradle** and **Jib** caching.']);
+  await open(page, body);
+  const bullet = page.getByText('Cut build time with Gradle and Jib caching.', { exact: true });
+  await expect(bullet).toBeVisible();
+  await expect(bullet.locator('strong')).toHaveText(['Gradle', 'Jib']);
+  await expect(page.getByText('**')).toHaveCount(0);
+  await expect(page.getByText('1 Example Street, Example city - 600001')).toBeVisible();
+});

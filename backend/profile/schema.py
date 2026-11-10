@@ -92,9 +92,16 @@ class Project(Strict):
     domain: text(60)
     summary: text(900)
     short: text(200) | None = None   # owner-written one-liner used where space is tight
+    company: text(120) | None = None  # employer the project was delivered for
     tech_stack: Annotated[list[text(60)], Field(min_length=1, max_length=40)] = Field(alias="techStack")
     roles: Annotated[list[Role], Field(min_length=1, max_length=10)]
     model_config = ConfigDict(extra="forbid", strict=True, populate_by_name=True)
+
+
+class SkillFocus(Strict):
+    """What the owner wants noticed first: shown near the top of the resume."""
+    primary: Annotated[list[text(40)], Field(max_length=10)] = Field(default_factory=list)
+    secondary: Annotated[list[text(40)], Field(max_length=10)] = Field(default_factory=list)
 
 
 class Reference(Strict):
@@ -145,6 +152,7 @@ class ProfileDocument(Strict):
     projects: Annotated[list[Project], Field(max_length=30)]
     domains: Annotated[list[text(60)], Field(max_length=12)]
     interests: Annotated[list[text(120)], Field(max_length=12)] = Field(default_factory=list)
+    skill_focus: SkillFocus | None = Field(default=None, alias="skillFocus")
     references: Annotated[list[Reference], Field(max_length=6)]
     narration: Narration | None = None
     privacy: Privacy = Field(default_factory=Privacy)
@@ -166,7 +174,7 @@ def public_view(document: dict) -> dict:
     privacy = document.get("privacy", {})
     view = {key: document[key] for key in (
         "schemaVersion", "identity", "summary", "highlights", "skills", "certifications", "awards",
-        "experience", "projects", "domains", "interests", "narration") if key in document}
+        "experience", "projects", "domains", "interests", "skillFocus", "narration") if key in document}
     contact = {"email": document["contact"]["email"], "linkedin": document["contact"]["linkedin"]}
     if document["contact"].get("website"):
         contact["website"] = document["contact"]["website"]

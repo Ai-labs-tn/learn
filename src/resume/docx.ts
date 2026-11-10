@@ -1,6 +1,6 @@
 import type { Profile } from '../portfolio/types';
 import { titleRuleSpace, type ResumePlan } from './layout';
-import { footerSz, looks, STYLE_IDS, type Look } from './look';
+import { looks } from './look';
 import type { Para, Run } from './model';
 import { sanitize } from './model';
 import { SPEC } from './template/spec';
@@ -10,28 +10,6 @@ import { b64ToBytes, docTitle, topSkills } from './util';
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const styleBlock = (xml: string, id: string) => new RegExp(`<w:style\\b[^>]*w:styleId="${id}"[\\s\\S]*?</w:style>`).exec(xml)?.[0];
 
-/** Scales the COPY's styles (sizes and spacing) to the tier; the stored template is never modified. */
-export function patchStyles(xml: string, plan: ResumePlan): string {
-  const L = looks(plan.tier);
-  const setSpacing = (s: string, before?: number, after?: number) => s.replace(/<w:spacing\b[^>]*\/>/, (sp) => {
-    let out = sp;
-    if (before !== undefined) out = out.replace(/(\bw:before=")\d+/, `$1${before}`);
-    if (after !== undefined) out = out.replace(/(\bw:after=")\d+/, `$1${after}`);
-    return out;
-  });
-  const setSize = (s: string, sz: number) => s.replace(/(<w:sz\b[^>]*\bw:val=")\d+/, `$1${sz}`).replace(/(<w:szCs\b[^>]*\bw:val=")\d+/, `$1${sz}`);
-  let out = xml.replace(/<w:docDefaults>[\s\S]*?<\/w:docDefaults>/, (d) => setSpacing(setSize(d, footerSz(plan.tier)), undefined, L.Normal.afterTw));
-  for (const id of STYLE_IDS) {
-    const block = styleBlock(out, id);
-    if (!block || id === 'Normal') continue;
-    const l: Look = L[id];
-    let next = setSpacing(block, SPEC.styles[id].before ? l.beforeTw : undefined, /w:after="/.test(block) ? l.afterTw : undefined);
-    if (/<w:sz\b/.test(next)) next = setSize(next, l.sz);
-    out = out.replace(block, () => next);
-  }
-  return out;
-}
-
 export async function renderDocx(profile: Profile, plan: ResumePlan): Promise<Uint8Array> {
   const JSZip = (await import('jszip')).default;
   const zip = await JSZip.loadAsync(b64ToBytes(TEMPLATE_B64));
@@ -40,8 +18,7 @@ export async function renderDocx(profile: Profile, plan: ResumePlan): Promise<Ui
     if (!f) throw new Error(`Template part missing: ${p}`);
     return f.async('string');
   };
-  const L = looks(plan.tier);
-  zip.file('word/styles.xml', patchStyles(await read('word/styles.xml'), plan));
+  const L = looks();
 
   const links: { id: string; href: string }[] = [];
   const linkId = (href: string) => {
@@ -60,7 +37,7 @@ export async function renderDocx(profile: Profile, plan: ResumePlan): Promise<Ui
       const space = titleRuleSpace(L.Title);
       ppr += `<w:pBdr><w:bottom w:val="single" w:sz="${SPEC.rule.size}" w:space="${space}" w:color="${SPEC.rule.color}"/></w:pBdr><w:spacing w:after="0"/>`;
     } else if (p.after !== undefined) {
-      ppr += `<w:spacing w:after="${Math.round(p.after * plan.tier.spacing)}"/>`;
+      ppr += `<w:spacing w:after="${p.after}"/>`;
     }
     return `<w:p><w:pPr>${ppr}</w:pPr>${p.runs.map(run).join('')}</w:p>`;
   };

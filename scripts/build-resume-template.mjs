@@ -1,5 +1,5 @@
 // Sanitises the owner's Word resume template and extracts its look into generated modules.
-// Usage: npm run resume:template [-- --template <path-to-docx>]
+// Usage: npm run resume:template [-- --template <path-to-docx>]  (default: ../ResumeTemplate-v2.docx, made from ResumeTemplate.docx by scripts/derive-resume-template-v2.mjs)
 import JSZip from 'jszip';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const argAt = process.argv.indexOf('--template');
-const templatePath = path.resolve(argAt > 0 ? process.argv[argAt + 1] : path.join(root, '..', 'ResumeTemplate.docx'));
+const templatePath = path.resolve(argAt > 0 ? process.argv[argAt + 1] : path.join(root, '..', 'ResumeTemplate-v2.docx'));
 const outDir = path.join(root, 'src', 'resume', 'template');
 const A4 = { w: 11906, h: 16838 };
 

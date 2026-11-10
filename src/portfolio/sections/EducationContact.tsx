@@ -22,13 +22,14 @@ export function Education({ profile }: { profile: Profile }) {
 }
 
 export function Contact({ profile }: { profile: Profile }) {
-  const { email, linkedin, phone, website } = profile.contact;
+  const { email, linkedin, phone, website, address } = profile.contact;
   const safeLinkedin = /^https:\/\//.test(linkedin) ? linkedin : '';
   if (!email && !safeLinkedin && !phone && !website) return null;
   return (
     <SectionShell id={SECTION_IDS.contact} eyebrow="Contact" title="Let’s build something">
       <Reveal className={s.contactPanel}>
         {profile.identity.region && <p className={s.lead}>Based in {profile.identity.region}.</p>}
+        {address && <p className={s.body}><span className={s.srOnly}>Address: </span>{address}</p>}
         <div className={s.contactLinks}>
           {email && <a className={s.cta} href={`mailto:${email}`}>{email}</a>}
           {phone && <a className={s.ctaAlt} href={`tel:${phone.replace(/[^+\d]/g, '')}`}><span className={s.srOnly}>Phone: </span>{phone}</a>}

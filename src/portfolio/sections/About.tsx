@@ -1,7 +1,8 @@
-﻿import { useRef } from 'react';
+import { useRef } from 'react';
 import { useCountUp, useInView, useReducedMotion } from '../hooks/motion';
 import { deriveStrengths, SECTION_IDS, yearsOfExperience } from '../derive';
 import type { Profile } from '../types';
+import { RichText } from '../richText';
 import { Reveal, SectionShell } from './shared';
 import s from '../portfolio.module.css';
 
@@ -32,7 +33,7 @@ export function About({ profile }: { profile: Profile }) {
   if (!about && !stats.length && !strengths.length) return null;
   return (
     <SectionShell id={SECTION_IDS.about} eyebrow="About" title="Engineering with a platform mindset">
-      {about && <Reveal i={1}><p className={s.lead}>{about}</p></Reveal>}
+      {about && <Reveal i={1}><p className={s.lead}><RichText text={about} /></p></Reveal>}
       {n?.careerStory && <Reveal i={2}><p className={s.body}>{n.careerStory}</p></Reveal>}
       {stats.length > 0 && (
         <Reveal i={2} className={s.stats}>
