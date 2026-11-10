@@ -50,9 +50,8 @@ test('PDF and Word downloads are real files with the right names', async ({ page
 });
 
 test('a failing generator is reported without breaking the page', async ({ page }) => {
+  await page.addInitScript(() => { URL.createObjectURL = () => { throw new Error('storage blocked'); }; });
   await openPortfolio(page);
-  // The generator is lazy-loaded on click, so anything requested from here on is that chunk.
-  await page.route('**/assets/*.js', route => route.abort());
   await page.getByRole('button', { name: 'Download resume' }).first().click();
   await page.getByRole('button', { name: 'PDF document (.pdf)' }).click();
   await expect(page.getByRole('alert')).toContainText('could not be created');
