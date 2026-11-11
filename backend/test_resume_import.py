@@ -17,6 +17,8 @@ MARKDOWN = """<!-- a note that is ignored -->
 Headline: Engineer · Builder
 Titles: Builder | Engineer
 Region: Example region
+Tagline: Builder · Engineer
+Pitch: Builds **things** well.
 Domains: Education, Retail
 
 ## Contact
@@ -111,6 +113,7 @@ def merged():
 def test_markdown_becomes_a_valid_profile_document():
     document = merged()
     ProfileDocument.model_validate(document)
+    assert document["identity"]["tagline"] == "Builder · Engineer" and document["identity"]["pitch"] == "Builds **things** well."
     assert document["identity"]["titles"] == ["Builder", "Engineer"] and document["domains"] == ["Education", "Retail"]
     assert document["contact"]["phone"] == "555 0100 00" and document["contact"]["website"] == "https://example.invalid/"
     assert document["summary"] == "Example **summary** sentence one. Sentence two."

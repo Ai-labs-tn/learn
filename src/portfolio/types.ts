@@ -15,7 +15,7 @@ export type Narration = {
   projectStories?: Record<string, string>;
 };
 export type Profile = {
-  identity: { name: string; headline: string; titles: string[]; region: string };
+  identity: { name: string; headline: string; titles: string[]; region: string; tagline?: string; pitch?: string };
   contact: { email: string; linkedin: string; phone?: string; website?: string; address?: string };
   summary: string;
   highlights: string[];
@@ -62,6 +62,8 @@ export function normalizeEnvelope(value: unknown): ProfileEnvelope | null {
       headline: str(p.identity.headline),
       titles: strs(p.identity.titles),
       region: str(p.identity.region),
+      tagline: str(p.identity.tagline) || undefined,
+      pitch: str(p.identity.pitch) || undefined,
     },
     contact: { email: str(contact.email), linkedin: str(contact.linkedin), phone: /^\+?[0-9 ()-]{6,20}$/.test(str(contact.phone)) ? str(contact.phone) : undefined,
       website: /^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(\/[A-Za-z0-9._~%\/-]*)?$/.test(str(contact.website)) ? str(contact.website) : undefined, address: str(contact.address) || undefined },

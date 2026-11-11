@@ -668,7 +668,7 @@ def parse_resume_markdown(source: str) -> dict:
         education.append({"level": level, "institution": institution, "location": location, "start": start, "end": end or start})
     return {
         "name": name.group(1).strip(), "headline": field("Headline"), "titles": [t.strip() for t in field("Titles").split("|") if t.strip()],
-        "region": field("Region"), "domains": [d.strip() for d in field("Domains").split(",") if d.strip()], "contact": contact,
+        "region": field("Region"), "tagline": field("Tagline"), "pitch": field("Pitch"), "domains": [d.strip() for d in field("Domains").split(",") if d.strip()], "contact": contact,
         "summary": summary, "highlights": bullets(profile_lines), "experience": experience, "projects": projects, "skills": skills,
         "skill_focus": focus, "certifications": certifications, "awards": awards, "education": education, "interests": bullets(sections.get("Activities and Interests", [])),
     }
@@ -678,7 +678,8 @@ def merge_resume(parsed: dict, base: dict) -> dict:
     """Overlay the Markdown content on the stored document, keeping ids, privacy switches, address, references and narration."""
     import calendar
     merged = json.loads(json.dumps(base))
-    merged["identity"] = {"name": parsed["name"], "headline": parsed["headline"], "titles": parsed["titles"], "region": parsed["region"]}
+    merged["identity"] = {"name": parsed["name"], "headline": parsed["headline"], "titles": parsed["titles"], "region": parsed["region"],
+                          **({"tagline": parsed["tagline"]} if parsed["tagline"] else {}), **({"pitch": parsed["pitch"]} if parsed["pitch"] else {})}
     contact = parsed["contact"]
     merged["contact"] = {**{k: v for k, v in base["contact"].items() if k in ("address",)},
                          "email": contact.get("email", ""), "linkedin": contact.get("linkedin", ""),
