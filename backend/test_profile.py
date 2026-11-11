@@ -222,7 +222,7 @@ def test_invalid_profile_documents_are_rejected_without_writes(client, method):
         (("document", "identity", "name"), "x" * 121), (("document", "contact", "email"), "bad email"),
         (("document", "contact", "linkedin"), "https://evil.invalid/in/example"),
         (("document", "contact", "website"), "http://example.invalid"), (("document", "contact", "website"), "https://example.invalid/<x>"),
-        (("document", "experience", 0, "achievements"), ["x" * 301]), (("document", "experience", 0, "achievements"), ["a"] * 9),
+        (("document", "experience", 0, "achievements"), ["x" * 501]), (("document", "experience", 0, "achievements"), ["a"] * 9),
         (("document", "interests"), "not a list"), (("document", "interests"), ["javascript:alert(1)"]),
         (("document", "skills", 0, "level"), True), (("document", "skills", 0, "level"), 6),
         (("document", "experience", 0, "start"), "2020-13"),

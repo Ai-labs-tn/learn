@@ -68,7 +68,7 @@ class Experience(Strict):
     location: text(120)
     start: Annotated[str, StringConstraints(pattern=YEAR_MONTH.pattern)]
     end: Annotated[str, StringConstraints(pattern=YEAR_MONTH.pattern)] | None = None
-    achievements: Annotated[list[text(300)], Field(max_length=8)] = Field(default_factory=list)
+    achievements: Annotated[list[text(500)], Field(max_length=8)] = Field(default_factory=list)
 
 
 class Education(Strict):
