@@ -11,7 +11,7 @@ export function Recognition({ profile }: { profile: Profile }) {
     <SectionShell id={SECTION_IDS.recognition} eyebrow="Recognition" title="Awards, certifications & highlights">
       {awards.length > 0 && (
         <>
-          <h3 className={s.h3}>Awards</h3>
+          <h3 className={`${s.h3} ${s.subTitle} ${s.subTitleTop}`}>Awards</h3>
           <ul className={s.deck}>
             {awards.map((a, i) => (
               <Reveal as="li" key={`${a.title}-${i}`} i={i % 4} className={s.award}>
@@ -25,7 +25,7 @@ export function Recognition({ profile }: { profile: Profile }) {
       )}
       {certifications.length > 0 && (
         <>
-          <h3 className={s.h3}>Certifications</h3>
+          <h3 className={`${s.h3} ${s.subTitle}`}>Certifications</h3>
           <ul className={s.badges}>
             {certifications.map((c) => (
               <Reveal as="li" key={c.name} className={s.badge}>
@@ -41,7 +41,7 @@ export function Recognition({ profile }: { profile: Profile }) {
       )}
       {highlights.length > 0 && (
         <>
-          <h3 className={s.h3}>Highlights</h3>
+          <h3 className={`${s.h3} ${s.subTitle}`}>Highlights</h3>
           <ul className={s.callouts}>
             {highlights.map((h, i) => <Reveal as="li" key={h} i={i} className={s.callout}><RichText text={h} /></Reveal>)}
           </ul>

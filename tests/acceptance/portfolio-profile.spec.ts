@@ -43,3 +43,13 @@ test('bold markers render as bold keywords and the public address is shown', asy
   await expect(page.getByText('**')).toHaveCount(0);
   await expect(page.getByText('1 Example Street, Example city - 600001')).toBeVisible();
 });
+test('sub-titles outside cards keep breathing room above and below', async ({ page }) => {
+  await open(page, envelope({}, []));
+  for (const name of ['Domains', 'Awards', 'Certifications']) {
+    const heading = page.getByRole('heading', { level: 3, name, exact: true });
+    await heading.scrollIntoViewIfNeeded();
+    const margins = await heading.evaluate((el) => { const s = getComputedStyle(el); return { top: parseFloat(s.marginTop), bottom: parseFloat(s.marginBottom) }; });
+    expect(margins.bottom, `${name} bottom margin`).toBeGreaterThanOrEqual(12);
+    if (name !== 'Awards') expect(margins.top, `${name} top margin`).toBeGreaterThanOrEqual(20);
+  }
+});

@@ -166,12 +166,14 @@ for (const [label, make] of CASES) {
   });
 }
 
-test('the owner fixture needs 3 pages at native sizes and no level scales fonts or spacing', async () => {
+test('the owner fixture keeps its full content on up to 4 pages at native sizes; no level scales fonts or spacing', async () => {
   const p = fixture();
   const plan = planResume(p);
-  expect(plan.pages).toBe(3);
-  expect(plan.maxPages).toBe(3);
-  expect(plan.docxPages).toBe(3);
+  expect(plan.tier.index).toBe(0);                       // richest level: nothing is trimmed to save a page
+  expect(plan.pages).toBeGreaterThanOrEqual(3);
+  expect(plan.pages).toBeLessThanOrEqual(4);
+  expect(plan.maxPages).toBe(4);
+  expect(plan.docxPages).toBeLessThanOrEqual(4);
   expect(plan.tier.index).toBeLessThan(TIER_COUNT);
   const L = looks();
   expect(L.Title.sz).toBe(56);
@@ -185,7 +187,13 @@ test('the owner fixture needs 3 pages at native sizes and no level scales fonts 
   expect(SPEC.colors).toMatchObject({ accent: '39A5B7', heading: '2A7B88', body: '404040' });
   expect(SPEC.rule).toMatchObject({ color: '39A5B7', size: 12 });
   expect(SPEC.bullet).toMatchObject({ left: 216, hanging: 216 });
-  expect(await generateResume(p, 'pdf').then((r) => r.pages)).toBe(3);
+  expect(await generateResume(p, 'pdf').then((r) => r.pages)).toBe(plan.pages);
+  // every project keeps its one-line description and the first 8 tech items (the owner's own edit had them)
+  const text = await pdfText((await generateResume(p, 'pdf')).bytes);
+  for (const pr of p.projects) {
+    expect(flat(text.text), pr.name).toContain(flat((pr.short ?? pr.summary).replace(/\*\*/g, '')));
+    for (const tech of pr.techStack.slice(0, 8)) expect(flat(text.text), `${pr.name}: ${tech}`).toContain(flat(tech));
+  }
   // the PDF's own sizes: name 28pt, entry lines 14pt, body 11pt, contact 10pt
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
   const doc = await pdfjs.getDocument({ data: new Uint8Array((await generateResume(p, 'pdf')).bytes), verbosity: 0 }).promise;

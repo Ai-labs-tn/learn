@@ -199,9 +199,8 @@ export function planResume(profile: Profile): ResumePlan {
     const e = evalTier(i);
     return { tier: e.tier, maxPages, pages: e.exact.pages, docxPages: e.safe.pages, lastPageFill: e.exact.lastPageFill, blocks: e.blocks, lines: e.exact.lines, fits: e.exact.pages <= maxPages && e.safe.pages <= maxPages };
   };
-  for (const maxPages of [3, 4]) {
-    for (let i = 0; i < TIER_COUNT; i++) { const p = make(i, maxPages); if (p.fits) return p; }
-  }
+  // Owner decision: keep the richest content, allowing up to 4 pages, instead of trimming to squeeze into 3.
+  for (let i = 0; i < TIER_COUNT; i++) { const p = make(i, 4); if (p.fits) return p; }
   let last = make(TIER_COUNT, 4);
   for (let i = TIER_COUNT; i <= MAX_TIER_INDEX; i++) { last = make(i, 4); if (last.fits) return last; }
   return last;
