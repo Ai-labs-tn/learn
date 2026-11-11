@@ -53,3 +53,19 @@ test('sub-titles outside cards keep breathing room above and below', async ({ pa
     if (name !== 'Awards') expect(margins.top, `${name} top margin`).toBeGreaterThanOrEqual(20);
   }
 });
+test('hero uses the owner tagline and pitch, drops the Domains card, and falls back when they are absent', async ({ page }) => {
+  const body = envelope({}, []);
+  body.profile.identity = { ...body.profile.identity, tagline: 'Staff Engineer \u00B7 Builder', pitch: 'Builds **reliable** systems.' };
+  await open(page, body);
+  const hero = page.locator('section[aria-labelledby="portfolio-name"]');
+  await expect(hero.getByText('Staff Engineer \u00B7 Builder', { exact: true })).toBeVisible();
+  await expect(hero.getByText('Builds reliable systems.', { exact: true })).toBeVisible();
+  await expect(hero.getByText('Domains', { exact: true })).toHaveCount(0);
+  await expect(hero.getByText('years building software')).toBeVisible();
+  await page.unroute('**/api/profile');
+  const plain = envelope({}, []); plain.version += 1;
+  plain.profile.identity = { ...plain.profile.identity, tagline: undefined, pitch: undefined };   // no owner lines: fall back to the summary
+  await page.route('**/api/profile', (route) => route.fulfill({ json: plain }));
+  await page.reload();
+  await expect(page.locator('section[aria-labelledby="portfolio-name"] p').filter({ hasText: snapshot.profile.summary.slice(0, 20) })).toBeVisible();
+});

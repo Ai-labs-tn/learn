@@ -1,7 +1,7 @@
 {
   "profileId": "from-resume-md",
   "version": 0,
-  "updatedAt": "2026-11-11T07:59:08Z",
+  "updatedAt": "2026-11-11T08:38:20Z",
   "profile": {
     "schemaVersion": 1,
     "identity": {
@@ -13,7 +13,9 @@
         "Full Stack Developer",
         "Senior Staff Engineer"
       ],
-      "region": "Tamil Nadu, India"
+      "region": "Tamil Nadu, India",
+      "tagline": "Senior Staff Engineer · Forward Deployed Engineer · Full Stack Developer",
+      "pitch": "12+ years building scalable, secure microservices on Google Cloud, with hands-on DevOps and AI-driven systems."
     },
     "summary": "Full-stack engineer with **12+ years** of experience building scalable, secure **microservices** in **Java** and **Python** on **Google Cloud**. Hands-on **DevOps** lead who deploys and runs applications on **GCP** through **GitHub Workflows**. Skilled in high- and low-level system design, including cloud-native and AI-driven solutions such as **RAG**, **LangChain** and **multi-agent systems** using **Google's A2A** protocol.",
     "highlights": [

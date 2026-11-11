@@ -31,6 +31,8 @@ class Identity(Strict):
     headline: text(200)
     titles: Annotated[list[text(80)], Field(min_length=1, max_length=8)]
     region: text(120)
+    tagline: text(120) | None = None   # hero headline; falls back to the headline
+    pitch: text(200) | None = None     # one short hero line; falls back to the first summary sentences
 
 
 class Contact(Strict):

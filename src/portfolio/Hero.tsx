@@ -12,14 +12,14 @@ export function Hero({ profile }: { profile: Profile }) {
   useScenePointer(scene, reduced);
   const [imgOk, setImgOk] = useState(true);
   const { identity, narration } = profile;
-  const tagline = narration?.tagline || identity.headline;
-  const pitch = narration?.elevatorPitch || firstSentences(profile.summary, 2);
+  const tagline = identity.tagline || narration?.tagline || identity.headline;
+  const pitch = identity.pitch || narration?.elevatorPitch || firstSentences(profile.summary, 2);
   const years = yearsOfExperience(profile);
   const orbit = [...profile.skills].sort((a, b) => b.level - a.level).slice(0, 6);
   const facts = [
     years > 0 && { k: `${years}+`, v: 'years building software' },
     identity.titles[0] && { k: 'Certified', v: identity.titles[0] },
-    profile.domains.length > 0 && { k: 'Domains', v: profile.domains.join(' · ') },
+
   ].filter(Boolean) as { k: string; v: string }[];
   const words = tagline.split(/\s+/).filter(Boolean);
   return (
