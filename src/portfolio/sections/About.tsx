@@ -52,7 +52,7 @@ export function About({ profile }: { profile: Profile }) {
       )}
       {profile.domains.length > 0 && (
         <Reveal i={3}>
-          <h3 className={s.h3}>Domains</h3>
+          <h3 className={`${s.h3} ${s.subTitle}`}>Domains</h3>
           <ul className={s.chips}>{profile.domains.map((d) => <li key={d} className={s.chip}>{d}</li>)}</ul>
         </Reveal>
       )}

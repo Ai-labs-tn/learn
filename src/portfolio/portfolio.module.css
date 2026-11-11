@@ -53,6 +53,9 @@
 .h3 { font-size: 1.2rem; line-height: 1.3; margin-block: 1.5rem 0.5rem; }
 .h4 { font-size: 1.1rem; margin-block: 0.25rem 0.5rem; }
 .panel .h3, .tCard .h3, .card .h3 { margin-block-start: 0.25rem; }
+/* Sub-titles outside cards: the generic '.root h3 { margin: 0 }' reset beats '.h3', so they had no spacing at all. */
+.root .subTitle { margin-block: 1.5rem 0.9rem; }
+.root .subTitleTop { margin-block-start: 0.25rem; }
 .lead { font-size: clamp(1.1rem, 2.4vw, 1.35rem); line-height: 1.6; max-inline-size: 70ch; }
 .body { color: var(--color-text-secondary); margin-block-start: 0.35rem; }
 .dates { color: var(--color-text-secondary); font-size: 0.9rem; font-weight: 600; }
