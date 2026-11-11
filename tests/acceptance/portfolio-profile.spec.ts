@@ -64,6 +64,7 @@ test('hero uses the owner tagline and pitch, drops the Domains card, and falls b
   await expect(hero.getByText('years building software')).toBeVisible();
   await page.unroute('**/api/profile');
   const plain = envelope({}, []); plain.version += 1;
+  plain.profile.identity = { ...plain.profile.identity, tagline: undefined, pitch: undefined };   // no owner lines: fall back to the summary
   await page.route('**/api/profile', (route) => route.fulfill({ json: plain }));
   await page.reload();
   await expect(page.locator('section[aria-labelledby="portfolio-name"] p').filter({ hasText: snapshot.profile.summary.slice(0, 20) })).toBeVisible();
